@@ -1,0 +1,16 @@
+{
+    "name": "Rdds.Unity.Nuget",
+    "rootNamespace": "Rdds.Unity.Nuget",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

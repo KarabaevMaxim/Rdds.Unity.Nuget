@@ -1,0 +1,57 @@
+﻿.PackageControlBlock {
+    width: auto;
+    height: auto;
+    margin: 5px;
+    border-color: black;
+    border-width: 2px;
+    border-radius: 3px;
+}
+
+.Header {
+    width: auto;
+    height: auto;
+    margin: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.Icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.Title {
+    width: auto;
+    height: auto;
+    -unity-font-style: bold;
+    font-size: 14px;
+    margin: 5px;
+}
+
+.DownloadCount {
+    width: auto;
+    height: auto;
+    font-size: 12px;
+    margin-left: auto;
+}
+
+.Description {
+    width: auto;
+    height: auto;
+}
+
+.PackagesList {
+    width: auto;
+    height: auto;
+    border-width: 2px;
+    border-radius: 3px;
+    margin: 5px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}

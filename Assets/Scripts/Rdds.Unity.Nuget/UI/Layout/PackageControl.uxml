@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:engine="UnityEngine.UIElements"
+        xmlns:editor="UnityEditor.UIElements"
+        xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
+    <engine:VisualElement name="Root" class="PackageControlBlock" >
+        <engine:VisualElement name="HeaderBlock" class="Header">
+            <engine:Image name="IconImage" class="Icon" />
+            <engine:Label name="TitleLbl" class="Title" />
+            <engine:Label name="VersionLabel" class="Title" />
+            <engine:Label name="DownloadCountLabel" class="DownloadCount" />
+        </engine:VisualElement>
+        <engine:Label name="DescriptionLbl" class="Description" />
+        <engine:Button name="DownloadBtn" text="Download"/>
+    </engine:VisualElement>
+</engine:UXML>

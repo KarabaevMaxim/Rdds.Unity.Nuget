@@ -12,6 +12,6 @@
             <engine:Label name="DownloadCountLabel" class="DownloadCount" />
         </engine:VisualElement>
         <engine:Label name="DescriptionLbl" class="Description" />
-        <engine:Button name="DownloadBtn" text="Download"/>
+        <engine:Button name="DownloadButton" text="Download"/>
     </engine:VisualElement>
 </engine:UXML>

@@ -40,7 +40,7 @@ namespace Rdds.Unity.Nuget.UI
 
         foreach (var package in packages)
         {
-          var control = new PackageControl(_container, package);
+          var control = new PackageControl(_container, package, _nugetService);
           await control.SetFields();
         }
       };

@@ -1,7 +1,7 @@
 using System;
-using UnityEngine;
+using System.Collections.Generic;
 
-namespace Rdds.Unity.Nuget
+namespace Rdds.Unity.Nuget.Entities
 {
   [Serializable]
   public class PackageInfo
@@ -20,8 +20,8 @@ namespace Rdds.Unity.Nuget
     
     public long? DownloadCount { get; set; }
     
-    public string Id { get; set; }
+    public PackageIdentity Identity { get; set; }
     
-    public string Version { get; set; }
+    public IEnumerable<FrameworkGroup> Dependencies { get; set; }
   }
 }

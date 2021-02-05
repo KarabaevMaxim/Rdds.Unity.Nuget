@@ -1,11 +1,27 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Threading.Tasks;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace Rdds.Unity.Nuget.Services
 {
-  public class DownloadHelper
+  public static class DownloadHelper
   {
+    public static async Task<Texture2D?> DownloadImageAsync(Uri? url)
+    {
+      if (url == null)
+        return null;
+      
+      var client = new HttpClient();
+      var response = await client.GetAsync(url);
+      var bytes = await response.Content.ReadAsByteArrayAsync();
+      var result = new Texture2D(0, 0);
+      result.LoadImage(bytes);
+      return result;
+    }
+  
     public static Texture2D DownloadImage(string url)
     {
       bool timedout = false;

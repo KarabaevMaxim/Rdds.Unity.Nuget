@@ -10,10 +10,21 @@
 .Header {
     width: auto;
     height: auto;
-    margin: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
+}
+
+.FilterString {
+    width: 80%;
+    flex-grow: 2;
+}
+
+.SourcesControl {
+    margin-left: auto;
+    flex-grow: 0;
 }
 
 .Icon {

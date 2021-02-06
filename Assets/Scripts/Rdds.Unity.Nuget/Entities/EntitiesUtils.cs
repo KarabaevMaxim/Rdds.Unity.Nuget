@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using Rdds.Unity.Nuget.Entities.Config;
 
 namespace Rdds.Unity.Nuget.Entities
 {
@@ -52,9 +54,16 @@ namespace Rdds.Unity.Nuget.Entities
       };
     }
 
-    public static NuGetVersion ToNugetVersion(this PackageVersion version)
-    {
-      return new NuGetVersion(version.ToString());
-    }
+    public static NuGetVersion ToNugetVersion(this PackageVersion version) => new NuGetVersion(version.ToString());
+
+    public static PackageSourceCredential CreatePackageSourceCredentials(this NugetPackageSource packageSource) =>
+      new PackageSourceCredential(packageSource.Path, packageSource.Credentials?.Username,
+        packageSource.Credentials?.Password, packageSource.Credentials?.IsPasswordClearText ?? false, null);
+
+    public static PackageSource ToPackageSource(this NugetPackageSource packageSource) =>
+      new PackageSource(packageSource.Path)
+      {
+        Credentials = packageSource.CreatePackageSourceCredentials()
+      };
   }
 }

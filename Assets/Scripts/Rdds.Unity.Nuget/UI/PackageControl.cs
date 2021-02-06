@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Services;
 using UnityEditor;
 using UnityEngine;
@@ -31,7 +32,7 @@ namespace Rdds.Unity.Nuget.UI
         icon = Resources.Load<Texture2D>("NugetIcon");
 
       _iconImage.image = icon;
-      _downloadButton.clickable.clicked += async () => await _service.DownloadPackage(_packageInfo.Identity);
+      _downloadButton.clickable.clicked += async () => await _service.DownloadPackageAsync(_packageInfo.Identity, CancellationToken.None);
     }
     
     public PackageControl(VisualElement parent, PackageInfo info, NugetService service)

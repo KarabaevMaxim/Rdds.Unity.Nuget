@@ -1,1 +1,3 @@
 -nowarn:8632
+-r:System.IO.Compression.dll
+-r:System.IO.Compression.FileSystem.dll

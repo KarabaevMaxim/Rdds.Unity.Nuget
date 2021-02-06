@@ -5,7 +5,9 @@
         xmlns:editor="UnityEditor.UIElements"
         xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
     <engine:ScrollView name="Root">
-        <engine:TextField name="FilterStringTextField" label="Filter:" text="json"/>
+        <engine:VisualElement name="Header" class="Header">
+            <engine:TextField name="FilterStringTextField" label="Filter:" text="json" class="FilterString"/>
+        </engine:VisualElement>
         <engine:Button name="SearchButton" text="Search"/>
         
         <engine:VisualElement name="Container" class="PackagesList">

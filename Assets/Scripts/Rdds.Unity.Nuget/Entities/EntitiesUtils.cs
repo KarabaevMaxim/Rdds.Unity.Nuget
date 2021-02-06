@@ -56,9 +56,11 @@ namespace Rdds.Unity.Nuget.Entities
 
     public static NuGetVersion ToNugetVersion(this PackageVersion version) => new NuGetVersion(version.ToString());
 
-    public static PackageSourceCredential CreatePackageSourceCredentials(this NugetPackageSource packageSource) =>
-      new PackageSourceCredential(packageSource.Path, packageSource.Credentials?.Username,
-        packageSource.Credentials?.Password, packageSource.Credentials?.IsPasswordClearText ?? false, null);
+    public static PackageSourceCredential? CreatePackageSourceCredentials(this NugetPackageSource packageSource) =>
+      packageSource.Credentials == null 
+        ? null 
+        : new PackageSourceCredential(packageSource.Path, packageSource.Credentials!.Username,
+          packageSource.Credentials!.Password, packageSource.Credentials.IsPasswordClearText, null);
 
     public static PackageSource ToPackageSource(this NugetPackageSource packageSource) =>
       new PackageSource(packageSource.Path)

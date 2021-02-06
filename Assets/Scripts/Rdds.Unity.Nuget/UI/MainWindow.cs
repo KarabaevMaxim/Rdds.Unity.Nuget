@@ -34,7 +34,6 @@ namespace Rdds.Unity.Nuget.UI
       InitializeLayout();
       
       _nugetConfigService.LoadConfigFile();
-      _nugetService.Initialize();
 
       CreateSourcesControl(_nugetConfigService.GetAvailableSources().ToList(), _nugetService.SelectedSource.Key);
     }
@@ -43,7 +42,7 @@ namespace Rdds.Unity.Nuget.UI
     {
       _fileService = new FileService();
       _nugetConfigService = new NugetConfigService(_fileService);
-      _nugetService = new NugetService(new UnityConsoleLogger(), _nugetConfigService);
+      _nugetService = new NugetService(new UnityConsoleLogger(), _nugetConfigService, _fileService);
     }
 
     private void InitializeLayout()
@@ -62,7 +61,7 @@ namespace Rdds.Unity.Nuget.UI
 
     private void CreateSourcesControl(List<string> sources, string selected)
     {
-      _sourcesControl = new PopupField<string>(sources, 0);
+      _sourcesControl = new PopupField<string>(sources, 2);
       _sourcesControl.value = selected;
       _sourcesControl.AddToClassList("SourcesControl");
       _header.Add(_sourcesControl);

@@ -30,6 +30,7 @@
 .Icon {
     width: 30px;
     height: 30px;
+    margin-left: 5px;
     margin-right: 5px;
     margin-bottom: 5px;
 }
@@ -53,6 +54,12 @@
     width: 100%;
     height: auto;
     white-space: normal;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.Button {
+    margin: 5px;
 }
 
 .PackagesList {

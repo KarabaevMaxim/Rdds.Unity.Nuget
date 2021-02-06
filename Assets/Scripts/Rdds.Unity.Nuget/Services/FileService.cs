@@ -31,5 +31,7 @@ namespace Rdds.Unity.Nuget.Services
 
       return File.ReadAllText(filePath);
     }
+
+    public FileStream CreateWriteFileStream(string filePath) => File.OpenWrite(filePath);
   }
 }

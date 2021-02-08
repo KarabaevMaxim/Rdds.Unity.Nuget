@@ -30,24 +30,16 @@
 .Icon {
     width: 30px;
     height: 30px;
-    margin-left: 5px;
-    margin-right: 5px;
-    margin-bottom: 5px;
+    margin: 5px;
 }
 
 .Title {
     width: auto;
     height: auto;
     -unity-font-style: bold;
+    -unity-text-align: middle-left;
     font-size: 14px;
     margin: 5px;
-}
-
-.DownloadCount {
-    width: auto;
-    height: auto;
-    font-size: 12px;
-    margin-left: auto;
 }
 
 .LongTextLabel {

@@ -45,16 +45,8 @@ namespace Rdds.Unity.Nuget.Entities
       };
     }
 
-    public static PackageVersion ToPackageVersion(this NuGetVersion version)
-    {
-      return new PackageVersion
-      {
-        Major = version.Major,
-        Minor = version.Minor,
-        Patch = version.Patch,
-        OriginalString = version.OriginalVersion
-      };
-    }
+    public static PackageVersion ToPackageVersion(this NuGetVersion version) => 
+      new PackageVersion(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.OriginalVersion);
 
     public static NuGetVersion ToNugetVersion(this PackageVersion version) => new NuGetVersion(version.ToString());
 

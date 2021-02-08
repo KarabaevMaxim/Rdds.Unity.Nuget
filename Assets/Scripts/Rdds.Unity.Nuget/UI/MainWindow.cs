@@ -6,21 +6,25 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using ILogger = NuGet.Common.ILogger;
 
 namespace Rdds.Unity.Nuget.UI
 {
   public class MainWindow : EditorWindow
   {
-    private NugetService _nugetService = null!;
+    private ILogger _logger = null!;
+    private INugetService _nugetService = null!;
     private FileService _fileService = null!;
     private NugetConfigService _nugetConfigService = null!;
     private FrameworkService _frameworkService = null!;
     
-    private VisualElement _container;
-    private TextField _filterStringTextField;
-    private Button _searchButton;
-    private VisualElement _header;
-    private PopupField<string> _sourcesControl;
+    private VisualElement _container = null!;
+    private TextField _filterStringTextField = null!;
+    private Button _searchButton = null!;
+    private VisualElement _header = null!;
+    private PopupField<string> _sourcesControl = null!;
+
+    private CancellationTokenSource? _searchCancellationTokenSource;
     
     [MenuItem("Rdds/Unity.Nuget")]
     public static void ShowDefaultWindow()
@@ -44,7 +48,8 @@ namespace Rdds.Unity.Nuget.UI
       _fileService = new FileService();
       _nugetConfigService = new NugetConfigService(_fileService);
       _frameworkService = new FrameworkService();
-      _nugetService = new NugetService(new UnityConsoleLogger(), _nugetConfigService, _fileService, _frameworkService);
+      _logger = new UnityConsoleLogger();
+      _nugetService = new NugetService(_logger, _nugetConfigService, _fileService, _frameworkService);
     }
 
     private void InitializeLayout()
@@ -63,7 +68,7 @@ namespace Rdds.Unity.Nuget.UI
 
     private void CreateSourcesControl(List<string> sources, string selected)
     {
-      _sourcesControl = new PopupField<string>(sources, 2);
+      _sourcesControl = new PopupField<string>(sources, 0);
       _sourcesControl.value = selected;
       _sourcesControl.AddToClassList("SourcesControl");
       _header.Add(_sourcesControl);
@@ -73,12 +78,18 @@ namespace Rdds.Unity.Nuget.UI
     private async void OnSearchButtonClicked()
     {
       _container.Clear();
-      var packages = await _nugetService.GetPackagesAsync(_filterStringTextField.text, 0, 20, CancellationToken.None);
+      _searchCancellationTokenSource?.Cancel();
+      _searchCancellationTokenSource = new CancellationTokenSource();
+      var packages = 
+        await _nugetService.GetPackagesAsync(_filterStringTextField.text, 0, 20, _searchCancellationTokenSource.Token);
 
       foreach (var package in packages)
       {
-        var control = new PackageControl(_container, package, _nugetService);
-        await control.SetFields();
+        if (_searchCancellationTokenSource.IsCancellationRequested)
+          return;
+        
+        var control = new PackageControl(_container, package, _nugetService, _logger);
+        await control.UpdateFields();
       }
     }
 

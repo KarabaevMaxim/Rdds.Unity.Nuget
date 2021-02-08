@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
 namespace Rdds.Unity.Nuget.Services
 {
-  public class NugetService
+  public class NugetService : INugetService
   {
     private readonly ILogger _logger;
     private readonly NugetConfigService _configService;
@@ -66,29 +67,36 @@ namespace Rdds.Unity.Nuget.Services
 
     public async Task<SourcePackageDependencyInfo> GetPackageDependencies(PackageIdentity identity)
     {
+      // todo try it
+      // var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken, );
+      // var deps = await resource.GetDependencyInfoAsync();
+      
       var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
       var cache = new SourceCacheContext();
       var resource = await repository.GetResourceAsync<DependencyInfoResource>();
       return await resource.ResolvePackage(identity.ToNugetPackageIdentity(), new NuGetFramework(_frameworkService.GetFramework()), cache, _logger, CancellationToken.None);
    }
 
-    public async Task<IEnumerable<PackageInfo>> GetPackagesAsync(string packageId, CancellationToken cancellationToken)
+    public async Task<PackageInfo?> GetPackageAsync(string packageId, PackageVersion version, CancellationToken cancellationToken)
     {
       var cache = new SourceCacheContext();
       var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
       var resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
       var packages =
         await resource.GetMetadataAsync(packageId, true, false, cache, _logger, cancellationToken);
-      return packages.Select(p => p.ToPackageInfo());
+      return packages.Select(p => p.ToPackageInfo()).FirstOrDefault(p => p.Identity.Version.Equals(version));
     }
 
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public async Task<IEnumerable<PackageVersion>> GetPackageVersionsAsync(string packageId, CancellationToken cancellationToken)
     {
       var cache = new SourceCacheContext();
       var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
       var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
       var versions = await resource.GetAllVersionsAsync(packageId, cache, _logger, cancellationToken);
-      return versions.Select(v => v.ToPackageVersion());
+      versions = versions.OrderByDescending(v => v);
+      var last = versions.First();
+      return versions.Where(v => !v.IsPrerelease || v == last).Select(v => v.ToPackageVersion());
     }
 
     public async Task<bool> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)

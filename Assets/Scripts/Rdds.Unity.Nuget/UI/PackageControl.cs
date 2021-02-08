@@ -1,51 +1,63 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Services;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using ILogger = NuGet.Common.ILogger;
 using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
 namespace Rdds.Unity.Nuget.UI
 {
   public class PackageControl
   {
+    private readonly VisualElement _versionPlaceholder;
     private readonly Label _titleLbl;
     private readonly Image _iconImage;
     private readonly Label _descriptionLbl;
-    private readonly Label _versionLabel;
-    private readonly Label _downloadCountLabel;
     private readonly Button _actionButton;
     private readonly Foldout _dependenciesPanel;
     private readonly Label _dependenciesLabel;
+    private PopupField<string> _versionsControl = null!;
     
-    private readonly PackageInfo _packageInfo;
-    private readonly NugetService _service;
+    private PackageInfo _packageInfo;
+    private readonly INugetService _nugetService;
+    private readonly ILogger _logger;
 
     private string ActionButtonText
     {
       get => _actionButton.text;
       set => _actionButton.text = value;
     }
+
+    private PackageInfo PackageInfo
+    {
+      set
+      {
+        _packageInfo = value;
+        
+      }
+      get => _packageInfo;
+    }
     
-    public async Task SetFields()
+    public async Task UpdateFields()
     {
       _titleLbl.text = _packageInfo.Title;
       _descriptionLbl.text = _packageInfo.Description;
-      _versionLabel.text = $"{_packageInfo.Identity.Version.OriginalString}";
-      _downloadCountLabel.text = $"Downloaded {_packageInfo.DownloadCount?.ToString() ?? "-"} times";
       AddDependencies();
-      var icon = await DownloadHelper.DownloadImageAsync(_packageInfo.IconUrl);
+      var versions = 
+        await _nugetService.GetPackageVersionsAsync(_packageInfo.Identity.Id, CancellationToken.None);
+      CreateVersionsControl(_packageInfo.Identity.Version, versions);
       
-      if (icon == null)
-        icon = Resources.Load<Texture2D>("NugetIcon");
-
-      _iconImage.image = icon;
-
       ToDefaultState();
+
+      await SetIconAsync();
     }
 
     private void AddDependencies()
@@ -71,6 +83,27 @@ namespace Rdds.Unity.Nuget.UI
       _dependenciesPanel.value = true;
     }
 
+    private void CreateVersionsControl(PackageVersion selectedVersion, IEnumerable<PackageVersion> availableVersions)
+    {
+      // ReSharper disable once ConstantConditionalAccessQualifier
+      _versionsControl?.RemoveFromHierarchy();
+      _versionsControl = new PopupField<string>(availableVersions.Select(v => v.ToString()).ToList(), 0);
+      _versionsControl.value = selectedVersion.ToString();
+      _versionsControl.style.height = new StyleLength(new Length(100, LengthUnit.Percent));
+      _versionPlaceholder.Add(_versionsControl);
+      _versionsControl.RegisterValueChangedCallback(OnVersionControlValueChanged);
+    }
+
+    private async Task SetIconAsync()
+    {
+      var icon = await DownloadHelper.DownloadImageAsync(_packageInfo.IconUrl);
+      
+      if (icon == null)
+        icon = Resources.Load<Texture2D>("NugetIcon");
+
+      _iconImage.image = icon;
+    }
+
     private void ToDefaultState()
     {
       ActionButtonText = "Download";
@@ -90,7 +123,7 @@ namespace Rdds.Unity.Nuget.UI
     
     private async void OnDownloadButtonClicked()
     {
-      var downloadResult = await _service.DownloadPackageAsync(_packageInfo.Identity, CancellationToken.None);
+      var downloadResult = await _nugetService.DownloadPackageAsync(_packageInfo.Identity, CancellationToken.None);
 
       if (!downloadResult)
         return;
@@ -102,21 +135,48 @@ namespace Rdds.Unity.Nuget.UI
 
     private void OnRemoveButtonClicked() => throw new NotImplementedException();
 
-    public PackageControl(VisualElement parent, PackageInfo info, NugetService service)
+    private async void OnVersionControlValueChanged(ChangeEvent<string> args)
+    {
+      PackageVersion version = null!;
+      
+      try
+      {
+        version = PackageVersion.Parse(args.newValue);
+      }
+      catch (Exception ex)
+      {
+        _logger.LogWarning($"{ex.GetType().Name}:{ex.Message} {ex.StackTrace}");
+        _versionsControl.value = args.previousValue;
+        return;
+      }
+      
+      var info = await _nugetService.GetPackageAsync(_packageInfo.Identity.Id, version, CancellationToken.None);
+
+      if (info == null)
+      {
+        _logger.LogWarning($"Package {_packageInfo.Identity.Id} with version {version} not found");
+        _versionsControl.value = args.previousValue;
+        return;
+      }
+
+      _packageInfo = info;
+      await UpdateFields();
+    }
+
+    public PackageControl(VisualElement parent, PackageInfo info, INugetService nugetService, ILogger logger)
     {
       _packageInfo = info;
-      _service = service;
+      _nugetService = nugetService;
+      _logger = logger;
       var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Scripts/Rdds.Unity.Nuget/UI/Layout/PackageControl.uxml");
       var root = visualTree.CloneTree();
       parent.Add(root);
+      _versionPlaceholder = root.Q<VisualElement>("VersionPlaceholder");
       _titleLbl = root.Q<Label>("TitleLbl");
       _descriptionLbl = root.Q<Label>("DescriptionLbl");
       _iconImage = root.Q<Image>("IconImage");
-      _versionLabel = root.Q<Label>("VersionLabel");
-      _downloadCountLabel = root.Q<Label>("DownloadCountLabel");
       _actionButton = root.Q<Button>("ActionButton");
       _dependenciesPanel = root.Q<Foldout>("DependenciesPanel");
-      _dependenciesLabel = _dependenciesPanel.Q<Label>("DependenciesLabel");
-    }
+      _dependenciesLabel = _dependenciesPanel.Q<Label>("DependenciesLabel"); }
   }
 }

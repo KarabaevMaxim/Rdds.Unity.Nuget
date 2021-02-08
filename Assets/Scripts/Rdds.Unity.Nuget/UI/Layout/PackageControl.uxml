@@ -7,8 +7,7 @@
         <engine:VisualElement name="HeaderBlock" class="Header">
             <engine:Image name="IconImage" class="Icon" />
             <engine:Label name="TitleLbl" class="Title" />
-            <engine:Label name="VersionLabel" class="Title" />
-            <engine:Label name="DownloadCountLabel" class="DownloadCount" />
+            <engine:VisualElement name="VersionPlaceholder" class="Title" />
         </engine:VisualElement>
         <engine:Label name="DescriptionLbl" class="LongTextLabel" />
         

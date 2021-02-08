@@ -96,7 +96,7 @@ namespace Rdds.Unity.Nuget.UI
 
     private async Task SetIconAsync()
     {
-      var icon = await DownloadHelper.DownloadImageAsync(_packageInfo.IconUrl);
+      var icon = await DownloadHelper.DownloadImageAsync(_packageInfo.IconUrl, CancellationToken.None);
       
       if (icon == null)
         icon = Resources.Load<Texture2D>("NugetIcon");

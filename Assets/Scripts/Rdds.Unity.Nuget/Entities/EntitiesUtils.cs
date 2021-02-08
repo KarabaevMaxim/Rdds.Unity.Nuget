@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
@@ -30,6 +29,9 @@ namespace Rdds.Unity.Nuget.Entities
       };
     }
 
+    public static NuGet.Packaging.Core.PackageIdentity ToNugetPackageIdentity(this PackageIdentity identity) => 
+      new NuGet.Packaging.Core.PackageIdentity(identity.Id, identity.Version.ToNugetVersion());
+
     public static FrameworkGroup ToFrameworkGroup(this PackageDependencyGroup dependency)
     {
       return new FrameworkGroup
@@ -38,7 +40,7 @@ namespace Rdds.Unity.Nuget.Entities
         Dependencies = dependency.Packages.Select(d => new PackageIdentity
         {
           Id = d.Id,
-          Version = d.VersionRange.MaxVersion.ToPackageVersion()
+          Version = d.VersionRange.MinVersion.ToPackageVersion()
         })
       };
     }

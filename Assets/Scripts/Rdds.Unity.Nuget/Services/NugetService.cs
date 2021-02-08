@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
@@ -17,6 +18,7 @@ namespace Rdds.Unity.Nuget.Services
     private readonly ILogger _logger;
     private readonly NugetConfigService _configService;
     private readonly FileService _fileService;
+    private readonly FrameworkService _frameworkService;
 
     private NugetPackageSource? _selectedSource;
     
@@ -46,14 +48,29 @@ namespace Rdds.Unity.Nuget.Services
 
     public async Task<IEnumerable<PackageInfo>> GetPackagesAsync(string filterString, int skip, int take, CancellationToken cancellationToken)
     {
-      var packageSource = SelectedSource.ToPackageSource();
-      var repository = Repository.Factory.GetCoreV3(packageSource);
+      var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
       var resource = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken);
       var searchFilter = new SearchFilter(true);
       var results =
         await resource.SearchAsync(filterString, searchFilter, skip, take, _logger, cancellationToken);
+
       return results.Select(r => r.ToPackageInfo());
+      //
+      // foreach (var res in result)
+      // {
+      //   var dep = await GetPackageDependencies(res.Identity); 
+      // }
+      //
+      // return result;
     }
+
+    public async Task<SourcePackageDependencyInfo> GetPackageDependencies(PackageIdentity identity)
+    {
+      var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
+      var cache = new SourceCacheContext();
+      var resource = await repository.GetResourceAsync<DependencyInfoResource>();
+      return await resource.ResolvePackage(identity.ToNugetPackageIdentity(), new NuGetFramework(_frameworkService.GetFramework()), cache, _logger, CancellationToken.None);
+   }
 
     public async Task<IEnumerable<PackageInfo>> GetPackagesAsync(string packageId, CancellationToken cancellationToken)
     {
@@ -96,11 +113,12 @@ namespace Rdds.Unity.Nuget.Services
       
     }
 
-    public NugetService(ILogger logger, NugetConfigService configService, FileService fileService)
+    public NugetService(ILogger logger, NugetConfigService configService, FileService fileService, FrameworkService frameworkService)
     {
       _logger = logger;
       _configService = configService;
       _fileService = fileService;
+      _frameworkService = frameworkService;
     }
   }
 }

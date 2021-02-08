@@ -6,7 +6,7 @@
         xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
     <engine:ScrollView name="Root">
         <engine:VisualElement name="Header" class="Header">
-            <engine:TextField name="FilterStringTextField" label="Filter:" text="json" class="FilterString"/>
+            <engine:TextField name="FilterStringTextField" label="Filter:" class="FilterString"/>
         </engine:VisualElement>
         <engine:Button name="SearchButton" text="Search"/>
         

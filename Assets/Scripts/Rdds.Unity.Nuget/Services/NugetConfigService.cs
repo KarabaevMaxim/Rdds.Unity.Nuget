@@ -15,7 +15,7 @@ namespace Rdds.Unity.Nuget.Services
     private readonly string _defaultGlobalConfigFilePath
       = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NuGet", "NuGet.Config");
     
-    private NugetConfigFile _configFile;
+    private NugetConfigFile _configFile = null!;
     
     public IEnumerable<string> GetAvailableSources() => _configFile.PackageSources.Select(ps => ps.Key);
 
@@ -61,7 +61,7 @@ namespace Rdds.Unity.Nuget.Services
           }; 
         }
         
-        var userName = GetValue(credentialsNode, "Username");
+        var userName = GetValue(credentialsNode, "Username") ?? throw new NullReferenceException("Username not found");
         var clearPassword = GetValue(credentialsNode, "ClearTextPassword");
         return new NugetPackageSource
         {
@@ -92,9 +92,6 @@ namespace Rdds.Unity.Nuget.Services
         .Attribute("value")!.Value;
     }
 
-    public NugetConfigService(FileService fileService)
-    {
-      _fileService = fileService;
-    }
+    public NugetConfigService(FileService fileService) => _fileService = fileService;
   }
 }

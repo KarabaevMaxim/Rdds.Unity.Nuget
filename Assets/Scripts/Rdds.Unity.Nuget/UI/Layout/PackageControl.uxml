@@ -2,7 +2,6 @@
 <engine:UXML
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:engine="UnityEngine.UIElements"
-        xmlns:editor="UnityEditor.UIElements"
         xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
     <engine:VisualElement name="Root" class="PackageControlBlock" >
         <engine:VisualElement name="HeaderBlock" class="Header">
@@ -11,7 +10,11 @@
             <engine:Label name="VersionLabel" class="Title" />
             <engine:Label name="DownloadCountLabel" class="DownloadCount" />
         </engine:VisualElement>
-        <engine:Label name="DescriptionLbl" class="Description" />
-        <engine:Button name="DownloadButton" text="Download" class="Button"/>
+        <engine:Label name="DescriptionLbl" class="LongTextLabel" />
+        
+        <engine:Foldout name="DependenciesPanel" text="Dependencies">
+            <engine:Label name="DependenciesLabel" class="LongTextLabel" />
+        </engine:Foldout>
+        <engine:Button name="DownloadButton" text="Download" class="Button" />
     </engine:VisualElement>
 </engine:UXML>

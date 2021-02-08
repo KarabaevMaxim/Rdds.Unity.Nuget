@@ -14,6 +14,7 @@ namespace Rdds.Unity.Nuget.UI
     private NugetService _nugetService = null!;
     private FileService _fileService = null!;
     private NugetConfigService _nugetConfigService = null!;
+    private FrameworkService _frameworkService = null!;
     
     private VisualElement _container;
     private TextField _filterStringTextField;
@@ -42,7 +43,8 @@ namespace Rdds.Unity.Nuget.UI
     {
       _fileService = new FileService();
       _nugetConfigService = new NugetConfigService(_fileService);
-      _nugetService = new NugetService(new UnityConsoleLogger(), _nugetConfigService, _fileService);
+      _frameworkService = new FrameworkService();
+      _nugetService = new NugetService(new UnityConsoleLogger(), _nugetConfigService, _fileService, _frameworkService);
     }
 
     private void InitializeLayout()

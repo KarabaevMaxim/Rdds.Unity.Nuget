@@ -91,7 +91,7 @@ namespace Rdds.Unity.Nuget.Services
       return versions.Select(v => v.ToPackageVersion());
     }
 
-    public async Task<string?> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
+    public async Task<bool> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
     {
       var cache = new SourceCacheContext();
       var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
@@ -99,13 +99,19 @@ namespace Rdds.Unity.Nuget.Services
       var packageVersion = identity.Version.ToNugetVersion();
       var cacheFilePath = Config.GetCacheNupkgFileName(identity);
 
-      using var stream = _fileService.CreateWriteFileStream(cacheFilePath);
-      var result = await resource.CopyNupkgToStreamAsync(identity.Id, packageVersion, stream, cache, _logger, cancellationToken);
-        
-      if (!result)
-        _logger.LogWarning($"Package {identity.Id} not downloaded");
+      using (var stream = _fileService.CreateWriteFileStream(cacheFilePath))
+      {
+        var result = await resource.CopyNupkgToStreamAsync(identity.Id, packageVersion, stream, cache, _logger, cancellationToken);
+
+        if (!result)
+        {
+          _logger.LogWarning($"Package {identity.Id} not downloaded");
+          return false;
+        }
+      }
       
-      return cacheFilePath;
+      _fileService.Unzip(cacheFilePath, _configService.LocalRepositoryPath);
+      return true;
     }
     
     public void InstallPackage(PackageInfo package)

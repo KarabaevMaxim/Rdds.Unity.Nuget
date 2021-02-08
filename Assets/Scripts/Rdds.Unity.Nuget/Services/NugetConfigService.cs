@@ -16,6 +16,8 @@ namespace Rdds.Unity.Nuget.Services
       = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NuGet", "NuGet.Config");
     
     private NugetConfigFile _configFile = null!;
+
+    public string LocalRepositoryPath => _configFile.RepositoryPath;
     
     public IEnumerable<string> GetAvailableSources() => _configFile.PackageSources.Select(ps => ps.Key);
 

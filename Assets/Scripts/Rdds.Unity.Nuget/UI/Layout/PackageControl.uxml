@@ -15,6 +15,6 @@
         <engine:Foldout name="DependenciesPanel" text="Dependencies">
             <engine:Label name="DependenciesLabel" class="LongTextLabel" />
         </engine:Foldout>
-        <engine:Button name="DownloadButton" text="Download" class="Button" />
+        <engine:Button name="ActionButton" class="Button" />
     </engine:VisualElement>
 </engine:UXML>

@@ -1,28 +1,23 @@
 ﻿using System.IO;
 using System.IO.Compression;
-using Rdds.Unity.Nuget.Entities;
-using Rdds.Unity.Nuget.Entities.Config;
 
 namespace Rdds.Unity.Nuget.Services
 {
   public class FileService
   {
-    // public void Unzip(string nupkgPath)
-    // {
-    //   using (ZipArchive zip = ZipFile.OpenRead(nupkgPath))
-    //   {
-    //     string baseDirectory = Path.Combine(NugetConfigFile.RepositoryPath, Path.GetFileNameWithoutExtension(nupkgPath));
-    //     
-    //     foreach (ZipArchiveEntry entry in zip.Entries)
-    //     {
-    //       string filePath = Path.Combine(baseDirectory, entry.FullName);
-    //       string directory = Path.GetDirectoryName(filePath);
-    //       Directory.CreateDirectory(directory);
-    //
-    //       entry.ExtractToFile(filePath, overwrite: true);
-    //     }
-    //   }
-    // }
+    public void Unzip(string nupkgPath, string targetDirectory)
+    {
+      using var zip = ZipFile.OpenRead(nupkgPath);
+      var baseDirectory = Path.Combine(targetDirectory, Path.GetFileNameWithoutExtension(nupkgPath));
+        
+      foreach (var entry in zip.Entries)
+      {
+        var filePath = Path.Combine(baseDirectory, entry.FullName);
+        var directory = Path.GetDirectoryName(filePath)!;
+        Directory.CreateDirectory(directory);
+        entry.ExtractToFile(filePath, true);
+      }
+    }
 
     public string? ReadFile(string filePath)
     {

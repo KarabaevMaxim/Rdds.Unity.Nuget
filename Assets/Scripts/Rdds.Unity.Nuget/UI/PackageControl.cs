@@ -62,9 +62,9 @@ namespace Rdds.Unity.Nuget.UI
 
     private void AddDependencies()
     {
+      _dependenciesPanel.value = false;
       if (!_packageInfo.Dependencies.Any())
       {
-        _dependenciesPanel.value = false;
         _dependenciesLabel.text = "No dependencies found";
         return;
       }
@@ -76,11 +76,10 @@ namespace Rdds.Unity.Nuget.UI
         textDependencies.AppendLine(group.TargetFramework);
 
         foreach (var dependency in group.Dependencies)
-          textDependencies.AppendLine($"  {dependency.Id} >= {dependency.Version}");
+          textDependencies.AppendLine($"  -{dependency.Id} >= {dependency.Version}");
       }
 
       _dependenciesLabel.text = textDependencies.ToString();
-      _dependenciesPanel.value = true;
     }
 
     private void CreateVersionsControl(PackageVersion selectedVersion, IEnumerable<PackageVersion> availableVersions)
@@ -150,7 +149,7 @@ namespace Rdds.Unity.Nuget.UI
         return;
       }
       
-      var info = await _nugetService.GetPackageAsync(_packageInfo.Identity.Id, version, CancellationToken.None);
+      var info = await _nugetService.GetPackageAsync(new PackageIdentity(_packageInfo.Identity.Id, version), CancellationToken.None);
 
       if (info == null)
       {

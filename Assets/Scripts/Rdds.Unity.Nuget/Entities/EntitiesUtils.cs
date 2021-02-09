@@ -20,30 +20,24 @@ namespace Rdds.Unity.Nuget.Entities
         Owners = metadata.Owners,
         Summary = metadata.Summary,
         Title = metadata.Title,
-        Identity = new PackageIdentity
-        {
-          Id = metadata.Identity.Id,
-          Version = metadata.Identity.Version.ToPackageVersion()
-        },
+        Identity = metadata.Identity.ToPackageIdentity(),
         Dependencies = metadata.DependencySets.Select(d => d.ToFrameworkGroup())
       };
     }
 
+    public static PackageIdentity ToPackageIdentity(this NuGet.Packaging.Core.PackageIdentity source) => 
+      new PackageIdentity(source.Id, source.Version.ToPackageVersion());
+
     public static NuGet.Packaging.Core.PackageIdentity ToNugetPackageIdentity(this PackageIdentity identity) => 
       new NuGet.Packaging.Core.PackageIdentity(identity.Id, identity.Version.ToNugetVersion());
 
-    public static FrameworkGroup ToFrameworkGroup(this PackageDependencyGroup dependency)
-    {
-      return new FrameworkGroup
+    public static FrameworkGroup ToFrameworkGroup(this PackageDependencyGroup dependency) =>
+      new FrameworkGroup
       {
         TargetFramework = dependency.TargetFramework.GetFrameworkString(),
-        Dependencies = dependency.Packages.Select(d => new PackageIdentity
-        {
-          Id = d.Id,
-          Version = d.VersionRange.MinVersion.ToPackageVersion()
-        })
+        Dependencies = dependency.Packages
+          .Select(d => new PackageIdentity(d.Id, d.VersionRange.MinVersion.ToPackageVersion()))
       };
-    }
 
     public static PackageVersion ToPackageVersion(this NuGetVersion version) => 
       new PackageVersion(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.OriginalVersion);

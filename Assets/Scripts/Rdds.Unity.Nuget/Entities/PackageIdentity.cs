@@ -2,8 +2,14 @@
 {
   public class PackageIdentity
   {
-    public string Id { get; set; }
+    public string Id { get; }
     
-    public PackageVersion Version { get; set; }
+    public PackageVersion Version { get; }
+
+    public PackageIdentity(string id, PackageVersion version)
+    {
+      Id = id;
+      Version = version;
+    }
   }
 }

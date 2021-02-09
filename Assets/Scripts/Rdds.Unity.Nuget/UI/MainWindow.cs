@@ -81,7 +81,7 @@ namespace Rdds.Unity.Nuget.UI
       _searchCancellationTokenSource?.Cancel();
       _searchCancellationTokenSource = new CancellationTokenSource();
       var packages = 
-        await _nugetService.GetPackagesAsync(_filterStringTextField.text, 0, 20, _searchCancellationTokenSource.Token);
+        await _nugetService.SearchPackagesAsync(_filterStringTextField.text, 0, 20, _searchCancellationTokenSource.Token);
 
       foreach (var package in packages)
       {

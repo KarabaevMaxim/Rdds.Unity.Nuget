@@ -47,22 +47,17 @@ namespace Rdds.Unity.Nuget.Services
 
     public void ChangeActiveSource(string key) => SelectedSource = _configService.GetPackageSource(key);
 
-    public async Task<IEnumerable<PackageInfo>> GetPackagesAsync(string filterString, int skip, int take, CancellationToken cancellationToken)
+    public async Task<IEnumerable<PackageInfo>> SearchPackagesAsync(string filterString, int skip, int take, CancellationToken cancellationToken)
     {
       var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
       var resource = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken);
       var searchFilter = new SearchFilter(true);
-      var results =
+      var foundPackages =
         await resource.SearchAsync(filterString, searchFilter, skip, take, _logger, cancellationToken);
-
-      return results.Select(r => r.ToPackageInfo());
-      //
-      // foreach (var res in result)
-      // {
-      //   var dep = await GetPackageDependencies(res.Identity); 
-      // }
-      //
-      // return result;
+      
+      var filledPackages = await Task.WhenAll(
+        foundPackages.Select(p => GetPackageAsync(p.Identity.ToPackageIdentity(), cancellationToken)));
+      return filledPackages.Where(p => p != null)!;
     }
 
     public Task<SourcePackageDependencyInfo> GetPackageDependencies(PackageIdentity identity)
@@ -77,14 +72,14 @@ namespace Rdds.Unity.Nuget.Services
       // return await resource.ResolvePackage(identity.ToNugetPackageIdentity(), new NuGetFramework(_frameworkService.GetFramework()), cache, _logger, CancellationToken.None);
     }
 
-    public async Task<PackageInfo?> GetPackageAsync(string packageId, PackageVersion version, CancellationToken cancellationToken)
+    public async Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
     {
       var cache = new SourceCacheContext();
       var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
       var resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
       var packages =
-        await resource.GetMetadataAsync(packageId, true, false, cache, _logger, cancellationToken);
-      return packages.Select(p => p.ToPackageInfo()).FirstOrDefault(p => p.Identity.Version.Equals(version));
+        await resource.GetMetadataAsync(identity.Id, true, false, cache, _logger, cancellationToken);
+      return packages.Select(p => p.ToPackageInfo()).FirstOrDefault(p => p.Identity.Version.Equals(identity.Version));
     }
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]

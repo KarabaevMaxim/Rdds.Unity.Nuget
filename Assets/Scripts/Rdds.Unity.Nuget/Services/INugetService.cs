@@ -12,10 +12,10 @@ namespace Rdds.Unity.Nuget.Services
     
     void ChangeActiveSource(string key);
 
-    Task<IEnumerable<PackageInfo>> GetPackagesAsync(string filterString, int skip, int take,
+    Task<IEnumerable<PackageInfo>> SearchPackagesAsync(string filterString, int skip, int take,
       CancellationToken cancellationToken);
 
-    Task<PackageInfo?> GetPackageAsync(string packageId, PackageVersion version, CancellationToken cancellationToken);
+    Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, CancellationToken cancellationToken);
     
     Task<bool> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken);
 

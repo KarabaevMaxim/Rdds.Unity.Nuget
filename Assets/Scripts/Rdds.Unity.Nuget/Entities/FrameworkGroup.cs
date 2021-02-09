@@ -4,8 +4,14 @@ namespace Rdds.Unity.Nuget.Entities
 {
   public class FrameworkGroup
   {
-    public string TargetFramework { get; set; }
+    public Framework TargetFramework { get; }
     
-    public IEnumerable<PackageIdentity> Dependencies { get; set; }
+    public IEnumerable<PackageIdentity> Dependencies { get; }
+
+    public FrameworkGroup(Framework targetFramework, IEnumerable<PackageIdentity> dependencies)
+    {
+      TargetFramework = targetFramework;
+      Dependencies = dependencies;
+    }
   }
 }

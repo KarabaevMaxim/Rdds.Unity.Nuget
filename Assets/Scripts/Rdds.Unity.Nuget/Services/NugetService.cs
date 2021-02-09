@@ -5,11 +5,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.Config;
 using UnityEditor;
+using PackageIdentity = Rdds.Unity.Nuget.Entities.PackageIdentity;
 using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
 namespace Rdds.Unity.Nuget.Services
@@ -54,22 +57,32 @@ namespace Rdds.Unity.Nuget.Services
       var searchFilter = new SearchFilter(true);
       var foundPackages =
         await resource.SearchAsync(filterString, searchFilter, skip, take, _logger, cancellationToken);
-      
-      var filledPackages = await Task.WhenAll(
-        foundPackages.Select(p => GetPackageAsync(p.Identity.ToPackageIdentity(), cancellationToken)));
-      return filledPackages.Where(p => p != null)!;
+
+      return foundPackages.Select(p => p.ToPackageInfo());
     }
 
-    public Task<SourcePackageDependencyInfo> GetPackageDependencies(PackageIdentity identity)
+    [Obsolete("It doesn't always work")]
+    public async Task<PackageInfo> FindDependenciesAsync(PackageInfo packageInfo,
+      CancellationToken cancellationToken)
     {
-      throw new NotImplementedException();
-      // todo try it
-      // var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken, );
-      // var deps = await resource.GetDependencyInfoAsync();
-      // var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
-      // var cache = new SourceCacheContext();
-      // var resource = await repository.GetResourceAsync<DependencyInfoResource>();
-      // return await resource.ResolvePackage(identity.ToNugetPackageIdentity(), new NuGetFramework(_frameworkService.GetFramework()), cache, _logger, CancellationToken.None);
+      var cacheContext = new SourceCacheContext();
+      var repositories = new[] { Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource()) };
+      var currentFramework = _frameworkService.RequireCurrentFramework();
+      var dependencies = new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default);
+      
+      await FindPackageDependenciesRecursive(
+        packageInfo.Identity.ToNugetPackageIdentity(),
+        currentFramework.ToNugetFramework(),
+        cacheContext,
+        repositories,
+        dependencies,
+        cancellationToken);
+
+      packageInfo.Dependencies = new []
+      {
+        new FrameworkGroup(currentFramework, dependencies.Select(d => d.ToPackageIdentity()))
+      };
+      return packageInfo;
     }
 
     public async Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
@@ -116,12 +129,38 @@ namespace Rdds.Unity.Nuget.Services
       _fileService.Unzip(cacheFilePath, _configService.LocalRepositoryPath);
       return true;
     }
-    
-    public void InstallPackage(PackageInfo package)
-    {
-      
-    }
 
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    private async Task FindPackageDependenciesRecursive(NuGet.Packaging.Core.PackageIdentity package,
+      NuGetFramework framework,
+      SourceCacheContext cacheContext,
+      IEnumerable<SourceRepository> repositories,
+      ISet<SourcePackageDependencyInfo> availablePackages,
+      CancellationToken cancellationToken)
+    {
+      if (availablePackages.Contains(package)) 
+        return;
+      
+      foreach (var repository in repositories)
+      {
+        var dependencyInfoResource = await repository.GetResourceAsync<DependencyInfoResource>(cancellationToken);
+        var dependencyInfo = await dependencyInfoResource.ResolvePackage(
+          package, framework, cacheContext, _logger, cancellationToken);
+
+        if (dependencyInfo == null) 
+          return;
+
+        availablePackages.Add(dependencyInfo);
+      
+        foreach (var dependency in dependencyInfo.Dependencies)
+        {
+          await FindPackageDependenciesRecursive(
+            new NuGet.Packaging.Core.PackageIdentity(dependency.Id, dependency.VersionRange.MinVersion),
+            framework, cacheContext, repositories, availablePackages, cancellationToken);
+        }
+      }
+    }
+    
     public NugetService(ILogger logger, NugetConfigService configService, FileService fileService, FrameworkService frameworkService)
     {
       _logger = logger;

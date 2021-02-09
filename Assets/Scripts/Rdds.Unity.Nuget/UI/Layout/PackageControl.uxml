@@ -11,7 +11,7 @@
         </engine:VisualElement>
         <engine:Label name="DescriptionLbl" class="LongTextLabel" />
         
-        <engine:Foldout name="DependenciesPanel" text="Dependencies">
+        <engine:Foldout name="DependenciesPanel" text="Dependencies" value="false">
             <engine:Label name="DependenciesLabel" class="LongTextLabel" />
         </engine:Foldout>
         <engine:Button name="ActionButton" class="Button" />

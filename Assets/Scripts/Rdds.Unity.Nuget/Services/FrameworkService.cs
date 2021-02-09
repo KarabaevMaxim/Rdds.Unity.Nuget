@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Rdds.Unity.Nuget.Entities;
 using UnityEditor;
 
 namespace Rdds.Unity.Nuget.Services
@@ -23,10 +24,10 @@ namespace Rdds.Unity.Nuget.Services
       {ApiCompatibilityLevel.NET_Web, ""},
     };
     
-    public string GetFramework()
+    public Framework RequireCurrentFramework()
     {
      var apiCompatibilityLevel = PlayerSettings.GetApiCompatibilityLevel(EditorUserBuildSettings.selectedBuildTargetGroup);
-     return _frameworks[apiCompatibilityLevel];
+     return new Framework(_frameworks[apiCompatibilityLevel]);
     }
   }
 }

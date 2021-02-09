@@ -89,7 +89,7 @@ namespace Rdds.Unity.Nuget.UI
           return;
         
         var control = new PackageControl(_container, package, _nugetService, _logger);
-        await control.UpdateFields();
+        await control.InitializeAsync();
       }
     }
 

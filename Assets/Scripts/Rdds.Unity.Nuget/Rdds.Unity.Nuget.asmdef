@@ -7,8 +7,15 @@
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "NuGet.Common.dll",
+        "NuGet.Frameworks.dll",
+        "NuGet.Protocol.dll",
+        "NuGet.Configuration.dll",
+        "NuGet.Packaging.dll",
+        "NuGet.Versioning.dll"
+    ],
     "autoReferenced": false,
     "defineConstraints": [],
     "versionDefines": [],

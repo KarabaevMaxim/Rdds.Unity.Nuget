@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Frameworks;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
@@ -65,17 +65,17 @@ namespace Rdds.Unity.Nuget.Services
       // return result;
     }
 
-    public async Task<SourcePackageDependencyInfo> GetPackageDependencies(PackageIdentity identity)
+    public Task<SourcePackageDependencyInfo> GetPackageDependencies(PackageIdentity identity)
     {
+      throw new NotImplementedException();
       // todo try it
       // var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken, );
       // var deps = await resource.GetDependencyInfoAsync();
-      
-      var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
-      var cache = new SourceCacheContext();
-      var resource = await repository.GetResourceAsync<DependencyInfoResource>();
-      return await resource.ResolvePackage(identity.ToNugetPackageIdentity(), new NuGetFramework(_frameworkService.GetFramework()), cache, _logger, CancellationToken.None);
-   }
+      // var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
+      // var cache = new SourceCacheContext();
+      // var resource = await repository.GetResourceAsync<DependencyInfoResource>();
+      // return await resource.ResolvePackage(identity.ToNugetPackageIdentity(), new NuGetFramework(_frameworkService.GetFramework()), cache, _logger, CancellationToken.None);
+    }
 
     public async Task<PackageInfo?> GetPackageAsync(string packageId, PackageVersion version, CancellationToken cancellationToken)
     {

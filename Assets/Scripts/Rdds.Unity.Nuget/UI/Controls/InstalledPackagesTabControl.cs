@@ -31,7 +31,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
     {
       _cancellationTokenSource?.Cancel();
       _cancellationTokenSource = new CancellationTokenSource();
-
+      _packagesContainer.Clear();
       var installedPackages =
         await _installedPackagesService.UpdateInstalledPackagesListAsync(_cancellationTokenSource.Token);
 

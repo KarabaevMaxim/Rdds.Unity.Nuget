@@ -3,12 +3,12 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:engine="UnityEngine.UIElements"
         xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
-    <engine:VisualElement name="Root" class="TabPanel">
+    <engine:VisualElement name="Root" class="Block">
         <engine:VisualElement name="Header" class="Header">
-            <engine:TextField name="FilterStringTextField" label="Filter:" class="FilterString"/>
+            <engine:TextField name="FilterStringTextField" label="Filter:" class="FilterString" />
         </engine:VisualElement>
 
-        <engine:Button name="SearchButton" text="Search"/>
+        <engine:Button name="SearchButton" text="Search" />
 
         <engine:VisualElement name="PackagesContainer" class="PackagesList">
         </engine:VisualElement>

@@ -8,12 +8,6 @@ namespace Rdds.Unity.Nuget.UI
 {
   public class MainWindow : EditorWindow
   {
-    #region Controls
-
-    private TabsControl _tabsControl = null!;
-
-    #endregion
-
     #region Unity methods
     
     [MenuItem("Rdds/Unity.Nuget")]
@@ -55,12 +49,7 @@ namespace Rdds.Unity.Nuget.UI
       var searchTab = new SearchPackagesTabControl(searchLayout.Q<VisualElement>("Root"), "Search", EditorContext.Instance.NugetService,
         EditorContext.Instance.NugetConfigService, EditorContext.Instance.Logger);
 
-      _tabsControl = new TabsControl(rootVisualElement.Q<VisualElement>("TabsControl"), installedTab, searchTab);
+      var tabsControl = new TabsControl(rootVisualElement.Q<VisualElement>("TabsControl"), installedTab, searchTab);
     }
-
-    #region Controls' event handlers
-
-
-    #endregion
   }
 }

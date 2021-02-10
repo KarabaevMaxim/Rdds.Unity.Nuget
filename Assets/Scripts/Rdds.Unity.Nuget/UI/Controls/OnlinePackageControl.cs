@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Services;
-using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -14,16 +13,10 @@ using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
 namespace Rdds.Unity.Nuget.UI.Controls
 {
-  public class PackageControl
+  internal class OnlinePackageControl : PackageControlBase
   {
     #region Controls
-
-    private readonly VisualElement _versionPlaceholder;
-    private readonly Label _titleLbl;
-    private readonly Image _iconImage;
-    private readonly Label _descriptionLbl;
-    private readonly Button _actionButton;
-    private readonly Label _dependenciesLabel;
+    
     private PopupField<string> _versionsControl = null!;
     
     #endregion
@@ -35,24 +28,12 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     #endregion
 
-    #region Fields and properties
-
-    private PackageInfo _packageInfo;
-    
-    private string ActionButtonText
-    {
-      get => _actionButton.text;
-      set => _actionButton.text = value;
-    }
-
-    #endregion
-
     #region Initialize methods
 
     public async Task InitializeAsync()
     {
-      _titleLbl.text = _packageInfo.Title;
-      _descriptionLbl.text = _packageInfo.Description;
+      Title = PackageInfo.Title;
+      Description = PackageInfo.Description;
       ToDefaultState();
 
       await CreateVersionsControlAsync();
@@ -62,28 +43,28 @@ namespace Rdds.Unity.Nuget.UI.Controls
     
     private async Task SetIconAsync()
     {
-      var icon = await DownloadHelper.DownloadImageAsync(_packageInfo.IconUrl, CancellationToken.None);
+      var icon = await DownloadHelper.DownloadImageAsync(PackageInfo.IconUrl, CancellationToken.None);
       
       if (icon == null)
         icon = Resources.Load<Texture2D>("NugetIcon");
 
-      _iconImage.image = icon;
+      IconImage.image = icon;
     }
     
     private async Task AddDependenciesAsync()
     {
-      var packageInfo = await _nugetService.GetPackageAsync(_packageInfo.Identity, CancellationToken.None);
+      var packageInfo = await _nugetService.GetPackageAsync(PackageInfo.Identity, CancellationToken.None);
 
       if (packageInfo?.Dependencies == null || !packageInfo.Dependencies.Any())
       {
-        _dependenciesLabel.text = "No dependencies found";
+        Dependencies = "No dependencies found";
         return;
       }
 
-      _packageInfo = packageInfo;
+      PackageInfo = packageInfo;
       var textDependencies = new StringBuilder();
 
-      foreach (var group in _packageInfo.Dependencies)
+      foreach (var group in PackageInfo.Dependencies)
       {
         textDependencies.AppendLine(group.TargetFramework.Name);
       
@@ -91,20 +72,20 @@ namespace Rdds.Unity.Nuget.UI.Controls
           textDependencies.AppendLine($"  -{dependency.Id} >= {dependency.Version}");
       }
 
-      _dependenciesLabel.text = textDependencies.ToString();
+      Dependencies = textDependencies.ToString();
     }
     
     private async Task CreateVersionsControlAsync()
     {
       var versions = 
-        await _nugetService.GetPackageVersionsAsync(_packageInfo.Identity.Id, CancellationToken.None);
+        await _nugetService.GetPackageVersionsAsync(PackageInfo.Identity.Id, CancellationToken.None);
       
       // ReSharper disable once ConstantConditionalAccessQualifier
       _versionsControl?.RemoveFromHierarchy();
       _versionsControl = new PopupField<string>(versions.Select(v => v.ToString()).ToList(), 0);
-      _versionsControl.value = _packageInfo.Identity.Version.ToString();
+      _versionsControl.value = PackageInfo.Identity.Version.ToString();
       _versionsControl.style.height = new StyleLength(new Length(100, LengthUnit.Percent));
-      _versionPlaceholder.Add(_versionsControl);
+      VersionPlaceholder.Add(_versionsControl);
       _versionsControl.RegisterValueChangedCallback(OnVersionControlValueChanged);
     }
 
@@ -115,13 +96,13 @@ namespace Rdds.Unity.Nuget.UI.Controls
     private void ToDefaultState()
     {
       ActionButtonText = "Download";
-      _actionButton.clickable.clicked += OnDownloadButtonClicked;
+      ActionButton.clickable.clicked += OnDownloadButtonClicked;
     }
     
     private void ToDownloadedState()
     {
       ActionButtonText = "Install";
-      _actionButton.clickable.clicked += OnInstallButtonClicked;
+      ActionButton.clickable.clicked += OnInstallButtonClicked;
     }
 
     private void ToInstalledState()
@@ -135,7 +116,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     private async void OnDownloadButtonClicked()
     {
-      var downloadResult = await _nugetService.DownloadPackageAsync(_packageInfo.Identity, CancellationToken.None);
+      var downloadResult = await _nugetService.DownloadPackageAsync(PackageInfo.Identity, CancellationToken.None);
 
       if (!downloadResult)
         return;
@@ -165,15 +146,15 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     private async Task<bool> TryChangePackageVersionAsync(PackageVersion newVersion)
     {
-      var info = await _nugetService.GetPackageAsync(new PackageIdentity(_packageInfo.Identity.Id, newVersion!), CancellationToken.None);
+      var info = await _nugetService.GetPackageAsync(new PackageIdentity(PackageInfo.Identity.Id, newVersion!), CancellationToken.None);
 
       if (info == null)
       {
-        _logger.LogWarning($"Package {_packageInfo.Identity.Id} with version {newVersion} not found");
+        _logger.LogWarning($"Package {PackageInfo.Identity.Id} with version {newVersion} not found");
         return false;
       }
 
-      _packageInfo = info;
+      PackageInfo = info;
       await InitializeAsync();
       return true;
     }
@@ -198,22 +179,12 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     #region Constructors
 
-    public PackageControl(VisualElement parent, PackageInfo info, INugetService nugetService, ILogger logger)
+    public OnlinePackageControl(VisualElement parent, PackageInfo packageInfo, INugetService nugetService, ILogger logger) : base(parent, packageInfo)
     {
-      _packageInfo = info;
       _nugetService = nugetService;
       _logger = logger;
-      var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.PackageControlLayout);
-      var root = visualTree.CloneTree();
-      parent.Add(root);
-      _versionPlaceholder = root.Q<VisualElement>("VersionPlaceholder");
-      _titleLbl = root.Q<Label>("TitleLbl");
-      _descriptionLbl = root.Q<Label>("DescriptionLbl");
-      _iconImage = root.Q<Image>("IconImage");
-      _actionButton = root.Q<Button>("ActionButton");
-      _dependenciesLabel = root.Q<Label>("DependenciesLabel");
     }
-
+    
     #endregion
   }
 }

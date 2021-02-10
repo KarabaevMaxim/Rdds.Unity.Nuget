@@ -40,7 +40,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
         if (_searchCancellationTokenSource.IsCancellationRequested)
           return;
         
-        var control = new PackageControl(_packagesContainer, package, _nugetService, _logger);
+        var control = new OnlinePackageControl(_packagesContainer, package, _nugetService, _logger);
         await control.InitializeAsync();
       }
     }

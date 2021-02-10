@@ -4,7 +4,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using Rdds.Unity.Nuget.Entities.Config;
+using Rdds.Unity.Nuget.Entities.NugetConfig;
 
 namespace Rdds.Unity.Nuget.Entities
 {

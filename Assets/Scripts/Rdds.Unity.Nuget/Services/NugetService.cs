@@ -10,7 +10,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
-using Rdds.Unity.Nuget.Entities.Config;
+using Rdds.Unity.Nuget.Entities.NugetConfig;
 using UnityEditor;
 using PackageIdentity = Rdds.Unity.Nuget.Entities.PackageIdentity;
 using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;

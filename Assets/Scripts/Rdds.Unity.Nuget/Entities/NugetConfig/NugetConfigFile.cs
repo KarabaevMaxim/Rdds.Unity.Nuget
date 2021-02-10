@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Rdds.Unity.Nuget.Entities.Config
+namespace Rdds.Unity.Nuget.Entities.NugetConfig
 {
   public class NugetConfigFile
   {

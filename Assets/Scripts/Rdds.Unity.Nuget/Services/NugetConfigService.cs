@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
-using Rdds.Unity.Nuget.Entities.Config;
+using Rdds.Unity.Nuget.Entities.NugetConfig;
 
 namespace Rdds.Unity.Nuget.Services
 {

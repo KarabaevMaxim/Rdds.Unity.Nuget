@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
-using Rdds.Unity.Nuget.Entities.Config;
+using Rdds.Unity.Nuget.Entities.NugetConfig;
 
 namespace Rdds.Unity.Nuget.Services
 {

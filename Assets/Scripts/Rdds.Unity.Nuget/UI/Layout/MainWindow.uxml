@@ -2,15 +2,30 @@
 <engine:UXML
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:engine="UnityEngine.UIElements"
-        xmlns:editor="UnityEditor.UIElements"
         xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
-    <engine:ScrollView name="Root">
-        <engine:VisualElement name="Header" class="Header">
-            <engine:TextField name="FilterStringTextField" label="Filter:" class="FilterString"/>
+    <engine:ScrollView name="Root" class="VerticalStack">
+        <engine:VisualElement name="TabsControlBlock" class="HorizontalStack Block">
+            <engine:Button name="InstalledTabButton" text="Installed" class="StackExpandedElement TabButton"/>    
+            <engine:Button name="SearchTabButton" text="Search" class="StackExpandedElement TabButton"/>    
         </engine:VisualElement>
-        <engine:Button name="SearchButton" text="Search"/>
         
-        <engine:VisualElement name="Container" class="PackagesList">
+        <engine:VisualElement name="TabsContainer" class="TabsContainer">
+            <engine:VisualElement name="InstalledTabPanel" class="TabPanel">
+                <engine:Label name="EmptyPlaceholderLabel" text="No packages installed"/>
+                <engine:VisualElement name="InstalledPackagesContainer">
+                </engine:VisualElement>
+            </engine:VisualElement>
+
+            <engine:VisualElement name="SearchTabPanel">
+                <engine:VisualElement name="Header" class="Header">
+                    <engine:TextField name="FilterStringTextField" label="Filter:" class="FilterString"/>
+                </engine:VisualElement>
+
+                <engine:Button name="SearchButton" text="Search"/>
+
+                <engine:VisualElement name="PackagesContainer" class="PackagesList">
+                </engine:VisualElement>
+            </engine:VisualElement>
         </engine:VisualElement>
     </engine:ScrollView>
 </engine:UXML>

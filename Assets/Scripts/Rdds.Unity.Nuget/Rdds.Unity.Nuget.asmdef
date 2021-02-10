@@ -14,7 +14,8 @@
         "NuGet.Protocol.dll",
         "NuGet.Configuration.dll",
         "NuGet.Packaging.dll",
-        "NuGet.Versioning.dll"
+        "NuGet.Versioning.dll",
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

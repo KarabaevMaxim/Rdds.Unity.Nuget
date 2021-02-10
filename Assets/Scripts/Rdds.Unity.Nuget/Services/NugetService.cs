@@ -35,8 +35,8 @@ namespace Rdds.Unity.Nuget.Services
           var key = EditorPrefs.GetString(nameof(SelectedSource), null);
 
           SelectedSource = string.IsNullOrWhiteSpace(key) 
-            ? _configService.GetDefaultPackageSource() 
-            : _configService.GetPackageSource(key);
+            ? _configService.RequireDefaultPackageSource() 
+            : _configService.RequirePackageSource(key);
         }
 
         return _selectedSource!;
@@ -48,7 +48,7 @@ namespace Rdds.Unity.Nuget.Services
       }
     }
 
-    public void ChangeActiveSource(string key) => SelectedSource = _configService.GetPackageSource(key);
+    public void ChangeActiveSource(string key) => SelectedSource = _configService.RequirePackageSource(key);
 
     public async Task<IEnumerable<PackageInfo>> SearchPackagesAsync(string filterString, int skip, int take, CancellationToken cancellationToken)
     {
@@ -85,10 +85,14 @@ namespace Rdds.Unity.Nuget.Services
       return packageInfo;
     }
 
-    public async Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
+    public Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, CancellationToken cancellationToken) => 
+      GetPackageAsync(identity, SelectedSource, cancellationToken);
+
+    public async Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, NugetPackageSource source,
+      CancellationToken cancellationToken)
     {
       var cache = new SourceCacheContext();
-      var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
+      var repository = Repository.Factory.GetCoreV3(source.ToPackageSource());
       var resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
       var packages =
         await resource.GetMetadataAsync(identity.Id, true, false, cache, _logger, cancellationToken);

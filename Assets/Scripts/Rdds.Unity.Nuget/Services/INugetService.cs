@@ -19,6 +19,9 @@ namespace Rdds.Unity.Nuget.Services
       CancellationToken cancellationToken);
 
     Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, CancellationToken cancellationToken);
+
+    Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, NugetPackageSource source,
+      CancellationToken cancellationToken);
     
     Task<bool> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken);
 

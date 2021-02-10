@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.IO.Compression;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Rdds.Unity.Nuget.Services
 {
@@ -27,6 +29,26 @@ namespace Rdds.Unity.Nuget.Services
       return File.ReadAllText(filePath);
     }
 
-    public FileStream CreateWriteFileStream(string filePath) => File.OpenWrite(filePath);
+    public async Task<string?> ReadFromFileAsync(string filePath)
+    {
+      if (!File.Exists(filePath))
+        return null;
+      
+      using var stream = File.OpenRead(filePath);
+      var bytes = new byte[stream.Length];
+      await stream.ReadAsync(bytes, 0, (int)stream.Length);
+      return Encoding.Default.GetString(bytes);
+    }
+    
+    public async Task WriteToFileAsync(string filePath, string content)
+    {
+      var bytes = Encoding.Default.GetBytes(content);
+      using var stream = CreateWriteFileStream(filePath);
+      stream.Seek(0, SeekOrigin.End);
+      await stream.WriteAsync(bytes, 0, bytes.Length);
+    }
+    
+    public FileStream CreateWriteFileStream(string filePath) =>
+      File.Open(filePath, FileMode.Create, FileAccess.Write);
   }
 }

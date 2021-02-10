@@ -203,7 +203,7 @@ namespace Rdds.Unity.Nuget.UI
       _packageInfo = info;
       _nugetService = nugetService;
       _logger = logger;
-      var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Scripts/Rdds.Unity.Nuget/UI/Layout/PackageControl.uxml");
+      var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.PackageControlLayout);
       var root = visualTree.CloneTree();
       parent.Add(root);
       _versionPlaceholder = root.Q<VisualElement>("VersionPlaceholder");

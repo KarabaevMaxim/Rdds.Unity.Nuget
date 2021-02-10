@@ -1,0 +1,16 @@
+{
+  "PackagesList": [
+    {
+      "Id": "Rdds.HttpClient",
+      "Version": "1.0.0",
+      "Source": "Gitlab",
+      "Path": ""
+    },
+    {
+      "Id": "Rdds.Dto",
+      "Version": "1.0.0",
+      "Source": "Gitlab",
+      "Path": ""
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+﻿.TabButton {
+    height: 20px;
+    margin: 0;
+}
+
+.OpenedTabButton {
+    background-color: #353535;
+}
+
+.TabPanel {
+    width: 100%;
+    height: 100%;
+}
+
+.TabsContainer {
+    width: 100%;
+    border-top-width: 2px;
+    border-color: black;
+}

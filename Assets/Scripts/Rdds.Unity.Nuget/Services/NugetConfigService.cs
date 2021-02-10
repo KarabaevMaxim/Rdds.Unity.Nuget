@@ -21,9 +21,9 @@ namespace Rdds.Unity.Nuget.Services
     
     public IEnumerable<string> GetAvailableSources() => _configFile.PackageSources.Select(ps => ps.Key);
 
-    public NugetPackageSource GetPackageSource(string key) => _configFile.PackageSources.First(ps => ps.Key == key);
+    public NugetPackageSource RequirePackageSource(string key) => _configFile.PackageSources.First(ps => ps.Key == key);
     
-    public NugetPackageSource GetDefaultPackageSource() => _configFile.PackageSources.First();
+    public NugetPackageSource RequireDefaultPackageSource() => _configFile.PackageSources.First();
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public void LoadConfigFile()

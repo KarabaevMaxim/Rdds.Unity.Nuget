@@ -1,0 +1,23 @@
+﻿.Block {
+    margin: 5px;
+}
+
+.HorizontalStack {
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.StackExpandedElement {
+    flex-grow: 1;
+}
+
+.VerticalStack {
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}

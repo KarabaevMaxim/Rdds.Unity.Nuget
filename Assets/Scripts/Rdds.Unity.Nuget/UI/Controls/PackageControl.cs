@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 using ILogger = NuGet.Common.ILogger;
 using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
-namespace Rdds.Unity.Nuget.UI
+namespace Rdds.Unity.Nuget.UI.Controls
 {
   public class PackageControl
   {

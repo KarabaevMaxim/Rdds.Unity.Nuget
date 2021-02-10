@@ -18,11 +18,14 @@ namespace Rdds.Unity.Nuget.Services
     {
       var installedPackages = _packagesFileService.RequirePackages();
 
-      var tasks = installedPackages.Select(pi =>
+      var tasks = installedPackages.Select(async pi =>
       {
         var source = _nugetConfigService.RequirePackageSource(pi.Item2);
-        var result = _nugetService.GetPackageAsync(pi.Item1, source, cancellationToken);
-        _logger.LogWarning($"Package {pi.Item1.Id} with version {pi.Item1.Version} not found in source {source.Key}");
+        var result = await _nugetService.GetPackageAsync(pi.Item1, source, cancellationToken);
+
+        if (result == null)
+          _logger.LogWarning($"Package {pi.Item1.Id} with version {pi.Item1.Version} not found in source {source.Key}");
+        
         return result;
       });
 

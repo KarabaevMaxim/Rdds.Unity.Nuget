@@ -17,12 +17,14 @@ using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
 namespace Rdds.Unity.Nuget.Services
 {
-  public class NugetService : INugetService
+  internal class NugetService : INugetService
   {
     private readonly ILogger _logger;
     private readonly NugetConfigService _configService;
     private readonly FileService _fileService;
     private readonly FrameworkService _frameworkService;
+    private readonly PackagesFileService _packagesFileService;
+    private readonly NuspecFileService _nuspecFileService;
 
     private NugetPackageSource? _selectedSource;
     
@@ -111,26 +113,45 @@ namespace Rdds.Unity.Nuget.Services
       return versions.Where(v => !v.IsPrerelease || v == last).Select(v => v.ToPackageVersion());
     }
 
-    public async Task<bool> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
+    public async Task<string?> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
     {
       var cache = new SourceCacheContext();
       var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
       var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
-      var packageVersion = identity.Version.ToNugetVersion();
-      var cacheFilePath = Config.GetCacheNupkgFileName(identity);
+      var version = identity.Version.ToNugetVersion();
+      var tempFilePath = _fileService.GetNupkgTempFilePath(identity);
 
-      using (var stream = _fileService.CreateWriteFileStream(cacheFilePath))
+      using (var stream = _fileService.CreateWriteFileStream(tempFilePath))
       {
-        var result = await resource.CopyNupkgToStreamAsync(identity.Id, packageVersion, stream, cache, _logger, cancellationToken);
+        var result = await resource.CopyNupkgToStreamAsync(identity.Id, version, stream, cache, _logger, cancellationToken);
 
         if (!result)
         {
           _logger.LogWarning($"Package {identity.Id} not downloaded");
-          return false;
+          return null;
         }
       }
       
-      _fileService.Unzip(cacheFilePath, _configService.LocalRepositoryPath);
+      var packageDirectoryPath = _fileService.Unzip(tempFilePath, _configService.LocalRepositoryPath);
+
+      if (!_fileService.RemoveFile(tempFilePath)) 
+        _logger.LogWarning($"Cannot remove temp file '{tempFilePath}'");
+
+      return packageDirectoryPath;
+    }
+
+    public async Task<bool> InstallPackageAsync(string packageDirectoryPath)
+    {
+      var packageInfo = _nuspecFileService.GetPackageInfoFromNuspec(packageDirectoryPath);
+
+      if (packageInfo == null)
+      {
+        _logger.LogWarning($"Error occurred while reading .nuspec file of package {packageDirectoryPath}");
+        return false;
+      }
+      
+      _packagesFileService.AddPackage(packageInfo.Identity, SelectedSource.Key, packageDirectoryPath);
+      await _packagesFileService.SavePackagesFileAsync();
       return true;
     }
 
@@ -164,13 +185,16 @@ namespace Rdds.Unity.Nuget.Services
         }
       }
     }
-    
-    public NugetService(ILogger logger, NugetConfigService configService, FileService fileService, FrameworkService frameworkService)
+
+    public NugetService(ILogger logger, NugetConfigService configService, FileService fileService,
+      FrameworkService frameworkService, PackagesFileService packagesFileService, NuspecFileService nuspecFileService)
     {
       _logger = logger;
       _configService = configService;
       _fileService = fileService;
       _frameworkService = frameworkService;
+      _packagesFileService = packagesFileService;
+      _nuspecFileService = nuspecFileService;
     }
   }
 }

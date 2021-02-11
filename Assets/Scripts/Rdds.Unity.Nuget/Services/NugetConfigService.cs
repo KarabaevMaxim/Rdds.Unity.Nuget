@@ -17,7 +17,8 @@ namespace Rdds.Unity.Nuget.Services
     
     private NugetConfigFile _configFile = null!;
 
-    public string LocalRepositoryPath => _configFile.RepositoryPath;
+    // todo temp
+    public string LocalRepositoryPath => @"D:\NugetRepository"; //_configFile.RepositoryPath;
     
     public IEnumerable<string> GetAvailableSources() => _configFile.PackageSources.Select(ps => ps.Key);
 
@@ -78,12 +79,8 @@ namespace Rdds.Unity.Nuget.Services
         };
       });
       var repositoryPath = GetValue(root.Element("config")!, "repositoryPath")!;
-      
-      _configFile = new NugetConfigFile
-      {
-        PackageSources = sources,
-        RepositoryPath = repositoryPath
-      };
+
+      _configFile = new NugetConfigFile(sources, repositoryPath);
     }
 
     private string? GetValue(XElement parent, string key)

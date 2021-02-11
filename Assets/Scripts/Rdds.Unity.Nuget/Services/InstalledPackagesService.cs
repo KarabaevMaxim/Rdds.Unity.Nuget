@@ -7,7 +7,7 @@ using Rdds.Unity.Nuget.Entities;
 
 namespace Rdds.Unity.Nuget.Services
 {
-  public class InstalledPackagesService
+  internal class InstalledPackagesService
   {
     private readonly PackagesFileService _packagesFileService;
     private readonly INugetService _nugetService;
@@ -32,7 +32,7 @@ namespace Rdds.Unity.Nuget.Services
       var packages = (await Task.WhenAll(tasks)).Where(p => p != null);
       return packages!;
     }
-
+    
     public InstalledPackagesService(PackagesFileService packagesFileService, INugetService nugetService,
       NugetConfigService nugetConfigService, ILogger logger)
     {

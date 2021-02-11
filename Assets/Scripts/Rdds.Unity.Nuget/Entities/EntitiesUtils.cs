@@ -8,15 +8,14 @@ using Rdds.Unity.Nuget.Entities.NugetConfig;
 
 namespace Rdds.Unity.Nuget.Entities
 {
-  public static class PackageInfoUtils
+  internal static class PackageInfoUtils
   {
     public static PackageInfo ToPackageInfo(this IPackageSearchMetadata metadata) =>
       new PackageInfo(metadata.Title,
         metadata.Authors, 
         metadata.Description, 
-        metadata.IconUrl,
-        metadata.Owners, 
-        metadata.Summary,
+        metadata.IconUrl?.AbsoluteUri,
+        metadata.Owners,
         metadata.DownloadCount,
         metadata.Identity.ToPackageIdentity(),
         metadata.DependencySets.Any() ? metadata.DependencySets.Select(d => d.ToFrameworkGroup()) : null);

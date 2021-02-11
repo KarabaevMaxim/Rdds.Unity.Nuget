@@ -20,7 +20,7 @@ namespace Rdds.Unity.Nuget.UI
     private async void OnEnable()
     {
       EditorContext.Instance.NugetConfigService.LoadConfigFile();
-      await EditorContext.Instance.PackagesFileService.LoadPackagesFile();
+      await EditorContext.Instance.PackagesFileService.LoadPackagesFileAsync();
       
       InitializeLayout();
     }

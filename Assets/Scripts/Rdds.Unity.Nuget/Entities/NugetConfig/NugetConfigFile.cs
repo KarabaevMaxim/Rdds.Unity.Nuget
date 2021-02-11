@@ -4,8 +4,14 @@ namespace Rdds.Unity.Nuget.Entities.NugetConfig
 {
   public class NugetConfigFile
   {
-    public IEnumerable<NugetPackageSource> PackageSources { get; set; } = null!;
+    public IEnumerable<NugetPackageSource> PackageSources { get; }
 
-    public string RepositoryPath { get; set; } = null!;
+    public string RepositoryPath { get; }
+
+    public NugetConfigFile(IEnumerable<NugetPackageSource> packageSources, string repositoryPath)
+    {
+      PackageSources = packageSources;
+      RepositoryPath = repositoryPath;
+    }
   }
 }

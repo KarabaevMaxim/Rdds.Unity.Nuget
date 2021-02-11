@@ -32,8 +32,8 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     public async Task InitializeAsync()
     {
-      Title = PackageInfo.Title;
-      Description = PackageInfo.Description;
+      Title = PackageInfo.Title ?? PackageInfo.Identity.Id;
+      Description = PackageInfo.Description ?? "No description";
       ToDefaultState();
 
       await CreateVersionsControlAsync();
@@ -43,7 +43,10 @@ namespace Rdds.Unity.Nuget.UI.Controls
     
     private async Task SetIconAsync()
     {
-      var icon = await DownloadHelper.DownloadImageAsync(PackageInfo.IconUrl, CancellationToken.None);
+      if (PackageInfo.IconPath == null)
+        return;
+      
+      var icon = await ImageHelper.DownloadImageAsync(PackageInfo.IconPath, CancellationToken.None);
       
       if (icon == null)
         icon = Resources.Load<Texture2D>("NugetIcon");
@@ -99,15 +102,16 @@ namespace Rdds.Unity.Nuget.UI.Controls
       ActionButton.clickable.clicked += OnDownloadButtonClicked;
     }
     
-    private void ToDownloadedState()
+    private void ToDownloadedState(string packageDirectoryPath)
     {
       ActionButtonText = "Install";
-      ActionButton.clickable.clicked += OnInstallButtonClicked;
+      ActionButton.clickable.clicked += async () => await OnInstallButtonClickedAsync(packageDirectoryPath);
     }
 
     private void ToInstalledState()
     {
       ActionButtonText = "Remove";
+      ActionButton.clickable.clicked += OnRemoveButtonClicked;
     }
 
     #endregion
@@ -116,15 +120,25 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     private async void OnDownloadButtonClicked()
     {
-      var downloadResult = await _nugetService.DownloadPackageAsync(PackageInfo.Identity, CancellationToken.None);
+      var packageDirectoryPath = await _nugetService.DownloadPackageAsync(PackageInfo.Identity, CancellationToken.None);
 
-      if (!downloadResult)
+      if (packageDirectoryPath == null)
         return;
       
-      ToDownloadedState();
+      ToDownloadedState(packageDirectoryPath);
     }
     
-    private void OnInstallButtonClicked() => throw new NotImplementedException();
+    private async Task OnInstallButtonClickedAsync(string packageDirectoryPath)
+    {
+      var result = await _nugetService.InstallPackageAsync(packageDirectoryPath);
+
+      if (result)
+        ToInstalledState();
+      else
+      {
+        // todo show alert
+      }
+    }
 
     private void OnRemoveButtonClicked() => throw new NotImplementedException();
 

@@ -11,6 +11,18 @@
       "Version": "1.0.0",
       "Source": "Gitlab",
       "Path": ""
+    },
+    {
+      "Id": "Newtonsoft.Json",
+      "Version": "13.0.1-beta1",
+      "Source": "nuget.org",
+      "Path": "D:\\NugetRepository\\Newtonsoft.Json.13.0.1-beta1"
+    },
+    {
+      "Id": "Microsoft.Extensions.Logging",
+      "Version": "5.0.0",
+      "Source": "nuget.org",
+      "Path": "D:\\NugetRepository\\Microsoft.Extensions.Logging.5.0.0"
     }
   ]
 }

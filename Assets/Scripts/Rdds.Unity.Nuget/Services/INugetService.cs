@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Frameworks;
-using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.NugetConfig;
 
 namespace Rdds.Unity.Nuget.Services
 {
-  public interface INugetService
+  internal interface INugetService
   {
     NugetPackageSource SelectedSource { get; }
     
@@ -23,8 +21,10 @@ namespace Rdds.Unity.Nuget.Services
     Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, NugetPackageSource source,
       CancellationToken cancellationToken);
     
-    Task<bool> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken);
+    Task<string?> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken);
 
+    Task<bool> InstallPackageAsync(string packageDirectoryPath);
+    
     Task<IEnumerable<PackageVersion>> GetPackageVersionsAsync(string packageId, CancellationToken cancellationToken);
 
     [Obsolete("It doesn't always work")]

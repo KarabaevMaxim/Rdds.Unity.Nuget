@@ -1,0 +1,13 @@
+﻿#Icon {
+    height: 20px;
+    width: 20px;
+    margin-right: 5px;
+}
+
+#Id {
+    border-right-color: #474545;
+    border-right-width: 2px;
+    margin-right: 5px;
+    -unity-font-style: bold;
+    font-size: 13px;
+}

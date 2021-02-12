@@ -11,6 +11,12 @@
       "Version": "1.0.0",
       "Source": "Gitlab",
       "Path": "D:\\NugetRepository\\Rdds.HttpClient.1.0.0"
+    },
+    {
+      "Id": "Microsoft.Extensions.DependencyInjection",
+      "Version": "5.0.1",
+      "Source": "nuget.org",
+      "Path": "D:\\NugetRepository\\Microsoft.Extensions.DependencyInjection.5.0.1"
     }
   ]
 }

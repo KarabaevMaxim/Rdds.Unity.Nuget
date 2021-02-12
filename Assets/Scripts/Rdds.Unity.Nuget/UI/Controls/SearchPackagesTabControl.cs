@@ -59,7 +59,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
       searchButton.clickable.clicked += OnSearchButtonClicked;
       _filterStringTextField = tabRoot.Q<TextField>("FilterStringTextField");
       _header = tabRoot.Q<VisualElement>("Header");
-      _sourcesControl = new PopupField<string>(nugetConfigService.GetAvailableSources().ToList(), 0);
+      _sourcesControl = new PopupField<string>(nugetConfigService.RequireAvailableSources().ToList(), 0);
       InitializeSourcesControl(_nugetService.SelectedSource.Key);
     }
   }

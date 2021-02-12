@@ -15,10 +15,12 @@
     border-bottom-width: 4px;
 }
 
-#InstalledPackagesListView {
-    height: 200px;
+.PanelHeader {
+    width: 100%;
+    height: auto;
+    background-color: #3e424d;
 }
 
-#LeftPanel {
-    width: auto;
+#FilterTextField {
+    width: 60%;
 }

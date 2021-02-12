@@ -10,6 +10,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
   internal class SearchPackagesTabControl : TabControl
   {
     private readonly INugetService _nugetService;
+    private readonly InstalledPackagesService _installedPackagesService;
     private readonly ILogger _logger;
 
     private readonly VisualElement _packagesContainer;
@@ -40,17 +41,18 @@ namespace Rdds.Unity.Nuget.UI.Controls
         if (_searchCancellationTokenSource.IsCancellationRequested)
           return;
         
-        var control = new OnlinePackageControl(_packagesContainer, package, _nugetService, _logger);
-        await control.InitializeAsync();
+        var control = new OnlinePackageControl(_packagesContainer, package, _nugetService, _installedPackagesService, _logger);
+        await control.InitializeAsync(false);
       }
     }
 
     private void OnSourcesControlValueChanged(ChangeEvent<string> args) => _nugetService.ChangeActiveSource(args.newValue);
 
     public SearchPackagesTabControl(VisualElement tabRoot, string title, INugetService nugetService,
-      NugetConfigService nugetConfigService, ILogger logger) : base(tabRoot, title)
+      NugetConfigService nugetConfigService, InstalledPackagesService installedPackagesService, ILogger logger) : base(tabRoot, title)
     {
       _nugetService = nugetService;
+      _installedPackagesService = installedPackagesService;
       _logger = logger;
       _packagesContainer = tabRoot.Q<VisualElement>("PackagesContainer");
       var searchButton = tabRoot.Q<Button>("SearchButton");

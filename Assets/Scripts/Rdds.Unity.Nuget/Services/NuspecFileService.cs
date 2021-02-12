@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -31,6 +32,19 @@ namespace Rdds.Unity.Nuget.Services
       return ParseNuspecFile(nuspecFiles[0]);
     }
 
+    public PackageInfo RequirePackageInfoFromNuspec(string packageDirectoryPath)
+    {
+      var nuspecFiles = Directory.GetFiles(packageDirectoryPath, "*.nuspec", SearchOption.AllDirectories);
+      
+      if (nuspecFiles.Length == 0)
+        throw new InvalidOperationException($".nuspec file of package '{packageDirectoryPath}' not found!");
+
+      if (nuspecFiles.Length > 1)
+        throw new InvalidOperationException($"Too many .nuspec files of package '{packageDirectoryPath}'!");
+
+      return ParseNuspecFile(nuspecFiles[0]);
+    }
+    
     private PackageInfo ParseNuspecFile(string nuspecFile)
     {
       var xDoc = XDocument.Load(nuspecFile); 

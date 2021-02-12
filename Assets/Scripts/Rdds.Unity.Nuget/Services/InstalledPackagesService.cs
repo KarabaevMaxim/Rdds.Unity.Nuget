@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using Rdds.Unity.Nuget.Entities;
+using Rdds.Unity.Nuget.Exceptions;
+using Rdds.Unity.Nuget.Utility;
 
 namespace Rdds.Unity.Nuget.Services
 {
@@ -12,6 +14,7 @@ namespace Rdds.Unity.Nuget.Services
     private readonly PackagesFileService _packagesFileService;
     private readonly INugetService _nugetService;
     private readonly NugetConfigService _nugetConfigService;
+    private readonly NuspecFileService _nuspecFileService;
     private readonly ILogger _logger;
 
     public async Task<IEnumerable<PackageInfo>> UpdateInstalledPackagesListAsync(CancellationToken cancellationToken)
@@ -32,13 +35,80 @@ namespace Rdds.Unity.Nuget.Services
       var packages = (await Task.WhenAll(tasks)).Where(p => p != null);
       return packages!;
     }
+
+    public IEnumerable<PackageInfo> RequireInstalledPackagesList() =>
+      _packagesFileService.RequirePackages()
+        .Select(p =>
+        {
+          var (_, directory) = p;
+          return _nuspecFileService.RequirePackageInfoFromNuspec(directory);
+        });
+
+    /// <summary>
+    /// Shows that dlls from nuget package locating in Plugins directory.
+    /// </summary>
+    public bool IsPackageDllInProject(string packageId) => true;
+    
+    public bool IsPackageInstalled(string packageId) => _packagesFileService.HasPackage(packageId) && IsPackageDllInProject(packageId);
+
+    public PackageVersion RequireVersionInstalledPackage(string packageId)
+    {
+      if (!IsPackageInstalled(packageId))
+        throw new PackageNotInstalledException(packageId);
+
+      var package = _packagesFileService.RequirePackage(packageId);
+      return PackageVersion.Parse(package.Version);
+    }
+
+    public bool EqualInstalledPackageVersion(PackageIdentity identity)
+    {
+      if (!IsPackageInstalled(identity.Id))
+        throw new PackageNotInstalledException(identity.Id);
+
+      var package = _packagesFileService.RequirePackage(identity.Id);
+      return identity.Version.Equals(PackageVersion.Parse(package.Version));
+    }
+    
+    public async Task<bool> InstallPackageAsync(string packageDirectoryPath, string sourceKey)
+    {
+      var packageInfo = _nuspecFileService.GetPackageInfoFromNuspec(packageDirectoryPath);
+
+      if (packageInfo == null)
+      {
+        _logger.LogWarning($"Error occurred while reading .nuspec file of package {packageDirectoryPath}");
+        return false;
+      }
+      
+      // todo add dlls in Plugins
+      _packagesFileService.AddOrUpdatePackage(packageInfo.Identity, sourceKey, packageDirectoryPath);
+      await _packagesFileService.SavePackagesFileAsync();
+      return true;
+    }
+    
+    public async Task<bool> RemovePackageAsync(PackageIdentity identity)
+    {
+      // todo remove dlls from Plugins
+      try
+      {
+        _packagesFileService.RemovePackage(identity);
+      }
+      catch (PackageNotInstalledException ex)
+      {
+        LogHelper.LogWarningException(ex);
+        return false;
+      }
+
+      await _packagesFileService.SavePackagesFileAsync();
+      return true;
+    }
     
     public InstalledPackagesService(PackagesFileService packagesFileService, INugetService nugetService,
-      NugetConfigService nugetConfigService, ILogger logger)
+      NugetConfigService nugetConfigService, NuspecFileService nuspecFileService, ILogger logger)
     {
       _packagesFileService = packagesFileService;
       _nugetService = nugetService;
       _nugetConfigService = nugetConfigService;
+      _nuspecFileService = nuspecFileService;
       _logger = logger;
     }
   }

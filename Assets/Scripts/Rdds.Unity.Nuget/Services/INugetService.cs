@@ -7,6 +7,7 @@ using Rdds.Unity.Nuget.Entities.NugetConfig;
 
 namespace Rdds.Unity.Nuget.Services
 {
+  // todo Create this interface common for offline and online package sources. And create 2 implementations for offline and for online. 
   internal interface INugetService
   {
     NugetPackageSource SelectedSource { get; }
@@ -23,8 +24,6 @@ namespace Rdds.Unity.Nuget.Services
     
     Task<string?> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken);
 
-    Task<bool> InstallPackageAsync(string packageDirectoryPath);
-    
     Task<IEnumerable<PackageVersion>> GetPackageVersionsAsync(string packageId, CancellationToken cancellationToken);
 
     [Obsolete("It doesn't always work")]

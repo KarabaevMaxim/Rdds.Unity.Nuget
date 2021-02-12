@@ -3,13 +3,14 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
+using Rdds.Unity.Nuget.Services;
 using UnityEngine;
 
-namespace Rdds.Unity.Nuget.Services
+namespace Rdds.Unity.Nuget.Utility
 {
   internal static class ImageHelper
   {
-    public static Task<Texture2D?> DownloadImageAsync(ResourcePath imagePath, CancellationToken token)
+    public static Task<Texture2D?> LoadImageAsync(ResourcePath imagePath, CancellationToken token)
     {
       if (imagePath.IsLocalPath)
         return GetImageFromFileSystemAsync(imagePath.Path, token);

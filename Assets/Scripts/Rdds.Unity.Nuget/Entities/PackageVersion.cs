@@ -60,6 +60,20 @@ namespace Rdds.Unity.Nuget.Entities
       return new PackageVersion(major, minor, patch, tags);
     }
 
+    public static bool TryParse(string source, out PackageVersion? result)
+    {
+      try
+      {
+        result = Parse(source);
+        return true;
+      }
+      catch
+      {
+        result = null;
+        return false;
+      }
+    }
+
     public PackageVersion(int major, int minor, int patch, IEnumerable<string> labels, string? originalString = null)
     {
       Major = major;

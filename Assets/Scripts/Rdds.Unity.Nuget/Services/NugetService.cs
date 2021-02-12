@@ -140,21 +140,6 @@ namespace Rdds.Unity.Nuget.Services
       return packageDirectoryPath;
     }
 
-    public async Task<bool> InstallPackageAsync(string packageDirectoryPath)
-    {
-      var packageInfo = _nuspecFileService.GetPackageInfoFromNuspec(packageDirectoryPath);
-
-      if (packageInfo == null)
-      {
-        _logger.LogWarning($"Error occurred while reading .nuspec file of package {packageDirectoryPath}");
-        return false;
-      }
-      
-      _packagesFileService.AddPackage(packageInfo.Identity, SelectedSource.Key, packageDirectoryPath);
-      await _packagesFileService.SavePackagesFileAsync();
-      return true;
-    }
-
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     private async Task FindPackageDependenciesRecursive(NuGet.Packaging.Core.PackageIdentity package,
       NuGetFramework framework,

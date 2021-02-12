@@ -48,9 +48,6 @@ namespace Rdds.Unity.Nuget.Services
 
     public async Task<string?> ReadFromFileAsync(string filePath, CancellationToken cancellationToken)
     {
-      if (!File.Exists(filePath))
-        return null;
-
       var bytes = await ReadBytesAsync(filePath, cancellationToken);
 
       if (bytes == null)

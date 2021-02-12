@@ -8,6 +8,8 @@ namespace Rdds.Unity.Nuget.UI
 {
   public class MainWindow : EditorWindow
   {
+    private readonly EditorContext _editorContext = EditorContext.Instance;
+    
     #region Unity methods
     
     [MenuItem("Rdds/Unity.Nuget")]
@@ -43,13 +45,15 @@ namespace Rdds.Unity.Nuget.UI
       var installedLayout = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.InstalledTabLayout).CloneTree();
       var searchLayout = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.SearchTabLayout).CloneTree();
 
-      var installedTab = new InstalledPackagesTabControl(installedLayout.Q<VisualElement>("Root"), "Installed", EditorContext.Instance.NugetService,
-        EditorContext.Instance.InstalledPackagesService, EditorContext.Instance.Logger);
+      var installedTab = new InstalledPackagesTabControl(installedLayout.Q<VisualElement>("Root"), "Installed",
+        _editorContext.NugetService,
+        _editorContext.InstalledPackagesService, _editorContext.Logger);
 
-      var searchTab = new SearchPackagesTabControl(searchLayout.Q<VisualElement>("Root"), "Search", EditorContext.Instance.NugetService,
-        EditorContext.Instance.NugetConfigService, EditorContext.Instance.Logger);
+      var searchTab = new SearchPackagesTabControl(searchLayout.Q<VisualElement>("Root"), "Search",
+        _editorContext.NugetService,
+        _editorContext.NugetConfigService, _editorContext.InstalledPackagesService, _editorContext.Logger);
 
-      var tabsControl = new TabsControl(rootVisualElement.Q<VisualElement>("TabsControl"), installedTab, searchTab);
+      _ = new TabsControl(rootVisualElement.Q<VisualElement>("TabsControl"), installedTab, searchTab);
     }
   }
 }

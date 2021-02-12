@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using NuGet.Common;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.PackagesFile;
-using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
+using Rdds.Unity.Nuget.Exceptions;
+using ILogger = NuGet.Common.ILogger;
 
 namespace Rdds.Unity.Nuget.Services
 {
@@ -48,6 +49,8 @@ namespace Rdds.Unity.Nuget.Services
           $"Error occurred while reading packages file. Will be create a new one. Exception: {ex.GetType().Name}: {ex.Message} {ex.StackTrace}");
         await CreateDefaultPackagesFileAsync();
       }
+
+      ValidatePackagesFile();
     }
 
     public async Task CreateDefaultPackagesFileAsync()
@@ -60,12 +63,12 @@ namespace Rdds.Unity.Nuget.Services
       await SavePackagesFileAsync();
     }
 
-    public void AddPackage(PackageIdentity identity, string sourceKey, string packageDirectoryPath)
+    public void AddOrUpdatePackage(PackageIdentity identity, string sourceKey, string packageDirectoryPath)
     {
       if (!Directory.Exists(packageDirectoryPath))
         throw new ArgumentOutOfRangeException(nameof(packageDirectoryPath), "Directory not found");
       
-      var foundPackage = _packages.PackagesList.FirstOrDefault(p => p.Id == identity.Id);
+      var foundPackage = GetPackage(identity.Id);
 
       if (foundPackage != null) 
          RemovePackage(foundPackage);
@@ -73,21 +76,51 @@ namespace Rdds.Unity.Nuget.Services
       _packages.PackagesList.Add(new Package(identity.Id, identity.Version.ToString(), sourceKey, packageDirectoryPath));
     }
 
-    public bool RemovePackage(PackageInfo package)
+    public void RemovePackage(PackageIdentity identity)
     {
-      var foundPackage = _packages.PackagesList.FirstOrDefault(p => p.Id == package.Identity.Id);
-      
-      if (foundPackage != null) 
-        return RemovePackage(foundPackage);
-
-      return false;
+      var foundPackage = RequirePackage(identity.Id);
+      RemovePackage(foundPackage);
     }
-
-    private bool RemovePackage(Package package) => _packages.PackagesList.Remove(package);
 
     public IEnumerable<(PackageIdentity, string)> RequirePackages() => 
       _packages.PackagesList.Select(p => (new PackageIdentity(p.Id, PackageVersion.Parse(p.Version)), p.Source));
 
+    public bool HasPackage(string packageId) => GetPackage(packageId) != null;
+
+    public Package? GetPackage(string packageId) => _packages.PackagesList.FirstOrDefault(p => p.Id == packageId);
+    
+    public Package RequirePackage(string packageId)
+    {
+      var foundPackage = GetPackage(packageId);
+
+      if (foundPackage == null)
+        throw new PackageNotInstalledException(packageId);
+
+      return foundPackage;
+    }
+
+    private bool RemovePackage(Package package) => _packages.PackagesList.Remove(package);
+
+    private void ValidatePackagesFile()
+    {
+      var issues = new StringBuilder();
+      
+      foreach (var package in _packages.PackagesList)
+      {
+        if (!PackageVersion.TryParse(package.Version, out _))
+          issues.AppendLine($"  -Format of version of package {package.Id} is not valid");
+
+        if (!Directory.Exists(package.Path))
+          issues.AppendLine($"  -Root directory {package.Path} of package {package.Id} not found");
+      }
+      
+      if (issues.Length == 0)
+        return;
+      
+      issues.Insert(0, $"Found issues with {_packagesFileName} file:{Environment.NewLine}");
+      _logger.LogWarning(issues.ToString());
+    }
+    
     public PackagesFileService(FileService fileService, ILogger logger)
     {
       _fileService = fileService;

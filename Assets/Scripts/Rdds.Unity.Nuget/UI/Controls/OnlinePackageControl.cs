@@ -1,12 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Services;
+using Rdds.Unity.Nuget.Utility;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 using ILogger = NuGet.Common.ILogger;
 using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
@@ -24,61 +22,45 @@ namespace Rdds.Unity.Nuget.UI.Controls
     #region Dependencies
 
     private readonly INugetService _nugetService;
+    private readonly InstalledPackagesService _installedPackagesService;
     private readonly ILogger _logger;
 
     #endregion
 
     #region Initialize methods
-
-    public async Task InitializeAsync()
+    
+    public async Task InitializeAsync(bool changedVersion)
     {
-      Title = PackageInfo.Title ?? PackageInfo.Identity.Id;
-      Description = PackageInfo.Description ?? "No description";
-      ToDefaultState();
+      if (_installedPackagesService.IsPackageInstalled(PackageInfo.Identity.Id))
+      {
+        if (_installedPackagesService.EqualInstalledPackageVersion(PackageInfo.Identity))
+          ToInstalledState();
+        else
+          ToInstalledAnotherVersionState();
+      }
+      else
+        ToDefaultState();
 
-      await CreateVersionsControlAsync();
+      await CreateVersionsControlAsync(!changedVersion);
       await AddDependenciesAsync();
-      await SetIconAsync();
+      await SetIconAsync(CancellationToken.None);
     }
-    
-    private async Task SetIconAsync()
-    {
-      if (PackageInfo.IconPath == null)
-        return;
-      
-      var icon = await ImageHelper.DownloadImageAsync(PackageInfo.IconPath, CancellationToken.None);
-      
-      if (icon == null)
-        icon = Resources.Load<Texture2D>("NugetIcon");
 
-      IconImage.image = icon;
-    }
-    
     private async Task AddDependenciesAsync()
     {
       var packageInfo = await _nugetService.GetPackageAsync(PackageInfo.Identity, CancellationToken.None);
 
-      if (packageInfo?.Dependencies == null || !packageInfo.Dependencies.Any())
+      if (packageInfo == null)
       {
-        Dependencies = "No dependencies found";
+        SetDependencies();
         return;
       }
-
-      PackageInfo = packageInfo;
-      var textDependencies = new StringBuilder();
-
-      foreach (var group in PackageInfo.Dependencies)
-      {
-        textDependencies.AppendLine(group.TargetFramework.Name);
       
-        foreach (var dependency in group.Dependencies)
-          textDependencies.AppendLine($"  -{dependency.Id} >= {dependency.Version}");
-      }
-
-      Dependencies = textDependencies.ToString();
+      PackageInfo = packageInfo;
+      SetDependencies();
     }
     
-    private async Task CreateVersionsControlAsync()
+    private async Task CreateVersionsControlAsync(bool takeVersionFromInstalled)
     {
       var versions = 
         await _nugetService.GetPackageVersionsAsync(PackageInfo.Identity.Id, CancellationToken.None);
@@ -86,10 +68,14 @@ namespace Rdds.Unity.Nuget.UI.Controls
       // ReSharper disable once ConstantConditionalAccessQualifier
       _versionsControl?.RemoveFromHierarchy();
       _versionsControl = new PopupField<string>(versions.Select(v => v.ToString()).ToList(), 0);
-      _versionsControl.value = PackageInfo.Identity.Version.ToString();
+
+      _versionsControl.value = _installedPackagesService.IsPackageInstalled(PackageInfo.Identity.Id) && takeVersionFromInstalled
+        ? _installedPackagesService.RequireVersionInstalledPackage(PackageInfo.Identity.Id).ToString()
+        : PackageInfo.Identity.Version.ToString();
+      
       _versionsControl.style.height = new StyleLength(new Length(100, LengthUnit.Percent));
       VersionPlaceholder.Add(_versionsControl);
-      _versionsControl.RegisterValueChangedCallback(OnVersionControlValueChanged);
+      _versionsControl.RegisterValueChangedCallback(OnVersionControlValueChangedAsync);
     }
 
     #endregion
@@ -99,7 +85,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
     private void ToDefaultState()
     {
       ActionButtonText = "Download";
-      ActionButton.clickable.clicked += OnDownloadButtonClicked;
+      ActionButton.clickable.clicked += OnDownloadButtonClickedAsync;
     }
     
     private void ToDownloadedState(string packageDirectoryPath)
@@ -108,45 +94,73 @@ namespace Rdds.Unity.Nuget.UI.Controls
       ActionButton.clickable.clicked += async () => await OnInstallButtonClickedAsync(packageDirectoryPath);
     }
 
+    private void ToInstalledAnotherVersionState()
+    {
+      ActionButtonText = "Update";
+      ActionButton.clickable.clicked += OnUpdateButtonClicked;
+    }
+    
     private void ToInstalledState()
     {
       ActionButtonText = "Remove";
-      ActionButton.clickable.clicked += OnRemoveButtonClicked;
+      ActionButton.clickable.clicked += OnRemoveButtonClickedAsync;
     }
 
     #endregion
 
     #region Controls' event handlers
 
-    private async void OnDownloadButtonClicked()
+    private async void OnDownloadButtonClickedAsync()
     {
-      var packageDirectoryPath = await _nugetService.DownloadPackageAsync(PackageInfo.Identity, CancellationToken.None);
-
+      var packageDirectoryPath = await DownloadPackageAsync();
+      
       if (packageDirectoryPath == null)
         return;
-      
+
       ToDownloadedState(packageDirectoryPath);
     }
     
     private async Task OnInstallButtonClickedAsync(string packageDirectoryPath)
     {
-      var result = await _nugetService.InstallPackageAsync(packageDirectoryPath);
-
+      var result = await InstallPackageAsync(packageDirectoryPath);
+      
       if (result)
         ToInstalledState();
       else
-      {
-        // todo show alert
-      }
+        DialogHelper.ShowErrorAlert($"Failed to install {PackageInfo.Identity.Id} package");
     }
 
-    private void OnRemoveButtonClicked() => throw new NotImplementedException();
-
-    private async void OnVersionControlValueChanged(ChangeEvent<string> args)
+    private async void OnRemoveButtonClickedAsync()
     {
-      if (!TryParseVersion(out var version))
+      var result = await _installedPackagesService.RemovePackageAsync(PackageInfo.Identity);
+
+      if (result)
+        ToDefaultState();
+      else
+        DialogHelper.ShowErrorAlert($"Failed to remove {PackageInfo.Identity.Id} package");
+    }
+
+    private async void OnUpdateButtonClicked()
+    {
+      var packageDirectoryPath = await DownloadPackageAsync();
+      
+      if (packageDirectoryPath == null)
+        return;
+
+      var installResult = await InstallPackageAsync(packageDirectoryPath);
+      
+      if (installResult)
+        ToInstalledState();
+      else
+        DialogHelper.ShowErrorAlert($"Failed to install {PackageInfo.Identity.Id} package");
+    }
+    
+    private async void OnVersionControlValueChangedAsync(ChangeEvent<string> args)
+    {
+      if (!PackageVersion.TryParse(_versionsControl.value, out var version))
       {
         _versionsControl.value = args.previousValue;
+        _logger.LogWarning($"Cannot parse version of package {_versionsControl.value}");
         return;
       }
 
@@ -158,6 +172,18 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     #region Helper methods
 
+    private Task<string?> DownloadPackageAsync()
+    {
+      var task = _nugetService.DownloadPackageAsync(PackageInfo.Identity, CancellationToken.None);
+      return DialogHelper.ShowLoadingAsync("Downloading...", "Wait while package downloading", task);
+    }
+
+    private Task<bool> InstallPackageAsync(string packageDirectoryPath)
+    {
+      var task = _installedPackagesService.InstallPackageAsync(packageDirectoryPath, _nugetService.SelectedSource.Key);
+      return DialogHelper.ShowLoadingAsync("Installing...", "Wait while package installing", task);
+    }
+    
     private async Task<bool> TryChangePackageVersionAsync(PackageVersion newVersion)
     {
       var info = await _nugetService.GetPackageAsync(new PackageIdentity(PackageInfo.Identity.Id, newVersion!), CancellationToken.None);
@@ -169,36 +195,22 @@ namespace Rdds.Unity.Nuget.UI.Controls
       }
 
       PackageInfo = info;
-      await InitializeAsync();
+      await InitializeAsync(true);
       return true;
-    }
-    
-    private bool TryParseVersion(out PackageVersion? version)
-    {
-      version = null;
-      
-      try
-      {
-        version = PackageVersion.Parse(_versionsControl.value);
-        return true;
-      }
-      catch (Exception ex)
-      {
-        _logger.LogWarning($"{ex.GetType().Name}:{ex.Message} {ex.StackTrace}");
-        return false;
-      }
     }
 
     #endregion
 
     #region Constructors
 
-    public OnlinePackageControl(VisualElement parent, PackageInfo packageInfo, INugetService nugetService, ILogger logger) : base(parent, packageInfo)
+    public OnlinePackageControl(VisualElement parent, PackageInfo packageInfo, INugetService nugetService,
+      InstalledPackagesService installedPackagesService, ILogger logger) : base(parent, packageInfo)
     {
       _nugetService = nugetService;
+      _installedPackagesService = installedPackagesService;
       _logger = logger;
     }
-    
+
     #endregion
   }
 }

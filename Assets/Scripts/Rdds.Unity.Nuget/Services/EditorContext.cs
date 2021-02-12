@@ -27,7 +27,7 @@ namespace Rdds.Unity.Nuget.Services
       PackagesFileService = new PackagesFileService(FileService, Logger);
       NugetService = new NugetService(Logger, NugetConfigService, FileService, FrameworkService, PackagesFileService, NuspecFileService);
       InstalledPackagesService =
-        new InstalledPackagesService(PackagesFileService, NugetService, NugetConfigService, Logger);
+        new InstalledPackagesService(PackagesFileService, NugetService, NugetConfigService, NuspecFileService, Logger);
     }
   }
 }

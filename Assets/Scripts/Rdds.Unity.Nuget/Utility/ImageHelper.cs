@@ -10,7 +10,7 @@ namespace Rdds.Unity.Nuget.Utility
 {
   internal static class ImageHelper
   {
-    public static Task<Texture2D?> LoadImageAsync(ResourcePath imagePath, CancellationToken token)
+    public static Task<Texture?> LoadImageAsync(ResourcePath imagePath, CancellationToken token)
     {
       if (imagePath.IsLocalPath)
         return GetImageFromFileSystemAsync(imagePath.Path, token);
@@ -18,7 +18,7 @@ namespace Rdds.Unity.Nuget.Utility
       return DownloadImageAsync(new Uri(imagePath.Path), token);
     }
 
-    private static async Task<Texture2D?> DownloadImageAsync(Uri imageUrl, CancellationToken token)
+    private static async Task<Texture?> DownloadImageAsync(Uri imageUrl, CancellationToken token)
     {
       using var client = new HttpClient();
       var response = await client.GetAsync(imageUrl, token);
@@ -30,7 +30,7 @@ namespace Rdds.Unity.Nuget.Utility
       return RequireTextureFromBytes(bytes);
     }
     
-    private static async Task<Texture2D?> GetImageFromFileSystemAsync(string imageFilePath, CancellationToken cancellationToken)
+    private static async Task<Texture?> GetImageFromFileSystemAsync(string imageFilePath, CancellationToken cancellationToken)
     {
       var fileService = EditorContext.FileService;
       var bytes = await fileService.ReadBytesAsync(imageFilePath, cancellationToken);
@@ -41,7 +41,7 @@ namespace Rdds.Unity.Nuget.Utility
       return RequireTextureFromBytes(bytes);
     }
 
-    private static Texture2D RequireTextureFromBytes(byte[] bytes)
+    private static Texture RequireTextureFromBytes(byte[] bytes)
     {
       var result = new Texture2D(0, 0);
       result.LoadImage(bytes);

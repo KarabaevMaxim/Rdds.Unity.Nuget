@@ -4,6 +4,8 @@ namespace Rdds.Unity.Nuget.NewUI
 {
   public static class Paths
   {
+    public static string DefaultIconResourceName { get; } = "NugetIcon";
+    
     public static string LayoutRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/NewUI/Layout";
     
     public static string LayoutStylesRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/NewUI/Layout/Styles";

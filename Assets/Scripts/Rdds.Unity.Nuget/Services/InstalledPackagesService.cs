@@ -36,12 +36,8 @@ namespace Rdds.Unity.Nuget.Services
     }
 
     public IEnumerable<PackageInfo> RequireInstalledPackagesList() =>
-      _packagesFileService.RequirePackages()
-        .Select(p =>
-        {
-          var (_, directory) = p;
-          return _nuspecFileService.RequirePackageInfoFromNuspec(directory);
-        });
+      _packagesFileService.RequirePackageModels()
+        .Select(p => _nuspecFileService.RequirePackageInfoFromNuspec(p.Path));
 
     /// <summary>
     /// Shows that dlls from nuget package locating in Plugins directory.

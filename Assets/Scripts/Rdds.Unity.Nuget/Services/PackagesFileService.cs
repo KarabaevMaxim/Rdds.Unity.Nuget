@@ -10,7 +10,6 @@ using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.PackagesFile;
 using Rdds.Unity.Nuget.Exceptions;
 using Rdds.Unity.Nuget.Utility;
-using ILogger = NuGet.Common.ILogger;
 
 namespace Rdds.Unity.Nuget.Services
 {
@@ -79,6 +78,8 @@ namespace Rdds.Unity.Nuget.Services
 
     public IEnumerable<(PackageIdentity, string)> RequirePackages() => 
       _packages.PackagesList.Select(p => (new PackageIdentity(p.Id, PackageVersion.Parse(p.Version)), p.Source));
+
+    public IEnumerable<Package> RequirePackageModels() => _packages.PackagesList;
 
     public bool HasPackage(string packageId) => GetPackage(packageId) != null;
 

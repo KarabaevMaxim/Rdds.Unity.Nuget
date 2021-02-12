@@ -31,7 +31,7 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
       _listView.itemsSource = _sourceItems;
       _listView.bindItem += (element, i) =>
       {
-        element.Q<Image>("Icon").image = _sourceItems[i].Texture;
+        element.Q<Image>("Icon").image = _sourceItems[i].Icon;
         element.Q<Label>("Id").text = _sourceItems[i].Id;
         element.Q<Label>("Sources").text = string.Join(", " , _sourceItems[i].Sources);
         element.Q<Label>("Version").text = _sourceItems[i].Version;

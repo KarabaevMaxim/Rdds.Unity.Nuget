@@ -5,6 +5,12 @@
       "Version": "8.0.2",
       "Source": "nuget.org",
       "Path": "D:\\NugetRepository\\Newtonsoft.Json.8.0.2"
+    },
+    {
+      "Id": "Rdds.HttpClient",
+      "Version": "1.0.0",
+      "Source": "Gitlab",
+      "Path": "D:\\NugetRepository\\Rdds.HttpClient.1.0.0"
     }
   ]
 }

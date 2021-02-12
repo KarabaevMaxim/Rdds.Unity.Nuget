@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.PackagesFile;
 using Rdds.Unity.Nuget.Exceptions;
+using Rdds.Unity.Nuget.Utility;
 using ILogger = NuGet.Common.ILogger;
 
 namespace Rdds.Unity.Nuget.Services
@@ -16,7 +17,6 @@ namespace Rdds.Unity.Nuget.Services
   internal class PackagesFileService
   {
     private readonly FileService _fileService;
-    private readonly ILogger _logger;
 
     private readonly string _packagesFileName = Path.Combine("NugetPackages.json");
 
@@ -34,7 +34,7 @@ namespace Rdds.Unity.Nuget.Services
 
       if (string.IsNullOrWhiteSpace(json))
       {
-        _logger.LogWarning("Packages file not found. Will be create a new one.");
+        LogHelper.LogWarning("Packages file not found. Will be create a new one.");
         await CreateDefaultPackagesFileAsync();
         return;
       }
@@ -45,8 +45,7 @@ namespace Rdds.Unity.Nuget.Services
       }
       catch (Exception ex)
       {
-        _logger.LogWarning(
-          $"Error occurred while reading packages file. Will be create a new one. Exception: {ex.GetType().Name}: {ex.Message} {ex.StackTrace}");
+        LogHelper.LogWarningException("Error occurred while reading packages file. Will be create a new one", ex);
         await CreateDefaultPackagesFileAsync();
       }
 
@@ -55,11 +54,7 @@ namespace Rdds.Unity.Nuget.Services
 
     public async Task CreateDefaultPackagesFileAsync()
     {
-      _packages = new Packages(new List<Package>
-      {
-        new Package("Rdds.HttpClient", "1.0.0", "Gitlab", string.Empty),
-        new Package("Rdds.Dto", "1.0.0", "Gitlab", string.Empty)
-      });
+      _packages = new Packages(new List<Package>());
       await SavePackagesFileAsync();
     }
 
@@ -118,13 +113,9 @@ namespace Rdds.Unity.Nuget.Services
         return;
       
       issues.Insert(0, $"Found issues with {_packagesFileName} file:{Environment.NewLine}");
-      _logger.LogWarning(issues.ToString());
+      LogHelper.LogWarning(issues.ToString());
     }
     
-    public PackagesFileService(FileService fileService, ILogger logger)
-    {
-      _fileService = fileService;
-      _logger = logger;
-    }
+    public PackagesFileService(FileService fileService) => _fileService = fileService;
   }
 }

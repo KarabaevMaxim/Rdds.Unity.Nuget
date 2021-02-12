@@ -1,33 +1,30 @@
 ﻿using NuGet.Common;
+using UnityEditor;
 
 namespace Rdds.Unity.Nuget.Services
 {
-  internal class EditorContext
+  [InitializeOnLoad]
+  internal static class EditorContext
   {
-    private static EditorContext? _instance;
+    public static ILogger Logger { get; }
+    public static INugetService NugetService { get; }
+    public static FileService FileService { get; }
+    public static NugetConfigService NugetConfigService { get; }
+    public static FrameworkService FrameworkService { get; }
+    public static PackagesFileService PackagesFileService { get; }
+    public static InstalledPackagesService InstalledPackagesService { get; }
+    public static NuspecFileService NuspecFileService { get; }
     
-    public static EditorContext Instance => _instance ??= new EditorContext();
-
-    public ILogger Logger { get; }
-    public INugetService NugetService { get; }
-    public FileService FileService { get; }
-    public NugetConfigService NugetConfigService { get; }
-    public FrameworkService FrameworkService { get; }
-    public PackagesFileService PackagesFileService { get; }
-    public InstalledPackagesService InstalledPackagesService { get; }
-    public NuspecFileService NuspecFileService { get; }
-    
-    private EditorContext()
+    static EditorContext()
     {
       Logger = new UnityConsoleLogger();
       FileService = new FileService();
       FrameworkService = new FrameworkService();
       NugetConfigService = new NugetConfigService(FileService);
-      NuspecFileService = new NuspecFileService(Logger);
-      PackagesFileService = new PackagesFileService(FileService, Logger);
-      NugetService = new NugetService(Logger, NugetConfigService, FileService, FrameworkService, PackagesFileService, NuspecFileService);
-      InstalledPackagesService =
-        new InstalledPackagesService(PackagesFileService, NugetService, NugetConfigService, NuspecFileService, Logger);
+      NuspecFileService = new NuspecFileService();
+      PackagesFileService = new PackagesFileService(FileService);
+      NugetService = new NugetService(Logger, NugetConfigService, FileService, FrameworkService);
+      InstalledPackagesService = new InstalledPackagesService(PackagesFileService, NugetService, NugetConfigService, NuspecFileService);
     }
   }
 }

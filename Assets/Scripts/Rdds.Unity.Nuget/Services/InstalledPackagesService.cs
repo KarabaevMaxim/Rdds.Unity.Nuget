@@ -15,7 +15,6 @@ namespace Rdds.Unity.Nuget.Services
     private readonly INugetService _nugetService;
     private readonly NugetConfigService _nugetConfigService;
     private readonly NuspecFileService _nuspecFileService;
-    private readonly ILogger _logger;
 
     public async Task<IEnumerable<PackageInfo>> UpdateInstalledPackagesListAsync(CancellationToken cancellationToken)
     {
@@ -27,8 +26,8 @@ namespace Rdds.Unity.Nuget.Services
         var result = await _nugetService.GetPackageAsync(pi.Item1, source, cancellationToken);
 
         if (result == null)
-          _logger.LogWarning($"Package {pi.Item1.Id} with version {pi.Item1.Version} not found in source {source.Key}");
-        
+          LogHelper.LogWarning($"Package {pi.Item1.Id} with version {pi.Item1.Version} not found in source {source.Key}");
+
         return result;
       });
 
@@ -75,7 +74,7 @@ namespace Rdds.Unity.Nuget.Services
 
       if (packageInfo == null)
       {
-        _logger.LogWarning($"Error occurred while reading .nuspec file of package {packageDirectoryPath}");
+        LogHelper.LogWarning($"Error occurred while reading .nuspec file of package {packageDirectoryPath}");
         return false;
       }
       
@@ -103,13 +102,12 @@ namespace Rdds.Unity.Nuget.Services
     }
     
     public InstalledPackagesService(PackagesFileService packagesFileService, INugetService nugetService,
-      NugetConfigService nugetConfigService, NuspecFileService nuspecFileService, ILogger logger)
+      NugetConfigService nugetConfigService, NuspecFileService nuspecFileService)
     {
       _packagesFileService = packagesFileService;
       _nugetService = nugetService;
       _nugetConfigService = nugetConfigService;
       _nuspecFileService = nuspecFileService;
-      _logger = logger;
     }
   }
 }

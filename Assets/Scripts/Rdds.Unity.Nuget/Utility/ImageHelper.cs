@@ -32,7 +32,7 @@ namespace Rdds.Unity.Nuget.Utility
     
     private static async Task<Texture2D?> GetImageFromFileSystemAsync(string imageFilePath, CancellationToken cancellationToken)
     {
-      var fileService = EditorContext.Instance.FileService;
+      var fileService = EditorContext.FileService;
       var bytes = await fileService.ReadBytesAsync(imageFilePath, cancellationToken);
 
       if (bytes == null)

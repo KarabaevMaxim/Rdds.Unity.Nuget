@@ -11,6 +11,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.NugetConfig;
+using Rdds.Unity.Nuget.Utility;
 using UnityEditor;
 using PackageIdentity = Rdds.Unity.Nuget.Entities.PackageIdentity;
 using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
@@ -23,8 +24,6 @@ namespace Rdds.Unity.Nuget.Services
     private readonly NugetConfigService _configService;
     private readonly FileService _fileService;
     private readonly FrameworkService _frameworkService;
-    private readonly PackagesFileService _packagesFileService;
-    private readonly NuspecFileService _nuspecFileService;
 
     private NugetPackageSource? _selectedSource;
     
@@ -127,7 +126,7 @@ namespace Rdds.Unity.Nuget.Services
 
         if (!result)
         {
-          _logger.LogWarning($"Package {identity.Id} not downloaded");
+          LogHelper.LogWarning($"Package {identity.Id} not downloaded");
           return null;
         }
       }
@@ -135,7 +134,7 @@ namespace Rdds.Unity.Nuget.Services
       var packageDirectoryPath = _fileService.Unzip(tempFilePath, _configService.LocalRepositoryPath);
 
       if (!_fileService.RemoveFile(tempFilePath)) 
-        _logger.LogWarning($"Cannot remove temp file '{tempFilePath}'");
+        LogHelper.LogWarning($"Cannot remove temp file '{tempFilePath}'");
 
       return packageDirectoryPath;
     }
@@ -171,15 +170,12 @@ namespace Rdds.Unity.Nuget.Services
       }
     }
 
-    public NugetService(ILogger logger, NugetConfigService configService, FileService fileService,
-      FrameworkService frameworkService, PackagesFileService packagesFileService, NuspecFileService nuspecFileService)
+    public NugetService(ILogger logger, NugetConfigService configService, FileService fileService, FrameworkService frameworkService)
     {
       _logger = logger;
       _configService = configService;
       _fileService = fileService;
       _frameworkService = frameworkService;
-      _packagesFileService = packagesFileService;
-      _nuspecFileService = nuspecFileService;
     }
   }
 }

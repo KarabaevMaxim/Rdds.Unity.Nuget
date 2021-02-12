@@ -5,27 +5,26 @@ using System.Linq;
 using System.Xml.Linq;
 using NuGet.Common;
 using Rdds.Unity.Nuget.Entities;
+using Rdds.Unity.Nuget.Utility;
 using PackageIdentity = Rdds.Unity.Nuget.Entities.PackageIdentity;
 
 namespace Rdds.Unity.Nuget.Services
 {
   internal class NuspecFileService
   {
-    private readonly ILogger _logger;
-
     public PackageInfo? GetPackageInfoFromNuspec(string packageDirectoryPath)
     {
       var nuspecFiles = Directory.GetFiles(packageDirectoryPath, "*.nuspec", SearchOption.AllDirectories);
 
       if (nuspecFiles.Length == 0)
       {
-        _logger.LogWarning($".nuspec file of package '{packageDirectoryPath}' not found!");
+        LogHelper.LogWarning($".nuspec file of package '{packageDirectoryPath}' not found!");
         return null;
       }
       
       if (nuspecFiles.Length > 1)
       {
-        _logger.LogWarning($"Too many .nuspec files of package '{packageDirectoryPath}'!");
+        LogHelper.LogWarning($"Too many .nuspec files of package '{packageDirectoryPath}'!");
         return null;
       }
 
@@ -85,7 +84,5 @@ namespace Rdds.Unity.Nuget.Services
       return new PackageInfo(title, authors, description, iconPath, owners, null,
         new PackageIdentity(id, PackageVersion.Parse(version)), dependencies);
     }
-
-    public NuspecFileService(ILogger logger) => _logger = logger;
   }
 }

@@ -14,12 +14,14 @@ namespace Rdds.Unity.Nuget.Services
     public static PackagesFileService PackagesFileService { get; }
     public static InstalledPackagesService InstalledPackagesService { get; }
     public static NuspecFileService NuspecFileService { get; }
+    public static AssembliesService AssembliesService { get; }
     
     static EditorContext()
     {
       Logger = new UnityConsoleLogger();
       FileService = new FileService();
       FrameworkService = new FrameworkService();
+      AssembliesService = new AssembliesService(FileService);
       NugetConfigService = new NugetConfigService(FileService);
       NuspecFileService = new NuspecFileService();
       PackagesFileService = new PackagesFileService(FileService);

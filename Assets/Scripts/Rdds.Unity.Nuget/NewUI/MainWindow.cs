@@ -42,7 +42,7 @@ namespace Rdds.Unity.Nuget.NewUI
       _assembliesPopupPlaceholder = _leftPanel.Q<VisualElement>("AssembliesPopupPlaceholder");
       _sourcesListPlaceholder = _leftPanel.Q<VisualElement>("SourcesListPlaceholder");
 
-      AddAssembliesListPopup();
+      await AddAssembliesListPopupAsync();
       AddSourcesListPopup();
       
       _ = new PackagesListControl(_leftPanel, "Installed", 200, await RequireInstalledPackages());
@@ -70,12 +70,13 @@ namespace Rdds.Unity.Nuget.NewUI
       return models.ToList();
     }
 
-    private void AddAssembliesListPopup()
+    private async Task AddAssembliesListPopupAsync()
     {
-      var assemblies = new List<string> {"All assemblies"};
-      assemblies.AddRange(AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name));
+      var assemblies = await EditorContext.AssembliesService.RequireAllAssembliesAsync();
+      var assembliesNames = new List<string> {"All assemblies"};
+      assembliesNames.AddRange(assemblies.Select(a => a.Name));
       
-      var popup = new PopupField<string>(assemblies, 0);
+      var popup = new PopupField<string>(assembliesNames, 0);
       _assembliesPopupPlaceholder.Add(popup);
       popup.RegisterValueChangedCallback(OnAssembliesListPopupValueChanged);
     }

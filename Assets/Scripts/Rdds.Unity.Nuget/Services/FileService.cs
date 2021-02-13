@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Threading;
@@ -56,6 +57,16 @@ namespace Rdds.Unity.Nuget.Services
       return Encoding.Default.GetString(bytes);
     }
     
+    public async Task<string> RequireFileContentAsync(string filePath, CancellationToken cancellationToken)
+    {
+      var content = await ReadFromFileAsync(filePath, cancellationToken);
+
+      if (content == null)
+        throw new FileNotFoundException($"File {filePath} not found");
+
+      return content;
+    }
+    
     public async Task<byte[]?> ReadBytesAsync(string filePath, CancellationToken cancellationToken)
     {
       if (!File.Exists(filePath))
@@ -88,5 +99,9 @@ namespace Rdds.Unity.Nuget.Services
 
     public string GetNupkgTempFilePath(PackageIdentity identity) => 
       Path.Combine(TempDirectoryPath, $"{identity.Id}.{identity.Version.OriginalString}.nupkg");
+
+    public IEnumerable<string> FindFiles(string directory, string extension, bool recursive) =>
+      Directory.EnumerateFiles(directory, $"*.{extension}",
+        recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
   }
 }

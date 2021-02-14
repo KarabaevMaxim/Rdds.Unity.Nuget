@@ -9,20 +9,28 @@
             <engine:Label name="Id" class="IdLabel" />
         </engine:VisualElement>
         
-        <engine:VisualElement name="SubHeader" class="Block HorizontalStack ExpandedByWidth">
-            <engine:VisualElement name="VersionsPlaceholder" class="StackExpanded2Element" />
-            <engine:VisualElement name="SourcesPlaceholder" class="StackExpandedElement" />
-            <engine:Button name="UpdateInAllAssembliesButton" class="Button">
-                <engine:Image name="ButtonIcon" style="width: 100%; height: 100%;"/>
-            </engine:Button>
-            <engine:Button name="InstallRemoveInAllAssembliesButton" class="Button">
-                <engine:Image name="ButtonIcon" style="padding: 5px; width: 100%; height: 100%;"/>
-            </engine:Button>
+        <engine:VisualElement name="ContentPanel">
+            <engine:VisualElement name="SubHeader" class="Block HorizontalStack ExpandedByWidth">
+                <engine:VisualElement name="VersionsPlaceholder" class="StackExpanded2Element" />
+                <engine:VisualElement name="SourcesPlaceholder" class="StackExpandedElement" />
+                <engine:Button name="UpdateInAllAssembliesButton" class="Button">
+                    <engine:Image name="ButtonIcon" class="ButtonIcon"/>
+                </engine:Button>
+                <engine:Button name="InstallRemoveInAllAssembliesButton" class="Button">
+                    <engine:Image name="ButtonIcon" class="ButtonIcon"/>
+                </engine:Button>
+            </engine:VisualElement>
+
+            <engine:Label name="DescriptionLabel" class="Block" />
+            <engine:Foldout name="DependenciesPanel" text="Dependencies" value="false" class="Block">
+                <engine:Label name="DependenciesLabel" />
+            </engine:Foldout>
+
+            <engine:Foldout name="AssembliesPanel" text="Assemblies" class="Block">
+                <engine:Label name="AssembliesNotFoundLabel" text="Assemblies not found"/>
+                <engine:ListView name="ListView" class="">
+                </engine:ListView>
+            </engine:Foldout>
         </engine:VisualElement>
-        
-        <engine:Label name="DescriptionLabel" />
-        <engine:Foldout name="DependenciesPanel" text="Dependencies" value="false">
-            <engine:Label name="DependenciesLabel" />
-        </engine:Foldout>
     </engine:VisualElement>
 </engine:UXML>

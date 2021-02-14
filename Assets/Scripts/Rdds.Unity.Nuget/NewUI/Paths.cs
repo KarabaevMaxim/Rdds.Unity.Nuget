@@ -21,5 +21,7 @@ namespace Rdds.Unity.Nuget.NewUI
     public static string PackageRowLayout { get; } = Path.Combine(LayoutControlsRootPath, "PackageRow.uxml");
     public static string PackagesListControlLayout { get; } = Path.Combine(LayoutControlsRootPath, "PackagesListControl.uxml");
     public static string PackageDetailControlLayout { get; } = Path.Combine(LayoutControlsRootPath, "PackageDetailsControl.uxml");
+    public static string AssemblyRowLayout { get; } = Path.Combine(LayoutControlsRootPath, "AssemblyRow.uxml");
+
   }
 }

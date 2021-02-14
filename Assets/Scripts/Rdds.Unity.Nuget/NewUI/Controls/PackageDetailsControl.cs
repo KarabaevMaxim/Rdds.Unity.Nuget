@@ -12,7 +12,9 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
 {
   internal class PackageDetailsControl
   {
-    private static readonly VisualTreeAsset _treeAsset;
+    private static readonly VisualTreeAsset _mainTreeAsset;
+    private static readonly VisualTreeAsset _assemblyRowTreeAsset;
+    
     private readonly Image _headerIcon;
     private readonly Label _headerId;
     private readonly VisualElement _versionsPlaceholder;
@@ -23,12 +25,15 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
     private readonly VisualElement _subHeader;
     private readonly Label _descriptionLabel;
     private readonly Label _dependenciesLabel;
-    
+    private readonly VisualElement _assembliesPanel;
+    private readonly VisualElement _contentPanel;
+    private readonly Label _assembliesNotFoundLabel;
+    private readonly ListView _assembliesListView;
+
     private PopupField<string>? _versionsControl;
     private PopupField<string>? _sourcesControl;
 
     private PackageDetailsPresentationModel _details;
-
 
     public PackageDetailsPresentationModel? Details
     {
@@ -37,15 +42,18 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
       {
         if (!value.HasValue)
           return;
-        
+
+        _contentPanel.visible = true;
         _details = value.Value;
         Id = _details.Id;
         _headerIcon.image = _details.Icon;
-        CreateVersionsControl(_details.SelectedVersion, _details.Versions);
-        CreateSourcesControl(_details.SelectedSource, _details.AvailableInSources);
+        Description = _details.Description;
         _installRemoveInAllAssembliesButtonIcon.image = _details.InstallRemoveButtonIcon;
         UpdateButtonVisible = _details.UpdateButtonAction != null;
+        CreateVersionsControl(_details.SelectedVersion, _details.Versions);
+        CreateSourcesControl(_details.SelectedSource, _details.AvailableInSources);
         CreateDependencies(_details.Dependencies);
+        CreateAssembliesList(_details.Assemblies);
       }
     }
     
@@ -57,7 +65,6 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
 
     private bool UpdateButtonVisible
     {
-      get => _updateInAllAssembliesButton.visible;
       set
       {
         _updateInAllAssembliesButton.visible = value;
@@ -69,6 +76,23 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
       }
     }
 
+    private bool AssembliesNotFound
+    {
+      set
+      {
+        if (value)
+        {
+          _assembliesListView.RemoveFromHierarchy();
+          _assembliesPanel.Add(_assembliesNotFoundLabel);
+        }
+        else
+        {
+          _assembliesNotFoundLabel.RemoveFromHierarchy();
+          _assembliesPanel.Add(_assembliesListView);
+        }
+      }
+    }
+    
     private string? Dependencies
     {
       get => _dependenciesLabel.text;
@@ -83,10 +107,12 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
 
     public void Reset()
     {
+      _contentPanel.visible = false;
       UpdateButtonVisible = false;
       _sourcesControl?.RemoveFromHierarchy();
       _versionsControl?.RemoveFromHierarchy();
       Dependencies = null;
+      Description = null;
     }
     
     private void CreateVersionsControl(string selectedVersion, List<string> versions)
@@ -130,6 +156,24 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
 
       Dependencies = sb.ToString();
     }
+
+    private void CreateAssembliesList(List<AssemblyPackageDetailsPresentationModel> assemblies)
+    {
+      if (!assemblies.Any())
+      {
+        AssembliesNotFound = true;
+        return;
+      }
+
+      AssembliesNotFound = false;
+      _assembliesListView.itemHeight = 40;
+      _assembliesListView.style.height = new StyleLength(new Length(200));
+      _assembliesListView.selectionType = SelectionType.None;
+      _assembliesListView.itemsSource = assemblies;
+      
+      _assembliesListView.bindItem -= OnAssembliesListViewBindItem;
+      _assembliesListView.bindItem += OnAssembliesListViewBindItem;
+    }
     
     private void OnSourcesControlValueChanged(ChangeEvent<string> evt)
     {
@@ -142,10 +186,21 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
     private void OnInstallRemoveInAllAssembliesButtonClicked() => Details!.Value.InstallRemoveButtonAction?.Invoke();
 
     private void OnUpdateInAllAssembliesButtonClicked() => Details!.Value.UpdateButtonAction?.Invoke();
-
+    
+    private void OnAssembliesListViewBindItem(VisualElement row, int index)
+    {
+      var model = (AssemblyPackageDetailsPresentationModel)_assembliesListView.itemsSource[index];
+      
+      row.Q<Image>("Icon").image = model.Icon;
+      row.Q<Label>("Name").text = model.Name;
+      row.Q<Label>("InstalledVersionOfPackage").text = model.InstalledVersionOfPackage ?? string.Empty;
+      row.Q<Button>("ActionButton").clickable.clicked += model.ButtonAction;
+      row.Q<Image>("ButtonIcon").image = model.ButtonIcon;
+    }
+    
     public PackageDetailsControl(VisualElement parent)
     {
-      var root = _treeAsset.CloneTree();
+      var root = _mainTreeAsset.CloneTree();
       root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(Paths.PackageDetailsStyles));
       parent.Add(root);
 
@@ -163,10 +218,19 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
       _updateInAllAssembliesButton.Q<Image>("ButtonIcon").image = ImageHelper.LoadImageFromResource(Paths.UpdatePackageButtonIconResourceName);
       _descriptionLabel = root.Q<Label>("DescriptionLabel");
       _dependenciesLabel = root.Q<Label>("DependenciesLabel");
-      
+      _contentPanel = root.Q<VisualElement>("ContentPanel");
+      _assembliesPanel = _contentPanel.Q<Foldout>("AssembliesPanel");
+      _assembliesNotFoundLabel = _assembliesPanel.Q<Label>("AssembliesNotFoundLabel");
+      _assembliesListView = _assembliesPanel.Q<ListView>("ListView");
+      _assembliesListView.makeItem += _assemblyRowTreeAsset.CloneTree;
+
       Reset();
     }
     
-    static PackageDetailsControl() => _treeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.PackageDetailControlLayout);
+    static PackageDetailsControl()
+    {
+      _mainTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.PackageDetailControlLayout);
+      _assemblyRowTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.AssemblyRowLayout);
+    }
   }
 }

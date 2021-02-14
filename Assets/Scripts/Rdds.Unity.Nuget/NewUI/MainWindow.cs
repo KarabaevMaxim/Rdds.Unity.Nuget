@@ -24,6 +24,8 @@ namespace Rdds.Unity.Nuget.NewUI
     private VisualElement _sourcesListPlaceholder = null!;
     private TwoPaneSplitView _root = null!;
     private PackageDetailsControl _packageDetailsControl = null!;
+
+    private IEnumerable<AssemblyModel> _assemblies = null!;
     
     [MenuItem("Rdds/New Unity.Nuget")]
     public static void ShowDefaultWindow()
@@ -50,8 +52,10 @@ namespace Rdds.Unity.Nuget.NewUI
 
       _root.fixedPaneIndex = 1;
       _root.fixedPaneInitialDimension = 300;
+
+      _assemblies = await EditorContext.AssembliesService.RequireAllAssembliesAsync();
       
-      await AddAssembliesListPopupAsync();
+      AddAssembliesListPopup();
       AddSourcesListPopup();
 
       _packageDetailsControl = new PackageDetailsControl(_rightPanel);
@@ -80,11 +84,10 @@ namespace Rdds.Unity.Nuget.NewUI
       return models.ToList();
     }
 
-    private async Task AddAssembliesListPopupAsync()
+    private void AddAssembliesListPopup()
     {
-      var assemblies = await EditorContext.AssembliesService.RequireAllAssembliesAsync();
       var assembliesNames = new List<string> {"All assemblies"};
-      assembliesNames.AddRange(assemblies.Select(a => a.Name));
+      assembliesNames.AddRange(_assemblies.Select(a => a.Name));
       
       var popup = new PopupField<string>(assembliesNames, 0);
       _assembliesPopupPlaceholder.Add(popup);
@@ -123,9 +126,15 @@ namespace Rdds.Unity.Nuget.NewUI
       Action? updateAction = installed && !EditorContext.InstalledPackagesService.EqualInstalledPackageVersion(identity)
                          ? () => { }
                          : (Action?)null;
+      
+      var assemblies = _assemblies
+        .Select(a =>
+          new AssemblyPackageDetailsPresentationModel(ImageHelper.LoadBuiltinImage("AssemblyDefinitionAsset Icon"),
+            a.Name, null, ImageHelper.LoadImageFromResource(Paths.InstallPackageButtonIconResourceName), () => { }))
+        .ToList();
       var details = new PackageDetailsPresentationModel(selected.Id, selected.Icon, selected.Version,
         new List<string> {selected.Version}, selected.Sources.First(), selected.Sources, null,
-        null, installIcon, installAction, updateAction);
+        null, installIcon, installAction, updateAction, assemblies);
       _packageDetailsControl.Details = details;
 
       var versions = await EditorContext.NugetService.GetPackageVersionsAsync(selected.Id, _loadDetailsCancellationTokenSource.Token);

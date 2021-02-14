@@ -24,13 +24,17 @@ namespace Rdds.Unity.Nuget.NewUI.Controls.Models
     
     public Texture InstallRemoveButtonIcon { get; }
     
+    public List<AssemblyPackageDetailsPresentationModel> Assemblies { get; }
+    
     public Action? InstallRemoveButtonAction { get; }
     
     public Action? UpdateButtonAction { get; }
 
     public PackageDetailsPresentationModel(string id, Texture icon, string selectedVersion, List<string> versions,
       string selectedSource, List<string> availableInSources, string? description,
-      IEnumerable<DependenciesPresentationModel>? dependencies, Texture installRemoveButtonIcon, Action? installRemoveButtonAction, Action? updateButtonAction)
+      IEnumerable<DependenciesPresentationModel>? dependencies, Texture installRemoveButtonIcon,
+      Action? installRemoveButtonAction, Action? updateButtonAction,
+      List<AssemblyPackageDetailsPresentationModel> assemblies)
     {
       Id = id;
       Icon = icon;
@@ -43,6 +47,7 @@ namespace Rdds.Unity.Nuget.NewUI.Controls.Models
       InstallRemoveButtonIcon = installRemoveButtonIcon;
       InstallRemoveButtonAction = installRemoveButtonAction;
       UpdateButtonAction = updateButtonAction;
+      Assemblies = assemblies;
     }
   }
 }

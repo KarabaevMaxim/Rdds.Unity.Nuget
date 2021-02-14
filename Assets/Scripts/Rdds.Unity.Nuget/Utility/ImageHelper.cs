@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Services;
+using UnityEditor;
 using UnityEngine;
 
 namespace Rdds.Unity.Nuget.Utility
@@ -27,6 +28,8 @@ namespace Rdds.Unity.Nuget.Utility
       
       return result;
     }
+
+    public static Texture LoadBuiltinImage(string name) => EditorGUIUtility.IconContent(name).image;
 
     private static async Task<Texture?> DownloadImageAsync(Uri imageUrl, CancellationToken token)
     {

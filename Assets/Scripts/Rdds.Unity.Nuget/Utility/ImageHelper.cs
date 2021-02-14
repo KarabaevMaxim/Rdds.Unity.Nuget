@@ -18,6 +18,16 @@ namespace Rdds.Unity.Nuget.Utility
       return DownloadImageAsync(new Uri(imagePath.Path), token);
     }
 
+    public static Texture LoadImageFromResource(string resourcePath)
+    {
+      var result = Resources.Load<Texture>(resourcePath);
+      
+      if (result == null)
+        throw new ArgumentOutOfRangeException(nameof(resourcePath), $"Texture '{resourcePath}' not found in resources");
+      
+      return result;
+    }
+
     private static async Task<Texture?> DownloadImageAsync(Uri imageUrl, CancellationToken token)
     {
       using var client = new HttpClient();

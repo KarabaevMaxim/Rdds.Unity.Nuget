@@ -4,8 +4,8 @@
         xmlns:engine="UnityEngine.UIElements"
         xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
     <engine:VisualElement name="Root" class="Root Block HorizontalStack">
-        <engine:Image name="Icon"/>
-        <engine:Label name="Id" />
+        <engine:Image name="Icon" class="SmallIcon"/>
+        <engine:Label name="Id" class="IdLabel" />
         <engine:Label name="Sources" />
         <engine:Label name="Version" class="HorizontalStackLeftElement"/>
     </engine:VisualElement>

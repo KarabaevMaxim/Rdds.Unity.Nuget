@@ -5,7 +5,7 @@
         xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
     
     <engine:TwoPaneSplitView name="Root">
-        <engine:VisualElement name="LeftPanel">
+        <engine:VisualElement name="LeftPanel" style="width: 200px;">
             <engine:VisualElement class="PanelHeader HorizontalStack Block">
                 <engine:TextField name="FilterTextField" class="StackExpanded2Element" />
                 <engine:VisualElement name="AssembliesPopupPlaceholder" class="StackExpandedElement" />
@@ -13,6 +13,7 @@
             </engine:VisualElement>
         </engine:VisualElement>
         <engine:ScrollView name="RightPanel">
+
         </engine:ScrollView>
     </engine:TwoPaneSplitView>
 </engine:UXML>

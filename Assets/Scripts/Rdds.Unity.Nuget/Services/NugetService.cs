@@ -62,8 +62,7 @@ namespace Rdds.Unity.Nuget.Services
       return foundPackages.Select(p => p.ToPackageInfo());
     }
 
-    [Obsolete("It doesn't always work")]
-    public async Task<PackageInfo> FindDependenciesAsync(PackageInfo packageInfo,
+    public async Task<IEnumerable<FrameworkGroup>> FindDependenciesAsync(PackageIdentity packageIdentity,
       CancellationToken cancellationToken)
     {
       var cacheContext = new SourceCacheContext();
@@ -72,19 +71,19 @@ namespace Rdds.Unity.Nuget.Services
       var dependencies = new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default);
       
       await FindPackageDependenciesRecursive(
-        packageInfo.Identity.ToNugetPackageIdentity(),
+        packageIdentity.ToNugetPackageIdentity(),
         currentFramework.ToNugetFramework(),
         cacheContext,
         repositories,
         dependencies,
         cancellationToken);
 
-      packageInfo.Dependencies = new []
+      return new []
       {
         new FrameworkGroup(currentFramework, dependencies.Select(d => d.ToPackageIdentity()))
       };
-      return packageInfo;
     }
+
 
     public Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, CancellationToken cancellationToken) => 
       GetPackageAsync(identity, SelectedSource, cancellationToken);

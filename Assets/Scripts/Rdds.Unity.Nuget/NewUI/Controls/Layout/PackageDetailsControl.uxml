@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:engine="UnityEngine.UIElements"
+        xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
+    <engine:VisualElement name="Root">
+        <engine:VisualElement name="Header" class="PanelHeader HorizontalStack Block">
+            <engine:Image name="Icon" class="SmallIcon" />
+            <engine:Label name="Id" class="IdLabel" />
+        </engine:VisualElement>
+        
+        <engine:VisualElement name="SubHeader" class="Block HorizontalStack ExpandedByWidth">
+            <engine:VisualElement name="VersionsPlaceholder" class="StackExpanded2Element" />
+            <engine:VisualElement name="SourcesPlaceholder" class="StackExpandedElement" />
+            <engine:Button name="UpdateInAllAssembliesButton" class="Button">
+                <engine:Image name="ButtonIcon" style="width: 100%; height: 100%;"/>
+            </engine:Button>
+            <engine:Button name="InstallRemoveInAllAssembliesButton" class="Button">
+                <engine:Image name="ButtonIcon" style="padding: 5px; width: 100%; height: 100%;"/>
+            </engine:Button>
+        </engine:VisualElement>
+        
+        <engine:Label name="DescriptionLabel" />
+        <engine:Foldout name="DependenciesPanel" text="Dependencies" value="false">
+            <engine:Label name="DependenciesLabel" />
+        </engine:Foldout>
+    </engine:VisualElement>
+</engine:UXML>

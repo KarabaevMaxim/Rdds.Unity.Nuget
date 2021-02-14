@@ -25,9 +25,8 @@ namespace Rdds.Unity.Nuget.Services
     Task<string?> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken);
 
     Task<IEnumerable<PackageVersion>> GetPackageVersionsAsync(string packageId, CancellationToken cancellationToken);
-
-    [Obsolete("It doesn't always work")]
-    Task<PackageInfo> FindDependenciesAsync(PackageInfo packageInfo,
+    
+    Task<IEnumerable<FrameworkGroup>> FindDependenciesAsync(PackageIdentity packageIdentity,
       CancellationToken cancellationToken);
   }
 }

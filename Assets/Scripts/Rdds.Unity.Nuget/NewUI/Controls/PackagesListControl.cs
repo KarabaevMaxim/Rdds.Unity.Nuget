@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Rdds.Unity.Nuget.NewUI.Controls.Models;
 using UnityEditor;
 using UnityEngine.UIElements;
 
@@ -15,7 +17,8 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
     private readonly VisualTreeAsset _rowTemplate;
     private readonly int _listViewHeight;
     private readonly List<PackageRowPresentationModel> _sourceItems;
-    
+    private readonly Action<PackageRowPresentationModel> _selectionChangeHandler;
+
     public string Title
     {
       get => _titleLabel.text;
@@ -38,11 +41,13 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
       };
       _listView.onSelectionChange += objects =>
       {
-        var models = objects.Cast<PackageRowPresentationModel>();
+        var selected = objects.Cast<PackageRowPresentationModel>().First();
+        _selectionChangeHandler.Invoke(selected);
       };
     }
 
-    public PackagesListControl(VisualElement parent, string title, int listViewHeight, List<PackageRowPresentationModel> sourceItems)
+    public PackagesListControl(VisualElement parent, string title, int listViewHeight, List<PackageRowPresentationModel> sourceItems,
+      Action<PackageRowPresentationModel> selectionChangeHandler)
     {
       var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.PackagesListControlLayout);
       var root = visualTree.CloneTree();
@@ -54,6 +59,7 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
 
       _listViewHeight = listViewHeight;
       _sourceItems = sourceItems;
+      _selectionChangeHandler = selectionChangeHandler;
       Title = title;
 
       Initialize();

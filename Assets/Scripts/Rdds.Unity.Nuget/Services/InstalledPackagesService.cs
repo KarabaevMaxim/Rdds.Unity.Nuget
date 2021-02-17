@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Exceptions;
+using Rdds.Unity.Nuget.Other;
 using Rdds.Unity.Nuget.Utility;
 
 namespace Rdds.Unity.Nuget.Services
@@ -63,8 +64,8 @@ namespace Rdds.Unity.Nuget.Services
       var package = _packagesFileService.RequirePackage(identity.Id);
       return identity.Version.Equals(PackageVersion.Parse(package.Version));
     }
-    
-    public async Task<bool> InstallPackageAsync(string packageDirectoryPath, string sourceKey)
+
+    public async Task<bool> InstallPackageAsync(string packageDirectoryPath, string sourceKey, string assemblyName)
     {
       var packageInfo = _nuspecFileService.GetPackageInfoFromNuspec(packageDirectoryPath);
 
@@ -74,17 +75,19 @@ namespace Rdds.Unity.Nuget.Services
         return false;
       }
       
-      // todo add dlls in Plugins
+      // todo add dlls in Plugins, add reference to dll in asmdef
       _packagesFileService.AddOrUpdatePackage(packageInfo.Identity, sourceKey, packageDirectoryPath);
+      _packagesFileService.InstallPackageInAssembly(packageInfo.Identity.Id, assemblyName);
       await _packagesFileService.SavePackagesFileAsync();
       return true;
     }
     
-    public async Task<bool> RemovePackageAsync(PackageIdentity identity)
+    public async Task<bool> RemovePackageAsync(PackageIdentity identity, string assemblyName)
     {
       // todo remove dlls from Plugins
       try
       {
+        _packagesFileService.RemovePackageFromAssembly(identity.Id, assemblyName);
         _packagesFileService.RemovePackage(identity);
       }
       catch (PackageNotInstalledException ex)

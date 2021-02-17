@@ -25,6 +25,12 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
       set => _titleLabel.text = value;
     }
 
+    public void Refresh(List<PackageRowPresentationModel> sourceItems)
+    {
+      _listView.itemsSource = sourceItems;
+      _listView.Refresh();
+    }
+
     private void Initialize()
     {
       _listView.style.height = new StyleLength(_listViewHeight);
@@ -34,10 +40,11 @@ namespace Rdds.Unity.Nuget.NewUI.Controls
       _listView.itemsSource = _sourceItems;
       _listView.bindItem += (element, i) =>
       {
-        element.Q<Image>("Icon").image = _sourceItems[i].Icon;
-        element.Q<Label>("Id").text = _sourceItems[i].Id;
-        element.Q<Label>("Sources").text = string.Join(", " , _sourceItems[i].Sources);
-        element.Q<Label>("Version").text = _sourceItems[i].Version;
+        var model = (PackageRowPresentationModel)_listView.itemsSource[i];
+        element.Q<Image>("Icon").image = model.Icon;
+        element.Q<Label>("Id").text = model.Id;
+        element.Q<Label>("Sources").text = string.Join(", " , model.Sources);
+        element.Q<Label>("Version").text = model.Version;
       };
       _listView.onSelectionChange += objects =>
       {

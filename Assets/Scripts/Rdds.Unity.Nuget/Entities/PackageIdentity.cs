@@ -11,5 +11,11 @@
       Id = id;
       Version = version;
     }
+
+    public PackageIdentity(string id, string version)
+    {
+      Id = id;
+      Version = PackageVersion.Parse(version);
+    }
   }
 }

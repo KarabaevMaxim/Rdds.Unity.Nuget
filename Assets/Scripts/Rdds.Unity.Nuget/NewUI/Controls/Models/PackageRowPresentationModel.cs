@@ -12,13 +12,16 @@ namespace Rdds.Unity.Nuget.NewUI.Controls.Models
     public Texture Icon { get; }
 
     public List<string> Sources { get; }
+    
+    public IEnumerable<string> InstalledInAssemblies { get; }
 
-    public PackageRowPresentationModel(string id, string version, Texture icon, List<string> sources)
+    public PackageRowPresentationModel(string id, string version, Texture icon, List<string> sources, IEnumerable<string> installedInAssemblies)
     {
       Icon = icon;
       Id = id;
       Version = version;
       Sources = sources;
+      InstalledInAssemblies = installedInAssemblies;
     }
   }
 }

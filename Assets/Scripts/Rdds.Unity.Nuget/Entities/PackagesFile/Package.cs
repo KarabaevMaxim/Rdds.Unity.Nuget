@@ -1,4 +1,6 @@
-﻿namespace Rdds.Unity.Nuget.Entities.PackagesFile
+﻿using System.Collections.Generic;
+
+namespace Rdds.Unity.Nuget.Entities.PackagesFile
 {
   public class Package
   {
@@ -10,12 +12,15 @@
     
     public string Path { get; }
 
-    public Package(string id, string version, string source, string path)
+    public List<string> InstalledInAssemblies { get; }
+
+    public Package(string id, string version, string source, string path, List<string> installedInAssemblies)
     {
       Id = id;
       Version = version;
       Source = source;
       Path = path;
+      InstalledInAssemblies = installedInAssemblies;
     }
   }
 }

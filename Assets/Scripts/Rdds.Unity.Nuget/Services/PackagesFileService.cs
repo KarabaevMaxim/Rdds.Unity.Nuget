@@ -57,6 +57,28 @@ namespace Rdds.Unity.Nuget.Services
       await SavePackagesFileAsync();
     }
 
+    public void InstallPackageInAssembly(string packageId, string assemblyName)
+    {
+      var foundPackage = RequirePackage(packageId);
+      
+      if (foundPackage.InstalledInAssemblies.Contains(assemblyName))
+        // todo throw PackageAlreadyInstalled exception?
+        return;
+
+      foundPackage.InstalledInAssemblies.Add(assemblyName);
+    }
+    
+    public void RemovePackageFromAssembly(string packageId, string assemblyName)
+    {
+      var foundPackage = RequirePackage(packageId);
+      
+      if (!foundPackage.InstalledInAssemblies.Contains(assemblyName))
+        // todo throw PackageNotInstalled exception?
+        return;
+
+      foundPackage.InstalledInAssemblies.Remove(assemblyName);
+    }
+    
     public void AddOrUpdatePackage(PackageIdentity identity, string sourceKey, string packageDirectoryPath)
     {
       if (!Directory.Exists(packageDirectoryPath))
@@ -66,8 +88,9 @@ namespace Rdds.Unity.Nuget.Services
 
       if (foundPackage != null) 
          RemovePackage(foundPackage);
-      
-      _packages.PackagesList.Add(new Package(identity.Id, identity.Version.ToString(), sourceKey, packageDirectoryPath));
+
+      _packages.PackagesList.Add(new Package(identity.Id, identity.Version.ToString(), sourceKey, packageDirectoryPath,
+        foundPackage?.InstalledInAssemblies ?? new List<string>()));
     }
 
     public void RemovePackage(PackageIdentity identity)
@@ -116,7 +139,7 @@ namespace Rdds.Unity.Nuget.Services
       issues.Insert(0, $"Found issues with {_packagesFileName} file:{Environment.NewLine}");
       LogHelper.LogWarning(issues.ToString());
     }
-    
+
     public PackagesFileService(FileService fileService) => _fileService = fileService;
   }
 }

@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
 
 namespace Rdds.Unity.Nuget.Services.New.Configs
 {
   internal class LocalPackagesConfigService : IConfigService
   {
-    public void LoadConfigFile()
+    public Task LoadConfigFileAsync()
     {
       // Загружает конфиг
       // Десериализует полученные данные

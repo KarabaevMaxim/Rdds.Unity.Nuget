@@ -1,57 +1,76 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Exceptions;
+using Rdds.Unity.Nuget.Services.New.Configs.Models;
+using Rdds.Unity.Nuget.Utility;
 
 namespace Rdds.Unity.Nuget.Services.New.Configs
 {
   internal class InstalledPackagesConfigService : IConfigService
   {
-    private readonly List<InstalledPackageInfo> _installedPackages = new List<InstalledPackageInfo>();
+    private readonly FileService _fileService;
+    private const string ConfigName = "InstalledPackages.json";
+    
+    private List<InstalledPackageInfo> _installedPackages = new List<InstalledPackageInfo>();
 
     public IReadOnlyList<InstalledPackageInfo> InstalledPackages => _installedPackages;
-    
-    public void LoadConfigFile()
+
+    public async Task LoadConfigFileAsync()
     {
-      throw new NotImplementedException();
+      var json = await _fileService.ReadFromFileAsync(ConfigName, CancellationToken.None);
+
+      if (json == null)
+      {
+        LogHelper.LogWarning($"{ConfigName} file not found, a new file will be created");
+        await SaveDefaultConfigFileAsync();
+        return;
+      }
+      
+      try
+      {
+        _installedPackages = JsonConvert.DeserializeObject<List<InstalledPackageInfo>>(json!);
+      }
+      catch (JsonException ex)
+      {
+        LogHelper.LogWarningException($"An error occurred while reading {ConfigName} file, a new file will be created", ex);
+        await SaveDefaultConfigFileAsync();
+      }
     }
 
-    public void SaveConfigFile()
+    public async Task SaveConfigFileAsync()
     {
-      throw new NotImplementedException();
+      var json = JsonConvert.SerializeObject(_installedPackages);
+      await _fileService.WriteToFileAsync(ConfigName, json);
     }
     
-    public void AddInstalledPackage(PackageIdentity identity, IEnumerable<string> installedInAssemblies, IEnumerable<string> dllNames)
-    {
-      // Добавляет запись вида:
-      //{
-      // id: identity.Id,
-      // version: identity.Version,
-      // assemblies: [<assemblies>],
-      // dllNames: [<dllNames>]
-      //}
-    }
+    public void AddInstalledPackage(PackageIdentity identity, List<string> installedInAssemblies, IEnumerable<string> dllNames) => 
+      _installedPackages.Add(new InstalledPackageInfo(identity.Id, identity.Version.ToString(), installedInAssemblies, dllNames));
 
     public void AddPackageToAssemblies(string packageId, IEnumerable<string> installedInAssemblies)
     {
+      var package = RequireInstalledPackage(packageId);
+      package.InstalledInAssemblies.AddRange(installedInAssemblies);
     }
     
-    public bool RemoveInstalledPackage(PackageIdentity identity, IEnumerable<string> assemblies)
+    public bool RemoveInstalledPackage(string packageId, IEnumerable<string> assemblies)
     {
-      // Находит запись с указанным id
-      // Удаляет переданные assemblies из сохраненных assemblies
-      // Если в списке на удаление есть сборки, которых нет в сохраненных, то бросить исключение PackageNotInstalled
-      // Если в результате список сборок станет пустым, то удалить всю запись пакета
-      // Если удалили всю записть, то вернуть true, иначе false
-      throw new NotImplementedException();
+      var package = RequireInstalledPackage(packageId);
+      package.InstalledInAssemblies.RemoveAll(assemblies.Contains);
+
+      if (package.InstalledInAssemblies.Count == 0)
+      {
+        _installedPackages.Remove(package);
+        return true;
+      }
+
+      return false;
     }
 
-    public IEnumerable<string> RequireDllNames(string packageId)
-    {
-      // Возвращает свойство dllNames
-      throw new NotImplementedException();
-    }
+    public IEnumerable<string> RequireDllNames(string packageId) => RequireInstalledPackage(packageId).DllNames;
 
     public InstalledPackageInfo RequireInstalledPackage(string packageId)
     {
@@ -63,28 +82,15 @@ namespace Rdds.Unity.Nuget.Services.New.Configs
       return package;
     }
 
-    public InstalledPackageInfo? GetInstalledPackage(string packageId)
+    public InstalledPackageInfo? GetInstalledPackage(string packageId) => 
+      _installedPackages.FirstOrDefault(p => p.Id == packageId);
+
+    private async Task SaveDefaultConfigFileAsync()
     {
-      return _installedPackages.FirstOrDefault(p => p.Id == packageId);
+      _installedPackages = new List<InstalledPackageInfo>();
+      await SaveConfigFileAsync();
     }
 
-    public class InstalledPackageInfo
-    {
-      public string Id { get; }
-      
-      public string Version { get; }
-      
-      public IEnumerable<string> InstalledInAssemblies { get; }
-      
-      public IEnumerable<string> DllNames { get; }
-
-      public InstalledPackageInfo(string id, string version, IEnumerable<string> installedInAssemblies, IEnumerable<string> dllNames)
-      {
-        Id = id;
-        Version = version;
-        InstalledInAssemblies = installedInAssemblies;
-        DllNames = dllNames;
-      }
-    }
+    public InstalledPackagesConfigService(FileService fileService) => _fileService = fileService;
   }
 }

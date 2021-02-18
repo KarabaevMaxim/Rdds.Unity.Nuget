@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Rdds.Unity.Nuget.NewUI.Controls.Models
+namespace Rdds.Unity.Nuget.New.UI.Controls.Models
 {
   /// <summary>
   /// Presentation model for assembly row in details panel of package.

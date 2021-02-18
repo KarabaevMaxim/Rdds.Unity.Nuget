@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rdds.Unity.Nuget.NewUI.Controls.Models;
+using Rdds.Unity.Nuget.New.UI.Controls.Models;
 using UnityEditor;
 using UnityEngine.UIElements;
 
-namespace Rdds.Unity.Nuget.NewUI.Controls
+namespace Rdds.Unity.Nuget.New.UI.Controls
 {
   internal class PackagesListControl
   {

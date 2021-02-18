@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Rdds.Unity.Nuget.NewUI
+namespace Rdds.Unity.Nuget.New.UI
 {
   public static class Paths
   {
@@ -9,10 +9,10 @@ namespace Rdds.Unity.Nuget.NewUI
     public static string InstallPackageButtonIconResourceName { get; } = "InstallIcon";
     public static string RemovePackageButtonIconResourceName { get; } = "RemoveIcon";
 
-    public static string LayoutRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/NewUI/Layout";
-    public static string StylesRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/NewUI/Layout/Styles";
-    public static string LayoutControlsRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/NewUI/Controls/Layout";
-    public static string StylesControlsRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/NewUI/Controls/Layout/Styles";
+    public static string LayoutRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/New/UI/Layout";
+    public static string StylesRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/New/UI/Layout/Styles";
+    public static string LayoutControlsRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/New/UI/Controls/Layout";
+    public static string StylesControlsRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/New/UI/Controls/Layout/Styles";
     
     public static string Styles { get; } = Path.Combine(StylesRootPath, "Styles.uss");
     public static string PackageDetailsStyles { get; } = Path.Combine(StylesControlsRootPath, "PackageDetailsStyles.uss");

@@ -2,13 +2,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using Rdds.Unity.Nuget.NewUI.Controls.Models;
+using Rdds.Unity.Nuget.New.UI.Controls.Models;
 using Rdds.Unity.Nuget.Utility;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
-namespace Rdds.Unity.Nuget.NewUI.Controls
+namespace Rdds.Unity.Nuget.New.UI.Controls
 {
   internal class PackageDetailsControl
   {

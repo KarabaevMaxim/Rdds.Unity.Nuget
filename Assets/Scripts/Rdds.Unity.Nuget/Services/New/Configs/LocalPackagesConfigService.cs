@@ -11,6 +11,7 @@ namespace Rdds.Unity.Nuget.Services.New.Configs
       // Загружает конфиг
       // Десериализует полученные данные
       // Если конфиг не найден или сломан, то создать пустой по-умолчанию
+      throw new NotImplementedException();
     }
     
     public string? GetPackagePath(PackageIdentity identity)

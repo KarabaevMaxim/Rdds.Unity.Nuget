@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Rdds.Unity.Nuget.NewUI.Controls.Models
+namespace Rdds.Unity.Nuget.New.UI.Controls.Models
 {
   internal class DependenciesPresentationModel
   {

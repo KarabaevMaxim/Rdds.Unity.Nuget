@@ -5,6 +5,7 @@ using System.Linq;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.New.Services.Configs;
 using Rdds.Unity.Nuget.Services;
+using Rdds.Unity.Nuget.Utility;
 using UnityEditor;
 
 namespace Rdds.Unity.Nuget.New.Services
@@ -27,9 +28,9 @@ namespace Rdds.Unity.Nuget.New.Services
     {
       foreach (var dll in dllPaths)
       {
-        var importer = (PluginImporter) AssetImporter.GetAtPath(dll);
+        var importer = AssetImporter.GetAtPath(dll);
+        ReflectionHelper.SetPrivateProperty(importer, "ValidateReferences", false);
       }
-      throw new NotImplementedException();
     }
 
     public bool RemoveDlls(IEnumerable<string> dllNames)

@@ -24,7 +24,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     private async void OnRemoveButtonClicked()
     {
-      var result = await _installedPackagesService.RemovePackageAsync(PackageInfo.Identity);
+      var result = await _installedPackagesService.RemovePackageAsync(PackageInfo.Identity, null);
 
       if (result)
         RemoveFromLayout();

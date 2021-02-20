@@ -4,16 +4,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rdds.Unity.Nuget.Entities;
-using Rdds.Unity.Nuget.Exceptions;
-using Rdds.Unity.Nuget.Services.New.Configs.Models;
+using Rdds.Unity.Nuget.New.Exceptions;
+using Rdds.Unity.Nuget.New.Services.Configs.Models;
+using Rdds.Unity.Nuget.Services;
 using Rdds.Unity.Nuget.Utility;
 
-namespace Rdds.Unity.Nuget.Services.New.Configs
+namespace Rdds.Unity.Nuget.New.Services.Configs
 {
-  internal class InstalledPackagesConfigService : IConfigService
+  internal class InstalledPackagesConfigService
   {
-    private readonly FileService _fileService;
     private const string ConfigName = "InstalledPackages.json";
+    
+    private readonly FileService _fileService;
     
     private List<InstalledPackageInfo> _installedPackages = new List<InstalledPackageInfo>();
 
@@ -32,7 +34,7 @@ namespace Rdds.Unity.Nuget.Services.New.Configs
       
       try
       {
-        _installedPackages = JsonConvert.DeserializeObject<List<InstalledPackageInfo>>(json!);
+        _installedPackages = JsonConvert.DeserializeObject<List<InstalledPackageInfo>>(json);
       }
       catch (JsonException ex)
       {
@@ -84,7 +86,8 @@ namespace Rdds.Unity.Nuget.Services.New.Configs
 
     public InstalledPackageInfo? GetInstalledPackage(string packageId) => 
       _installedPackages.FirstOrDefault(p => p.Id == packageId);
-
+    
+    
     private async Task SaveDefaultConfigFileAsync()
     {
       _installedPackages = new List<InstalledPackageInfo>();

@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using NuGet.Common;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Utility;
 using PackageIdentity = Rdds.Unity.Nuget.Entities.PackageIdentity;
 
-namespace Rdds.Unity.Nuget.Services
+namespace Rdds.Unity.Nuget.New.Services
 {
   internal class NuspecFileService
   {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Rdds.Unity.Nuget.Services.New.Configs.Models
+namespace Rdds.Unity.Nuget.New.Services.Configs.Models
 {
   public class InstalledPackageInfo
   {

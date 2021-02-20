@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Rdds.Unity.Nuget.Exceptions
+namespace Rdds.Unity.Nuget.New.Exceptions
 {
   public class PackageNotInstalledException : Exception
   {

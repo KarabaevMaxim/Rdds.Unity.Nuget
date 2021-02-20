@@ -30,6 +30,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
       InitializeSources();
       InitializeAssemblies();
       await _installedPackagesPresenter.InitializeAsync();
+      _availablePackagesPresenter.Initialize();
     }
     
     private void SelectPackageRow(PackageRowPresentationModel selected)

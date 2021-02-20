@@ -4,7 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using Rdds.Unity.Nuget.Entities;
-using Rdds.Unity.Nuget.Exceptions;
+using Rdds.Unity.Nuget.New.Exceptions;
+using Rdds.Unity.Nuget.New.Services;
 using Rdds.Unity.Nuget.Other;
 using Rdds.Unity.Nuget.Utility;
 

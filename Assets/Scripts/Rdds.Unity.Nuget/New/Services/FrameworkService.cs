@@ -2,7 +2,7 @@
 using Rdds.Unity.Nuget.Entities;
 using UnityEditor;
 
-namespace Rdds.Unity.Nuget.Services
+namespace Rdds.Unity.Nuget.New.Services
 {
   public class FrameworkService
   {

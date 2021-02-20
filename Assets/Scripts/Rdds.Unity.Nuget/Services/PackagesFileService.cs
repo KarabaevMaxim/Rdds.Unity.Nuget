@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.PackagesFile;
-using Rdds.Unity.Nuget.Exceptions;
+using Rdds.Unity.Nuget.New.Exceptions;
+using Rdds.Unity.Nuget.New.Services;
 using Rdds.Unity.Nuget.Utility;
 
 namespace Rdds.Unity.Nuget.Services

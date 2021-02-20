@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
+using Rdds.Unity.Nuget.Utility;
 
-namespace Rdds.Unity.Nuget.Services
+namespace Rdds.Unity.Nuget.New.Services
 {
   public class FileService
   {
@@ -92,9 +93,17 @@ namespace Rdds.Unity.Nuget.Services
     {
       if (!File.Exists(filePath))
         return false;
-      
-      File.Delete(filePath);
-      return true;
+
+      try
+      {
+        File.Delete(filePath);
+        return true;
+      }
+      catch (IOException ex)
+      {
+        LogHelper.LogWarningException($"Failed remove file {filePath}", ex);
+        return false;
+      }
     }
 
     public string GetNupkgTempFilePath(PackageIdentity identity) => 
@@ -103,5 +112,38 @@ namespace Rdds.Unity.Nuget.Services
     public IEnumerable<string> FindFiles(string directory, string extension, bool recursive) =>
       Directory.EnumerateFiles(directory, $"*.{extension}",
         recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+
+    public IEnumerable<string> CopyFilesFromDirectory(string directory, string extension, string destinationDirectory)
+    {
+      var files = FindFiles(directory, extension, false);
+      var copiedFiles = new List<string>();
+      
+      foreach (var file in files)
+      {
+        var newFilePath = CopyFile(file, destinationDirectory);
+
+        if (newFilePath != null) 
+          copiedFiles.Add(file);
+      }
+
+      return copiedFiles;
+    }
+
+    public string? CopyFile(string sourceFile, string destinationDirectory)
+    {
+      var newFilePath = Path.Combine(destinationDirectory, Path.GetFileName(sourceFile));
+      
+      try
+      {
+        File.Copy(sourceFile, newFilePath);
+      }
+      catch (IOException ex)
+      {
+        LogHelper.LogWarningException($"Couldn't copy file {sourceFile} to destination {destinationDirectory}", ex);
+        return null;
+      }
+      
+      return newFilePath;
+    }
   }
 }

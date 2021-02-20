@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Rdds.Unity.Nuget.Entities
 {
@@ -11,5 +12,8 @@ namespace Rdds.Unity.Nuget.Entities
     public bool OverrideReferences { get; set; }
     
     public List<string>? PrecompiledReferences { get; set; }
+
+    [JsonIgnore] 
+    public string Path { get; set; } = null!;
   }
 }

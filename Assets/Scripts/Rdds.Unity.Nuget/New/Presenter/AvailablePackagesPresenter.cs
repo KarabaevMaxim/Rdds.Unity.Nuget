@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Rdds.Unity.Nuget.New.UI;
+using Rdds.Unity.Nuget.New.UI.Controls.Models;
 using Rdds.Unity.Nuget.Other;
 
 namespace Rdds.Unity.Nuget.New.Presenter
@@ -8,6 +10,11 @@ namespace Rdds.Unity.Nuget.New.Presenter
   {
     private readonly IMainWindow _mainWindow;
 
+    public void Initialize()
+    {
+      _mainWindow.AvailablePackages = new List<PackageRowPresentationModel>();
+    }
+    
     public void FilterById(string idPart)
     {
       var filtered = _mainWindow.AvailablePackages

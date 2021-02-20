@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Rdds.Unity.Nuget.Entities;
 
-namespace Rdds.Unity.Nuget.Services.New
+namespace Rdds.Unity.Nuget.New.Services
 {
   internal class RemotePackagesService
   {

@@ -132,7 +132,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     private async void OnRemoveButtonClickedAsync()
     {
-      var result = await _installedPackagesService.RemovePackageAsync(PackageInfo.Identity);
+      var result = await _installedPackagesService.RemovePackageAsync(PackageInfo.Identity, null);
 
       if (result)
         ToDefaultState();
@@ -180,7 +180,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     private Task<bool> InstallPackageAsync(string packageDirectoryPath)
     {
-      var task = _installedPackagesService.InstallPackageAsync(packageDirectoryPath, _nugetService.SelectedSource.Key);
+      var task = _installedPackagesService.InstallPackageAsync(packageDirectoryPath, _nugetService.SelectedSource.Key, null);
       return DialogHelper.ShowLoadingAsync("Installing...", "Wait while package installing", task);
     }
     

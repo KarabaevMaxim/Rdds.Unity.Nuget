@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Rdds.Unity.Nuget.Entities.NugetConfig;
-using Rdds.Unity.Nuget.New.Services;
 
-namespace Rdds.Unity.Nuget.Services
+namespace Rdds.Unity.Nuget.New.Services.Configs
 {
   public class NugetConfigService
   {
@@ -28,9 +29,10 @@ namespace Rdds.Unity.Nuget.Services
     public NugetPackageSource RequireDefaultPackageSource() => _configFile.PackageSources.First();
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-    public void LoadConfigFile()
+    public async Task LoadConfigFileAsync()
     {
-      var configContent = _fileService.ReadFile(_defaultGlobalConfigFilePath)!;
+      var configContent = (await _fileService.ReadFromFileAsync(_defaultGlobalConfigFilePath, CancellationToken.None))!;
+      // todo handle the lack of nugetconfig file
       var document = XDocument.Parse(configContent);
       var root = document.Root!;
       var sourcesNode = root.Element("packageSources")!;

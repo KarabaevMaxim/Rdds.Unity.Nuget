@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
@@ -18,8 +19,11 @@ namespace Rdds.Unity.Nuget.New.Presenter
     #region Fields
 
     private readonly IMainWindow _mainWindow;
+    private readonly PackagesFileService _packagesFileService;
     private readonly InstalledPackagesConfigService _installedPackagesConfigService;
     private readonly LocalPackagesConfigService _localPackagesConfigService;
+    private readonly NugetConfigService _nugetConfigService;
+    private readonly AssembliesService _assembliesService;
 
     private readonly InstalledPackagesPresenter _installedPackagesPresenter;
     private readonly AvailablePackagesPresenter _availablePackagesPresenter;
@@ -34,8 +38,12 @@ namespace Rdds.Unity.Nuget.New.Presenter
     {
       await _installedPackagesConfigService.LoadConfigFileAsync();
       await _localPackagesConfigService.LoadConfigFileAsync();
+      await _nugetConfigService.LoadConfigFileAsync();
+      await _packagesFileService.LoadConfigFileAsync();
+      
       InitializeSources();
-      InitializeAssemblies();
+      await InitializeAssembliesAsync();
+      
       await _installedPackagesPresenter.InitializeAsync();
       _availablePackagesPresenter.Initialize();
     }
@@ -124,21 +132,30 @@ namespace Rdds.Unity.Nuget.New.Presenter
 
     private void InitializeSources()
     {
-      _mainWindow.Sources = new List<string> { AllSources };
+      var sources = new List<string> { AllAssemblies };
+      sources.AddRange(_nugetConfigService.RequireAvailableSources());
+      _mainWindow.Sources = sources;
     }
 
-    private void InitializeAssemblies()
+    private async Task InitializeAssembliesAsync()
     {
-      _mainWindow.Assemblies = new List<string> { AllAssemblies };
+      var assemblies = new List<string> { AllAssemblies };
+      assemblies.AddRange((await _assembliesService.RequireAllAssembliesAsync()).Select(a => a.Name));
+      _mainWindow.Assemblies = assemblies;
     }
 
     public MainWindowPresenter(IMainWindow mainWindow, LocalPackagesService localPackagesService,
       PackagesFileService packagesFileService, InstalledPackagesConfigService installedPackagesConfigService, 
-      LocalPackagesConfigService localPackagesConfigService)
+      LocalPackagesConfigService localPackagesConfigService,
+      NugetConfigService nugetConfigService,
+      AssembliesService assembliesService)
     {
       _mainWindow = mainWindow;
+      _packagesFileService = packagesFileService;
       _installedPackagesConfigService = installedPackagesConfigService;
       _localPackagesConfigService = localPackagesConfigService;
+      _nugetConfigService = nugetConfigService;
+      _assembliesService = assembliesService;
       _installedPackagesPresenter = new InstalledPackagesPresenter(_mainWindow, localPackagesService, packagesFileService, _installedPackagesConfigService);
       _availablePackagesPresenter = new AvailablePackagesPresenter(_mainWindow);
       _packageDetailsPresenter = new PackageDetailsPresenter(_mainWindow.PackageDetailsControl);

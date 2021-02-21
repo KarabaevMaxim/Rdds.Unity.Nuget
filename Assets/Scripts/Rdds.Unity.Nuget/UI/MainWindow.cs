@@ -7,6 +7,7 @@ using UnityEngine.UIElements;
 
 namespace Rdds.Unity.Nuget.UI
 {
+  [Obsolete]
   public class MainWindow : EditorWindow
   {
     #region Unity methods
@@ -20,8 +21,8 @@ namespace Rdds.Unity.Nuget.UI
     
     private async void OnEnable()
     {
-      EditorContext.NugetConfigService.LoadConfigFile();
-      await EditorContext.PackagesFileService.LoadPackagesFileAsync();
+      await EditorContext.NugetConfigService.LoadConfigFileAsync();
+      await EditorContext.PackagesFileService.LoadConfigFileAsync();
       
       InitializeLayout();
     }

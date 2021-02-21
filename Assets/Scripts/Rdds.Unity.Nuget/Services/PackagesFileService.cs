@@ -14,6 +14,7 @@ using Rdds.Unity.Nuget.Utility;
 
 namespace Rdds.Unity.Nuget.Services
 {
+  [Obsolete]
   internal class PackagesFileService
   {
     private readonly FileService _fileService;
@@ -28,7 +29,7 @@ namespace Rdds.Unity.Nuget.Services
       await _fileService.WriteToFileAsync(_packagesFileName, json);
     }
     
-    public async Task LoadPackagesFileAsync()
+    public async Task LoadConfigFileAsync()
     {
       var json = await _fileService.ReadFromFileAsync(_packagesFileName, CancellationToken.None);
 

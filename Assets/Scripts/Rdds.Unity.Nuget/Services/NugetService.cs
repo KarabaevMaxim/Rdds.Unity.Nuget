@@ -12,6 +12,7 @@ using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.NugetConfig;
 using Rdds.Unity.Nuget.New.Services;
+using Rdds.Unity.Nuget.New.Services.Configs;
 using Rdds.Unity.Nuget.Utility;
 using UnityEditor;
 using PackageIdentity = Rdds.Unity.Nuget.Entities.PackageIdentity;

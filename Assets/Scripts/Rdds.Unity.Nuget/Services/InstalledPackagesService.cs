@@ -6,6 +6,7 @@ using NuGet.Common;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.New.Exceptions;
 using Rdds.Unity.Nuget.New.Services;
+using Rdds.Unity.Nuget.New.Services.Configs;
 using Rdds.Unity.Nuget.Other;
 using Rdds.Unity.Nuget.Utility;
 

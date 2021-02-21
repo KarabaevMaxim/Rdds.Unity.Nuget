@@ -14,13 +14,15 @@ namespace Rdds.Unity.Nuget.New.UI
     [MenuItem("Rdds/New Unity.Nuget")]
     public static async void ShowNugetWindow()
     {
-      EditorContext.NugetConfigService.LoadConfigFile();
-      await EditorContext.PackagesFileService.LoadPackagesFileAsync();
+      await EditorContext.PackagesFileService.LoadConfigFileAsync();
       
       var wnd = EditorWindow.GetWindow<MainWindow>();
       wnd.titleContent = new GUIContent("Nuget package manager");
-      _mainWindowPresenter = new MainWindowPresenter(wnd, EditorContext.LocalPackagesService, EditorContext.PackagesFileService,
-        EditorContext.InstalledPackagesConfigService, EditorContext.LocalPackagesConfigService);
+      _mainWindowPresenter = new MainWindowPresenter(wnd, EditorContext.LocalPackagesService, 
+        EditorContext.PackagesFileService,
+        EditorContext.InstalledPackagesConfigService, EditorContext.LocalPackagesConfigService, 
+        EditorContext.NugetConfigService, 
+        EditorContext.AssembliesService);
       await _mainWindowPresenter.InitializeAsync();
     }
   }

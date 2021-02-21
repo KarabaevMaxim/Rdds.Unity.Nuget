@@ -19,17 +19,19 @@ namespace Rdds.Unity.Nuget.Services
 
     public async Task<IEnumerable<AssemblyModel>> RequireAllAssembliesAsync()
     {
-      var tasks = _fileService.FindFiles(CodeRootDirectory, "asmdef", true).Select(async f =>
+      var tasks = _fileService.FindFiles(CodeRootDirectory, "asmdef", true).Select(async filePath =>
       {
-        var json = await _fileService.RequireFileContentAsync(f, CancellationToken.None);
+        var json = await _fileService.RequireFileContentAsync(filePath, CancellationToken.None);
 
         try
         {
-          return JsonConvert.DeserializeObject<AssemblyModel>(json);
+          var assembly = JsonConvert.DeserializeObject<AssemblyModel>(json);
+          assembly.Path = filePath;
+          return assembly;
         }
         catch (JsonException ex)
         {
-          LogHelper.LogWarningException($"Failed parse asmdef file {f}", ex);
+          LogHelper.LogWarningException($"Failed parse .asmdef file {filePath}", ex);
           return null;
         }
       });
@@ -57,10 +59,8 @@ namespace Rdds.Unity.Nuget.Services
 
       foreach (var assembly in assemblies)
       {
-        if (await AddDllReferencesInternalAsync(assembly, dllPaths))
-        {
+        if (await AddDllReferencesInternalAsync(assembly, dllPaths)) 
           changedAssemblies.Add(assembly.Path);
-        }
       }
 
       return changedAssemblies;

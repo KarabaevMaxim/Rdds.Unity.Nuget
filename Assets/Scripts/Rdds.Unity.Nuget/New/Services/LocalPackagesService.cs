@@ -14,7 +14,7 @@ namespace Rdds.Unity.Nuget.New.Services
     private readonly InstalledPackagesConfigService _installedPackagesConfigService;
     private readonly LocalPackagesConfigService _localPackagesConfigService;
     private readonly NuspecFileService _nuspecFileService;
-    private readonly DllFileService _dllFileService;
+    private readonly DllFilesService _dllFilesService;
     private readonly AssembliesService _assembliesService;
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
@@ -24,13 +24,12 @@ namespace Rdds.Unity.Nuget.New.Services
 
       if (path == null)
       {
-        LogHelper.LogWarning($"Package{identity.Id} {identity.Version} not downloaded");
+        LogHelper.LogWarning($"Package {identity.Id} {identity.Version} not downloaded");
         return false;
       }
-
-
-      var dlls = _dllFileService.CopyDlls(identity, targetFramework);
-      _dllFileService.ConfigureDlls(dlls);
+      
+      var dlls = _dllFilesService.CopyDlls(identity, targetFramework);
+      _dllFilesService.ConfigureDlls(dlls);
       var changedAssemblies= await _assembliesService.AddDllReferencesAsync(assembliesToInstall, dlls);
       _installedPackagesConfigService.AddInstalledPackage(identity, changedAssemblies.ToList(), dlls);
       await _installedPackagesConfigService.SaveConfigFileAsync();
@@ -47,31 +46,32 @@ namespace Rdds.Unity.Nuget.New.Services
       var result = true;
       
       if (needRemoveDlls) 
-        result &= _dllFileService.RemoveDlls(dllNames);
+        result &= _dllFilesService.RemoveDlls(dllNames);
 
       return result;
     }
 
     public IEnumerable<PackageIdentity> RequireInstalledPackages() => 
       _installedPackagesConfigService.InstalledPackages.Select(p => new PackageIdentity(p.Id, p.Version));
+    
 
-    public PackageInfo RequireInstalledPackageInfo(string packageId)
+    public Task<PackageInfo> RequireInstalledPackageInfoAsync(string packageId)
     {
       var package = _installedPackagesConfigService.RequireInstalledPackage(packageId);
       var path = _localPackagesConfigService.RequirePackagePath(new PackageIdentity(package.Id, package.Version));
-      return _nuspecFileService.RequirePackageInfoFromNuspec(path);
+      return _nuspecFileService.RequirePackageInfoFromNuspecAsync(path);
     }
 
     public LocalPackagesService(InstalledPackagesConfigService installedPackagesConfigService,
       LocalPackagesConfigService localPackagesConfigService,
       NuspecFileService nuspecFileService,
-      DllFileService dllFileService,
+      DllFilesService dllFilesService,
       AssembliesService assembliesService)
     {
       _installedPackagesConfigService = installedPackagesConfigService;
       _localPackagesConfigService = localPackagesConfigService;
       _nuspecFileService = nuspecFileService;
-      _dllFileService = dllFileService;
+      _dllFilesService = dllFilesService;
       _assembliesService = assembliesService;
     }
   }

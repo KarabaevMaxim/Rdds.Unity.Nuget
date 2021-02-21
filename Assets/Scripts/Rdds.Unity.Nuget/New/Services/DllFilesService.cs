@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.New.Services.Configs;
-using Rdds.Unity.Nuget.Services;
 using Rdds.Unity.Nuget.Utility;
 using UnityEditor;
 
 namespace Rdds.Unity.Nuget.New.Services
 {
-  internal class DllFileService
+  internal class DllFilesService
   {
     private readonly string _dllsDirectory = Path.Combine("Assets", "Plugins");
     private readonly FileService _fileService;
@@ -43,7 +41,7 @@ namespace Rdds.Unity.Nuget.New.Services
       return result;
     }
 
-    public DllFileService(FileService fileService, LocalPackagesConfigService localPackagesConfigService)
+    public DllFilesService(FileService fileService, LocalPackagesConfigService localPackagesConfigService)
     {
       _fileService = fileService;
       _localPackagesConfigService = localPackagesConfigService;

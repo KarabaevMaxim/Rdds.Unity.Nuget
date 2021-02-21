@@ -2,8 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
+using Rdds.Unity.Nuget.New.Services;
+using Rdds.Unity.Nuget.New.Services.Configs;
 using Rdds.Unity.Nuget.New.UI;
 using Rdds.Unity.Nuget.New.UI.Controls.Models;
+using Rdds.Unity.Nuget.Services;
 
 namespace Rdds.Unity.Nuget.New.Presenter
 {
@@ -15,7 +18,9 @@ namespace Rdds.Unity.Nuget.New.Presenter
     #region Fields
 
     private readonly IMainWindow _mainWindow;
-    
+    private readonly InstalledPackagesConfigService _installedPackagesConfigService;
+    private readonly LocalPackagesConfigService _localPackagesConfigService;
+
     private readonly InstalledPackagesPresenter _installedPackagesPresenter;
     private readonly AvailablePackagesPresenter _availablePackagesPresenter;
     private readonly PackageDetailsPresenter _packageDetailsPresenter;
@@ -25,8 +30,10 @@ namespace Rdds.Unity.Nuget.New.Presenter
     
     #endregion
 
-    private async void Initialize()
+    public async Task InitializeAsync()
     {
+      await _installedPackagesConfigService.LoadConfigFileAsync();
+      await _localPackagesConfigService.LoadConfigFileAsync();
       InitializeSources();
       InitializeAssemblies();
       await _installedPackagesPresenter.InitializeAsync();
@@ -124,11 +131,15 @@ namespace Rdds.Unity.Nuget.New.Presenter
     {
       _mainWindow.Assemblies = new List<string> { AllAssemblies };
     }
-    
-    public MainWindowPresenter(IMainWindow mainWindow)
+
+    public MainWindowPresenter(IMainWindow mainWindow, LocalPackagesService localPackagesService,
+      PackagesFileService packagesFileService, InstalledPackagesConfigService installedPackagesConfigService, 
+      LocalPackagesConfigService localPackagesConfigService)
     {
       _mainWindow = mainWindow;
-      _installedPackagesPresenter = new InstalledPackagesPresenter(_mainWindow);
+      _installedPackagesConfigService = installedPackagesConfigService;
+      _localPackagesConfigService = localPackagesConfigService;
+      _installedPackagesPresenter = new InstalledPackagesPresenter(_mainWindow, localPackagesService, packagesFileService, _installedPackagesConfigService);
       _availablePackagesPresenter = new AvailablePackagesPresenter(_mainWindow);
       _packageDetailsPresenter = new PackageDetailsPresenter(_mainWindow.PackageDetailsControl);
       
@@ -136,7 +147,6 @@ namespace Rdds.Unity.Nuget.New.Presenter
       _mainWindow.FilterTextChanged += FilterByIdAsync;
       _mainWindow.AssemblyChanged += FilterByAssembly;
       _mainWindow.SourceChanged += FilterBySource;
-      _mainWindow.WindowPostEnabled += Initialize;
     }
   }
 }

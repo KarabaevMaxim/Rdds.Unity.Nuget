@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Utility;
@@ -11,26 +13,28 @@ namespace Rdds.Unity.Nuget.New.Services
 {
   internal class NuspecFileService
   {
-    public PackageInfo? GetPackageInfoFromNuspec(string packageDirectoryPath)
+    private readonly FileService _fileService;
+
+    public Task<PackageInfo?> GetPackageInfoFromNuspecAsync(string packageDirectoryPath)
     {
       var nuspecFiles = Directory.GetFiles(packageDirectoryPath, "*.nuspec", SearchOption.AllDirectories);
 
       if (nuspecFiles.Length == 0)
       {
         LogHelper.LogWarning($".nuspec file of package '{packageDirectoryPath}' not found!");
-        return null;
+        return Task.FromResult<PackageInfo?>(null);
       }
       
       if (nuspecFiles.Length > 1)
       {
         LogHelper.LogWarning($"Too many .nuspec files of package '{packageDirectoryPath}'!");
-        return null;
+        return Task.FromResult<PackageInfo?>(null);
       }
 
-      return ParseNuspecFile(nuspecFiles[0]);
+      return ParseNuspecFileAsync(nuspecFiles[0])!;
     }
 
-    public PackageInfo RequirePackageInfoFromNuspec(string packageDirectoryPath)
+    public Task<PackageInfo> RequirePackageInfoFromNuspecAsync(string packageDirectoryPath)
     {
       var nuspecFiles = Directory.GetFiles(packageDirectoryPath, "*.nuspec", SearchOption.AllDirectories);
       
@@ -40,12 +44,13 @@ namespace Rdds.Unity.Nuget.New.Services
       if (nuspecFiles.Length > 1)
         throw new InvalidOperationException($"Too many .nuspec files of package '{packageDirectoryPath}'!");
 
-      return ParseNuspecFile(nuspecFiles[0]);
+      return ParseNuspecFileAsync(nuspecFiles[0]);
     }
     
-    private PackageInfo ParseNuspecFile(string nuspecFile)
+    private async Task<PackageInfo> ParseNuspecFileAsync(string nuspecFile)
     {
-      var xDoc = XDocument.Load(nuspecFile); 
+      var xml = (await _fileService.ReadFromFileAsync(nuspecFile, CancellationToken.None))!;
+      var xDoc = XDocument.Parse(xml); 
       var root = xDoc.Root!; 
       var xNamespace = root.GetDefaultNamespace().NamespaceName;
       var meta = root.Element(XName.Get("metadata", xNamespace))!;
@@ -83,5 +88,7 @@ namespace Rdds.Unity.Nuget.New.Services
       return new PackageInfo(title, authors, description, iconPath, owners, null,
         new PackageIdentity(id, PackageVersion.Parse(version)), dependencies);
     }
+    
+    public NuspecFileService(FileService fileService) => _fileService = fileService;
   }
 }

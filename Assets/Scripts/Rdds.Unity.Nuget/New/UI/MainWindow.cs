@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Rdds.Unity.Nuget.New.UI.Controls;
 using Rdds.Unity.Nuget.New.UI.Controls.Models;
 using UnityEditor;
@@ -14,10 +15,10 @@ namespace Rdds.Unity.Nuget.New.UI
   {
     #region Fields
 
-    private List<PackageRowPresentationModel> _installedPackages = null!;
-    private List<PackageRowPresentationModel> _availablePackages = null!;
-    private List<string> _sources = null!;
-    private List<string> _assemblies = null!;
+    private IEnumerable<PackageRowPresentationModel> _installedPackages = null!;
+    private IEnumerable<PackageRowPresentationModel> _availablePackages = null!;
+    private IEnumerable<string> _sources = null!;
+    private IEnumerable<string> _assemblies = null!;
     
     private VisualElement _leftPanel = null!;
     private VisualElement _rightPanel = null!;
@@ -33,7 +34,7 @@ namespace Rdds.Unity.Nuget.New.UI
 
     #region Properties
 
-    public List<PackageRowPresentationModel> InstalledPackages
+    public IEnumerable<PackageRowPresentationModel> InstalledPackages
     {
       get => _installedPackages;
       set
@@ -41,14 +42,14 @@ namespace Rdds.Unity.Nuget.New.UI
         _installedPackages = value;
 
         if (_installedListControl == null)
-          _installedListControl = new PackagesListControl(_leftPanel, "Installed", 200, _installedPackages,
+          _installedListControl = new PackagesListControl(_leftPanel, "Installed", 200, _installedPackages.ToList(),
             OnPackagesListSelectionChanged);
         else
-          _installedListControl.Refresh(_installedPackages);
+          _installedListControl.Refresh(_installedPackages.ToList());
       }
     }
     
-    public List<PackageRowPresentationModel> AvailablePackages
+    public IEnumerable<PackageRowPresentationModel> AvailablePackages
     {
       get => _availablePackages;
       set
@@ -56,30 +57,30 @@ namespace Rdds.Unity.Nuget.New.UI
         _availablePackages = value;
 
         if (_availableListControl == null)
-          _availableListControl = new PackagesListControl(_leftPanel, "Available", 200, AvailablePackages,
+          _availableListControl = new PackagesListControl(_leftPanel, "Available", 200, AvailablePackages.ToList(),
             OnPackagesListSelectionChanged);
         else
-          _availableListControl.Refresh(_availablePackages);
+          _availableListControl.Refresh(_availablePackages.ToList());
       }
     }
     
-    public List<string> Sources
+    public IEnumerable<string> Sources
     {
       get => _sources;
       set
       {
         _sources = value;
-        AddSourcesListPopup(_sources);
+        AddSourcesListPopup(_sources.ToList());
       }
     }
     
-    public List<string> Assemblies
+    public IEnumerable<string> Assemblies
     {
       get => _assemblies;
       set
       {
         _assemblies = value;
-        AddAssembliesListPopup(_assemblies);
+        AddAssembliesListPopup(_assemblies.ToList());
       }
     }
 
@@ -93,7 +94,6 @@ namespace Rdds.Unity.Nuget.New.UI
     public event Action<string>? FilterTextChanged;
     public event Action<string>? AssemblyChanged;
     public event Action<string>? SourceChanged;
-    public event Action? WindowPostEnabled;
 
     #endregion
 
@@ -118,7 +118,6 @@ namespace Rdds.Unity.Nuget.New.UI
       _root.fixedPaneInitialDimension = 300;
 
       PackageDetailsControl = new PackageDetailsControl(_rightPanel);
-      WindowPostEnabled?.Invoke();
     }
 
     #endregion

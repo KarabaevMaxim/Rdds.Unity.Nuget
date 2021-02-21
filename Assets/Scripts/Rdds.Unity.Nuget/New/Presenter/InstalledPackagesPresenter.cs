@@ -2,6 +2,9 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Rdds.Unity.Nuget.Entities;
+using Rdds.Unity.Nuget.New.Services;
+using Rdds.Unity.Nuget.New.Services.Configs;
 using Rdds.Unity.Nuget.New.UI;
 using Rdds.Unity.Nuget.New.UI.Controls.Models;
 using Rdds.Unity.Nuget.Other;
@@ -14,38 +17,31 @@ namespace Rdds.Unity.Nuget.New.Presenter
   internal class InstalledPackagesPresenter
   {
     private readonly IMainWindow _mainWindow;
+    private readonly LocalPackagesService _localPackagesService;
+    private readonly PackagesFileService _packagesFileService;
+    private readonly InstalledPackagesConfigService _installedPackagesConfigService;
 
-    private IEnumerable<PackageRowPresentationModel> _installedPackages;
+    private readonly List<PackageRowPresentationModel> _installedPackages;
 
     public async Task InitializeAsync()
     {
-      var installedPackagesService = EditorContext.InstalledPackagesService;
-      var packagesFileService = EditorContext.PackagesFileService;
-      var packages = installedPackagesService.RequireInstalledPackagesList();
+      var identities = _localPackagesService.RequireInstalledPackages();
 
-      var tasks = packages.Select(async p =>
+      foreach (var identity in identities)
       {
-        var icon = (p.IconPath == null
-          ? Resources.Load<Texture>(Paths.DefaultIconResourceName)
-          : await ImageHelper.LoadImageAsync(p.IconPath, CancellationToken.None)) 
-                   ?? ImageHelper.LoadImageFromResource(Paths.DefaultIconResourceName);
-        var source = packagesFileService.RequirePackage(p.Identity.Id).Source;
-
-        // todo initialize assemblies in which package installed
-        return new PackageRowPresentationModel(
-          p.Identity.Id, p.Identity.Version.ToString(), icon, new List<string> { source }, new List<string>());
-      });
-
-      var models = await Task.WhenAll(tasks);
-      _installedPackages = models;
-      _mainWindow.InstalledPackages = _installedPackages.ToList();
+        var packageInfo = await _localPackagesService.RequireInstalledPackageInfoAsync(identity.Id);
+        var pm = await CreatePresentationModelAsync(packageInfo);
+        _installedPackages.Add(pm);
+      }
+      
+      _mainWindow.InstalledPackages = _installedPackages;
     }
     
     public void FilterById(string idPart)
     {
       var filtered = _mainWindow.InstalledPackages
         .Where(p => p.Id.ContainsIgnoreCase(idPart));
-      _mainWindow.InstalledPackages = filtered.ToList();
+      _mainWindow.InstalledPackages = filtered;
     }
     
     public void FilterByAssembly(string? assembly)
@@ -53,7 +49,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
       // todo implement clear filter if assembly equals null
       var filtered = _mainWindow.InstalledPackages
         .Where(p => p.InstalledInAssemblies.Contains(assembly));
-      _mainWindow.InstalledPackages = filtered.ToList();
+      _mainWindow.InstalledPackages = filtered;
     }
     
     public void FilterBySource(string? source)
@@ -61,9 +57,30 @@ namespace Rdds.Unity.Nuget.New.Presenter
       // todo implement clear filter if source equals null
       var filtered = _mainWindow.InstalledPackages
         .Where(p => p.Sources.Contains(source));
-      _mainWindow.InstalledPackages = filtered.ToList();
+      _mainWindow.InstalledPackages = filtered;
     }
 
-    public InstalledPackagesPresenter(IMainWindow mainWindow) => _mainWindow = mainWindow;
+    private async Task<PackageRowPresentationModel> CreatePresentationModelAsync(PackageInfo packageInfo)
+    {
+      var id = packageInfo.Identity.Id;
+      var version = packageInfo.Identity.Version.ToString();
+      var icon = (packageInfo.IconPath == null
+                   ? Resources.Load<Texture>(Paths.DefaultIconResourceName)
+                   : await ImageHelper.LoadImageAsync(packageInfo.IconPath, CancellationToken.None)) 
+                 ?? ImageHelper.LoadImageFromResource(Paths.DefaultIconResourceName);
+      var sources = new List<string> { _packagesFileService.RequirePackage(packageInfo.Identity.Id).Source };
+      var assemblies = _installedPackagesConfigService.RequireInstalledInAssemblies(id);
+      return new PackageRowPresentationModel(id, version, icon, sources, assemblies);
+    }
+
+    public InstalledPackagesPresenter(IMainWindow mainWindow, LocalPackagesService localPackagesService,
+      PackagesFileService packagesFileService, InstalledPackagesConfigService installedPackagesConfigService)
+    {
+      _mainWindow = mainWindow;
+      _localPackagesService = localPackagesService;
+      _packagesFileService = packagesFileService;
+      _installedPackagesConfigService = installedPackagesConfigService;
+      _installedPackages = new List<PackageRowPresentationModel>();
+    }
   }
 }

@@ -86,8 +86,10 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
 
     public InstalledPackageInfo? GetInstalledPackage(string packageId) => 
       _installedPackages.FirstOrDefault(p => p.Id == packageId);
-    
-    
+
+    public IEnumerable<string> RequireInstalledInAssemblies(string packageId) => 
+      RequireInstalledPackage(packageId).InstalledInAssemblies;
+
     private async Task SaveDefaultConfigFileAsync()
     {
       _installedPackages = new List<InstalledPackageInfo>();

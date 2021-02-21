@@ -37,9 +37,11 @@ namespace Rdds.Unity.Nuget.Services
       return packages!;
     }
 
-    public IEnumerable<PackageInfo> RequireInstalledPackagesList() =>
-      _packagesFileService.RequirePackageModels()
-        .Select(p => _nuspecFileService.RequirePackageInfoFromNuspec(p.Path));
+    public IEnumerable<Task<PackageInfo>> RequireInstalledPackagesList()
+    {
+      return _packagesFileService.RequirePackageModels()
+        .Select(p => _nuspecFileService.RequirePackageInfoFromNuspecAsync(p.Path));
+    }
 
     /// <summary>
     /// Shows that dlls from nuget package locating in Plugins directory.
@@ -68,7 +70,7 @@ namespace Rdds.Unity.Nuget.Services
 
     public async Task<bool> InstallPackageAsync(string packageDirectoryPath, string sourceKey, string assemblyName)
     {
-      var packageInfo = _nuspecFileService.GetPackageInfoFromNuspec(packageDirectoryPath);
+      var packageInfo = await _nuspecFileService.GetPackageInfoFromNuspecAsync(packageDirectoryPath);
 
       if (packageInfo == null)
       {

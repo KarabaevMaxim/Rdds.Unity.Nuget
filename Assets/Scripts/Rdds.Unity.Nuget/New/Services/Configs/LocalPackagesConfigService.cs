@@ -45,7 +45,7 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
 
     public async Task SaveConfigFileAsync()
     {
-      var json = JsonConvert.SerializeObject(_localPackages);
+      var json = JsonConvert.SerializeObject(_localPackages, Formatting.Indented);
       await _fileService.WriteToFileAsync(ConfigName, json);
     }
 
@@ -68,7 +68,11 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
 
     private async Task SaveDefaultConfigFileAsync()
     {
-      _localPackages = new List<LocalPackageInfo>();
+      // _localPackages = new List<LocalPackageInfo>();
+      _localPackages = new List<LocalPackageInfo>
+      {
+        new LocalPackageInfo("Newtonsoft.Json", "8.0.2", @"D:\NugetRepository\Newtonsoft.Json.8.0.2")
+      };
       await SaveConfigFileAsync();
     }
     

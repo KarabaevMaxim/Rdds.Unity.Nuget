@@ -1,1 +1,7 @@
-[]
+[
+  {
+    "Id": "Newtonsoft.Json",
+    "Version": "8.0.2",
+    "Path": "D:\\NugetRepository\\Newtonsoft.Json.8.0.2"
+  }
+]

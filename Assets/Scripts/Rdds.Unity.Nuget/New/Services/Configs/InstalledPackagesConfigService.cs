@@ -45,7 +45,7 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
 
     public async Task SaveConfigFileAsync()
     {
-      var json = JsonConvert.SerializeObject(_installedPackages);
+      var json = JsonConvert.SerializeObject(_installedPackages, Formatting.Indented);
       await _fileService.WriteToFileAsync(ConfigName, json);
     }
     
@@ -92,7 +92,11 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
 
     private async Task SaveDefaultConfigFileAsync()
     {
-      _installedPackages = new List<InstalledPackageInfo>();
+      // _installedPackages = new List<InstalledPackageInfo>();
+      _installedPackages = new List<InstalledPackageInfo>
+      {
+        new InstalledPackageInfo("Newtonsoft.Json", "8.0.2", new List<string> { "Rdds.Unity.Nuget" }, new List<string> { "Newtonsoft.Json.dll" } )
+      };
       await SaveConfigFileAsync();
     }
 

@@ -15,6 +15,8 @@ namespace Rdds.Unity.Nuget.New.Services
 {
   internal class RemotePackagesService
   {
+    #region Fields and properties
+
     private readonly NugetConfigService _nugetConfigService;
     private readonly FileService _fileService;
     private readonly FrameworkService _frameworkService;
@@ -22,7 +24,7 @@ namespace Rdds.Unity.Nuget.New.Services
     private Dictionary<string, NugetService> _nugetServices = null!;
 
     private NugetPackageSource? _selectedSource;
-    
+
     public NugetPackageSource? SelectedSource
     {
       get
@@ -44,30 +46,27 @@ namespace Rdds.Unity.Nuget.New.Services
         EditorPrefs.SetString(nameof(SelectedSource), _selectedSource?.Key);
       }
     }
+    
+    #endregion
 
     public void ChangeActiveSource(string? key) => 
       SelectedSource = string.IsNullOrWhiteSpace(key) ? null : _nugetConfigService.RequirePackageSource(key!);
 
-    public async Task<IEnumerable<PackageInfo>> FindPackagesAsync(string filterString, int skip, int take, CancellationToken cancellationToken)
+    public async Task<IEnumerable<PackageInfoSourceWrapper>> FindPackagesAsync(string filterString, int skip, int take, CancellationToken cancellationToken)
     {
       if (SelectedSource == null)
       {
-        var services = _nugetServices.Select(p => p.Value);
-        var result = new List<PackageInfo>();
-        
-        foreach (var service in services)
-        {
-          if (cancellationToken.IsCancellationRequested)
-            return result;
-          
-          var packages = await service.SearchPackagesAsync(filterString, skip, take, cancellationToken);
-          result.AddRange(packages);
-        }
-
-        return result;
+        var tasks = _nugetServices
+          .Select(p => p.Value)
+          .Select(async service => (await service.SearchPackagesAsync(filterString, skip, take, cancellationToken))
+            .Select(package => new PackageInfoSourceWrapper(package, new []{ service.Source.Key })));
+        var allPackages = await Task.WhenAll(tasks);
+        return allPackages.SelectMany(p => p);
       }
 
-      return await _nugetServices[SelectedSource.Key].SearchPackagesAsync(filterString, skip, take, cancellationToken);
+      var packages = await _nugetServices[SelectedSource.Key]
+        .SearchPackagesAsync(filterString, skip, take, cancellationToken);
+      return packages.Select(p => new PackageInfoSourceWrapper(p, new []{ SelectedSource.Key }));
     }
 
     public IEnumerable<PackageVersion> FindPackageVersions(string packageId)
@@ -94,13 +93,20 @@ namespace Rdds.Unity.Nuget.New.Services
         .Select(source => new NugetService(_logger, _nugetConfigService, _fileService, _frameworkService, source));
       _nugetServices = nugetServices.ToDictionary(s => s.Source.Key);
     }
-    
-    public RemotePackagesService(NugetConfigService nugetConfigService, FileService fileService, FrameworkService frameworkService, ILogger logger)
+
+    #region Constructor
+
+    public RemotePackagesService(NugetConfigService nugetConfigService, 
+      FileService fileService, 
+      FrameworkService frameworkService, 
+      ILogger logger)
     {
       _nugetConfigService = nugetConfigService;
       _fileService = fileService;
       _frameworkService = frameworkService;
       _logger = logger;
     }
+
+    #endregion
   }
 }

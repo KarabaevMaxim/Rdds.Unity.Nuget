@@ -32,5 +32,21 @@ namespace Rdds.Unity.Nuget.Entities
       Identity = identity;
       Dependencies = dependencies;
     }
+    
+    internal class PackageIdComparer : IEqualityComparer<PackageInfo>
+    {
+      public bool Equals(PackageInfo x, PackageInfo y)
+      {
+        if (ReferenceEquals(x, y)) 
+          return true;
+
+        return x.Identity.Id == y.Identity.Id;
+      }
+
+      public int GetHashCode(PackageInfo obj)
+      {
+        return obj.Identity.Id.GetHashCode();
+      }
+    }
   }
 }

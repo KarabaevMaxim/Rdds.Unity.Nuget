@@ -41,17 +41,17 @@ namespace Rdds.Unity.Nuget.New.Presenter
       return ReloadPackagesAsync();
     }
     
-    private async Task<PackageRowPresentationModel> CreatePresentationModelAsync(PackageInfo packageInfo)
+    private async Task<PackageRowPresentationModel> CreatePresentationModelAsync(PackageInfoSourceWrapper packageInfo)
     {
-      var id = packageInfo.Identity.Id;
-      var version = packageInfo.Identity.Version.ToString();
-      var icon = (packageInfo.IconPath == null
+      var id = packageInfo.PackageInfo.Identity.Id;
+      var version = packageInfo.PackageInfo.Identity.Version.ToString();
+      var icon = (packageInfo.PackageInfo.IconPath == null
                    ? Resources.Load<Texture>(Paths.DefaultIconResourceName)
-                   : await ImageHelper.LoadImageAsync(packageInfo.IconPath, CancellationToken.None)) 
+                   : await ImageHelper.LoadImageAsync(packageInfo.PackageInfo.IconPath, CancellationToken.None)) 
                  ?? ImageHelper.LoadImageFromResource(Paths.DefaultIconResourceName);
       // todo take sources where package is available
       // Must we have this property?
-      var sources = new List<string> { "Gitlab" };
+      var sources = packageInfo.SourceKeys;
       var assemblies = _installedPackagesConfigService.GetInstalledInAssemblies(id) ?? new List<string>(0);
       return new PackageRowPresentationModel(id, version, icon, sources, assemblies);
     }

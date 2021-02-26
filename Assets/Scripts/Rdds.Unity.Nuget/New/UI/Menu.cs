@@ -18,9 +18,10 @@ namespace Rdds.Unity.Nuget.New.UI
       
       var wnd = EditorWindow.GetWindow<MainWindow>();
       wnd.titleContent = new GUIContent("Nuget package manager");
-      _mainWindowPresenter = new MainWindowPresenter(wnd, EditorContext.LocalPackagesService, 
-        EditorContext.PackagesFileService,
-        EditorContext.InstalledPackagesConfigService, EditorContext.LocalPackagesConfigService, 
+      _mainWindowPresenter = new MainWindowPresenter(wnd, 
+        EditorContext.LocalPackagesService,
+        EditorContext.InstalledPackagesConfigService,
+        EditorContext.LocalPackagesConfigService, 
         EditorContext.NugetConfigService, 
         EditorContext.AssembliesService,
         EditorContext.RemotePackagesService);

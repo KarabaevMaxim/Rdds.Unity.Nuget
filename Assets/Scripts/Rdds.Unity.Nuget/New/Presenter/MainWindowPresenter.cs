@@ -19,7 +19,6 @@ namespace Rdds.Unity.Nuget.New.Presenter
     #region Fields
 
     private readonly IMainWindow _mainWindow;
-    private readonly PackagesFileService _packagesFileService;
     private readonly InstalledPackagesConfigService _installedPackagesConfigService;
     private readonly LocalPackagesConfigService _localPackagesConfigService;
     private readonly NugetConfigService _nugetConfigService;
@@ -39,8 +38,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
     {
       await Task.WhenAll(_installedPackagesConfigService.LoadConfigFileAsync(),
         _localPackagesConfigService.LoadConfigFileAsync(), 
-        _nugetConfigService.LoadConfigFileAsync(),
-        _packagesFileService.LoadConfigFileAsync());
+        _nugetConfigService.LoadConfigFileAsync());
       
       _remotePackagesService.InitializeSources();
       
@@ -145,15 +143,15 @@ namespace Rdds.Unity.Nuget.New.Presenter
       _mainWindow.Assemblies = assemblies;
     }
 
-    public MainWindowPresenter(IMainWindow mainWindow, LocalPackagesService localPackagesService,
-      PackagesFileService packagesFileService, InstalledPackagesConfigService installedPackagesConfigService, 
+    public MainWindowPresenter(IMainWindow mainWindow, 
+      LocalPackagesService localPackagesService,
+      InstalledPackagesConfigService installedPackagesConfigService, 
       LocalPackagesConfigService localPackagesConfigService,
       NugetConfigService nugetConfigService,
       AssembliesService assembliesService,
       RemotePackagesService remotePackagesService)
     {
       _mainWindow = mainWindow;
-      _packagesFileService = packagesFileService;
       _installedPackagesConfigService = installedPackagesConfigService;
       _localPackagesConfigService = localPackagesConfigService;
       _nugetConfigService = nugetConfigService;

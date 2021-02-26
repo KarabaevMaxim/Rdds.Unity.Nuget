@@ -131,7 +131,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
 
     private void InitializeSources()
     {
-      var sources = new List<string> { AllAssemblies };
+      var sources = new List<string> { AllSources };
       sources.AddRange(_nugetConfigService.RequireAvailableSourcesKeys());
       _mainWindow.Sources = sources;
     }

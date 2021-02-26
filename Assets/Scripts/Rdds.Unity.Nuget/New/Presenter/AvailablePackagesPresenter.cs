@@ -49,8 +49,6 @@ namespace Rdds.Unity.Nuget.New.Presenter
                    ? Resources.Load<Texture>(Paths.DefaultIconResourceName)
                    : await ImageHelper.LoadImageAsync(packageInfo.PackageInfo.IconPath, CancellationToken.None)) 
                  ?? ImageHelper.LoadImageFromResource(Paths.DefaultIconResourceName);
-      // todo take sources where package is available
-      // Must we have this property?
       var sources = packageInfo.SourceKeys;
       var assemblies = _installedPackagesConfigService.GetInstalledInAssemblies(id) ?? new List<string>(0);
       return new PackageRowPresentationModel(id, version, icon, sources, assemblies);

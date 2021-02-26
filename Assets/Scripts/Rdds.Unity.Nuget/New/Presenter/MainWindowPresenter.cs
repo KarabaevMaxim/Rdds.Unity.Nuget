@@ -24,6 +24,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
     private readonly LocalPackagesConfigService _localPackagesConfigService;
     private readonly NugetConfigService _nugetConfigService;
     private readonly AssembliesService _assembliesService;
+    private readonly RemotePackagesService _remotePackagesService;
 
     private readonly InstalledPackagesPresenter _installedPackagesPresenter;
     private readonly AvailablePackagesPresenter _availablePackagesPresenter;
@@ -36,16 +37,17 @@ namespace Rdds.Unity.Nuget.New.Presenter
 
     public async Task InitializeAsync()
     {
-      await _installedPackagesConfigService.LoadConfigFileAsync();
-      await _localPackagesConfigService.LoadConfigFileAsync();
-      await _nugetConfigService.LoadConfigFileAsync();
-      await _packagesFileService.LoadConfigFileAsync();
+      await Task.WhenAll(_installedPackagesConfigService.LoadConfigFileAsync(),
+        _localPackagesConfigService.LoadConfigFileAsync(), 
+        _nugetConfigService.LoadConfigFileAsync(),
+        _packagesFileService.LoadConfigFileAsync());
+      
+      _remotePackagesService.InitializeSources();
       
       InitializeSources();
       await InitializeAssembliesAsync();
-      
-      await _installedPackagesPresenter.InitializeAsync();
-      _availablePackagesPresenter.Initialize();
+
+      await Task.WhenAll(_installedPackagesPresenter.InitializeAsync(), _availablePackagesPresenter.InitializeAsync());
     }
     
     private void SelectPackageRow(PackageRowPresentationModel selected)
@@ -100,7 +102,6 @@ namespace Rdds.Unity.Nuget.New.Presenter
     private async void FilterByIdAsync(string idPart)
     {
       _filterByStringDelayCancellationTokenSource?.Cancel();
-      _filterByStringDelayCancellationTokenSource?.Dispose();
       _filterByStringDelayCancellationTokenSource = new CancellationTokenSource();
       
       try
@@ -116,16 +117,16 @@ namespace Rdds.Unity.Nuget.New.Presenter
       //todo check it with ConfigureAwait(true/false)
       // args.newValue not working with async method
       _installedPackagesPresenter.FilterById(idPart);
-      _availablePackagesPresenter.FilterById(idPart);
+      await _availablePackagesPresenter.FilterByIdAsync(idPart);
     }
     
     private void FilterByAssembly(string assembly) => 
       _installedPackagesPresenter.FilterByAssembly(assembly == AllAssemblies ? null : assembly);
 
-    private void FilterBySource(string source)
+    private async void FilterBySourceAsync(string source)
     {
       _installedPackagesPresenter.FilterBySource(source == AllSources ? null : source);
-      _availablePackagesPresenter.FilterBySource(source == AllSources ? null : source);
+      await _availablePackagesPresenter.FilterBySourceAsync(source == AllSources ? null : source);
     }
 
     #endregion
@@ -133,7 +134,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
     private void InitializeSources()
     {
       var sources = new List<string> { AllAssemblies };
-      sources.AddRange(_nugetConfigService.RequireAvailableSources());
+      sources.AddRange(_nugetConfigService.RequireAvailableSourcesKeys());
       _mainWindow.Sources = sources;
     }
 
@@ -148,7 +149,8 @@ namespace Rdds.Unity.Nuget.New.Presenter
       PackagesFileService packagesFileService, InstalledPackagesConfigService installedPackagesConfigService, 
       LocalPackagesConfigService localPackagesConfigService,
       NugetConfigService nugetConfigService,
-      AssembliesService assembliesService)
+      AssembliesService assembliesService,
+      RemotePackagesService remotePackagesService)
     {
       _mainWindow = mainWindow;
       _packagesFileService = packagesFileService;
@@ -156,14 +158,15 @@ namespace Rdds.Unity.Nuget.New.Presenter
       _localPackagesConfigService = localPackagesConfigService;
       _nugetConfigService = nugetConfigService;
       _assembliesService = assembliesService;
-      _installedPackagesPresenter = new InstalledPackagesPresenter(_mainWindow, localPackagesService, packagesFileService, _installedPackagesConfigService);
-      _availablePackagesPresenter = new AvailablePackagesPresenter(_mainWindow);
+      _remotePackagesService = remotePackagesService;
+      _installedPackagesPresenter = new InstalledPackagesPresenter(_mainWindow, localPackagesService, _installedPackagesConfigService);
+      _availablePackagesPresenter = new AvailablePackagesPresenter(_mainWindow, _remotePackagesService, _installedPackagesConfigService);
       _packageDetailsPresenter = new PackageDetailsPresenter(_mainWindow.PackageDetailsControl);
       
       _mainWindow.PackageRowSelected += SelectPackageRow; 
       _mainWindow.FilterTextChanged += FilterByIdAsync;
       _mainWindow.AssemblyChanged += FilterByAssembly;
-      _mainWindow.SourceChanged += FilterBySource;
+      _mainWindow.SourceChanged += FilterBySourceAsync;
     }
   }
 }

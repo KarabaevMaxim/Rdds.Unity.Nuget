@@ -10,9 +10,8 @@ namespace Rdds.Unity.Nuget.UI.Controls
 {
   internal class InstalledPackagesTabControl : TabControl
   {
-    private readonly INugetService _nugetService;
+    private readonly NugetService _nugetService;
     private readonly InstalledPackagesService _installedPackagesService;
-    private readonly ILogger _logger;
 
     private readonly VisualElement _tabRoot;
     private readonly Label _emptyPlaceholderLabel;
@@ -58,12 +57,11 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     private bool HasChild(VisualElement parent, VisualElement child) => parent.Children().Contains(child);
 
-    public InstalledPackagesTabControl(VisualElement tabRoot, string title, INugetService nugetService,
-      InstalledPackagesService installedPackagesService, ILogger logger) : base(tabRoot, title)
+    public InstalledPackagesTabControl(VisualElement tabRoot, string title, NugetService nugetService,
+      InstalledPackagesService installedPackagesService) : base(tabRoot, title)
     {
       _tabRoot = tabRoot;
       _nugetService = nugetService;
-      _logger = logger;
       _installedPackagesService = installedPackagesService;
       _packagesContainer = tabRoot.Q<VisualElement>("InstalledPackagesContainer");
       _emptyPlaceholderLabel = tabRoot.Q<Label>("EmptyPlaceholderLabel");

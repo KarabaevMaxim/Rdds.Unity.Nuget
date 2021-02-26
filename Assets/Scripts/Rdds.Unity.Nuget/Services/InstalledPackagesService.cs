@@ -1,21 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.New.Exceptions;
 using Rdds.Unity.Nuget.New.Services;
 using Rdds.Unity.Nuget.New.Services.Configs;
-using Rdds.Unity.Nuget.Other;
 using Rdds.Unity.Nuget.Utility;
 
 namespace Rdds.Unity.Nuget.Services
 {
+  [Obsolete]
   internal class InstalledPackagesService
   {
     private readonly PackagesFileService _packagesFileService;
-    private readonly INugetService _nugetService;
+    private readonly NugetService _nugetService;
     private readonly NugetConfigService _nugetConfigService;
     private readonly NuspecFileService _nuspecFileService;
 
@@ -26,7 +26,7 @@ namespace Rdds.Unity.Nuget.Services
       var tasks = installedPackages.Select(async pi =>
       {
         var source = _nugetConfigService.RequirePackageSource(pi.Item2);
-        var result = await _nugetService.GetPackageAsync(pi.Item1, source, cancellationToken);
+        var result = await _nugetService.GetPackageAsync(pi.Item1, cancellationToken);
 
         if (result == null)
           LogHelper.LogWarning($"Package {pi.Item1.Id} with version {pi.Item1.Version} not found in source {source.Key}");
@@ -104,7 +104,7 @@ namespace Rdds.Unity.Nuget.Services
       return true;
     }
     
-    public InstalledPackagesService(PackagesFileService packagesFileService, INugetService nugetService,
+    public InstalledPackagesService(PackagesFileService packagesFileService, NugetService nugetService,
       NugetConfigService nugetConfigService, NuspecFileService nuspecFileService)
     {
       _packagesFileService = packagesFileService;

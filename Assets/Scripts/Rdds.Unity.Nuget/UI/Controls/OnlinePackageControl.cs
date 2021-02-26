@@ -21,7 +21,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     #region Dependencies
 
-    private readonly INugetService _nugetService;
+    private readonly NugetService _nugetService;
     private readonly InstalledPackagesService _installedPackagesService;
     private readonly ILogger _logger;
 
@@ -180,7 +180,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     private Task<bool> InstallPackageAsync(string packageDirectoryPath)
     {
-      var task = _installedPackagesService.InstallPackageAsync(packageDirectoryPath, _nugetService.SelectedSource.Key, null);
+      var task = _installedPackagesService.InstallPackageAsync(packageDirectoryPath, null, null);
       return DialogHelper.ShowLoadingAsync("Installing...", "Wait while package installing", task);
     }
     
@@ -203,7 +203,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     #region Constructors
 
-    public OnlinePackageControl(VisualElement parent, PackageInfo packageInfo, INugetService nugetService,
+    public OnlinePackageControl(VisualElement parent, PackageInfo packageInfo, NugetService nugetService,
       InstalledPackagesService installedPackagesService, ILogger logger) : base(parent, packageInfo)
     {
       _nugetService = nugetService;

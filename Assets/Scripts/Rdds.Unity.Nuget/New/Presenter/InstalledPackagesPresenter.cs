@@ -8,7 +8,6 @@ using Rdds.Unity.Nuget.New.Services.Configs;
 using Rdds.Unity.Nuget.New.UI;
 using Rdds.Unity.Nuget.New.UI.Controls.Models;
 using Rdds.Unity.Nuget.Other;
-using Rdds.Unity.Nuget.Services;
 using Rdds.Unity.Nuget.Utility;
 using UnityEngine;
 
@@ -18,7 +17,6 @@ namespace Rdds.Unity.Nuget.New.Presenter
   {
     private readonly IMainWindow _mainWindow;
     private readonly LocalPackagesService _localPackagesService;
-    private readonly PackagesFileService _packagesFileService;
     private readonly InstalledPackagesConfigService _installedPackagesConfigService;
 
     private readonly List<PackageRowPresentationModel> _installedPackages;
@@ -68,17 +66,17 @@ namespace Rdds.Unity.Nuget.New.Presenter
                    ? Resources.Load<Texture>(Paths.DefaultIconResourceName)
                    : await ImageHelper.LoadImageAsync(packageInfo.IconPath, CancellationToken.None)) 
                  ?? ImageHelper.LoadImageFromResource(Paths.DefaultIconResourceName);
-      var sources = new List<string> { _packagesFileService.RequirePackage(packageInfo.Identity.Id).Source };
+      // todo take sources where package is available
+      // Must we have this property?
+      var sources = new List<string> { "Gitlab" };
       var assemblies = _installedPackagesConfigService.RequireInstalledInAssemblies(id);
       return new PackageRowPresentationModel(id, version, icon, sources, assemblies);
     }
 
-    public InstalledPackagesPresenter(IMainWindow mainWindow, LocalPackagesService localPackagesService,
-      PackagesFileService packagesFileService, InstalledPackagesConfigService installedPackagesConfigService)
+    public InstalledPackagesPresenter(IMainWindow mainWindow, LocalPackagesService localPackagesService, InstalledPackagesConfigService installedPackagesConfigService)
     {
       _mainWindow = mainWindow;
       _localPackagesService = localPackagesService;
-      _packagesFileService = packagesFileService;
       _installedPackagesConfigService = installedPackagesConfigService;
       _installedPackages = new List<PackageRowPresentationModel>();
     }

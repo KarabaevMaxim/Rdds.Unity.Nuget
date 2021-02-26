@@ -46,11 +46,11 @@ namespace Rdds.Unity.Nuget.UI
       var searchLayout = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.SearchTabLayout).CloneTree();
 
       var installedTab = new InstalledPackagesTabControl(installedLayout.Q<VisualElement>("Root"), "Installed",
-        EditorContext.NugetService,
-        EditorContext.InstalledPackagesService, EditorContext.Logger);
+        null,
+        EditorContext.InstalledPackagesService);
 
       var searchTab = new SearchPackagesTabControl(searchLayout.Q<VisualElement>("Root"), "Search",
-        EditorContext.NugetService,
+        null,
         EditorContext.NugetConfigService, EditorContext.InstalledPackagesService, EditorContext.Logger);
 
       _ = new TabsControl(rootVisualElement.Q<VisualElement>("TabsControl"), installedTab, searchTab);

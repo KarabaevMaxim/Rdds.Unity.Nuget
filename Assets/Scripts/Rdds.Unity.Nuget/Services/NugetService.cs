@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -14,48 +13,23 @@ using Rdds.Unity.Nuget.Entities.NugetConfig;
 using Rdds.Unity.Nuget.New.Services;
 using Rdds.Unity.Nuget.New.Services.Configs;
 using Rdds.Unity.Nuget.Utility;
-using UnityEditor;
 using PackageIdentity = Rdds.Unity.Nuget.Entities.PackageIdentity;
 using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
 namespace Rdds.Unity.Nuget.Services
 {
-  internal class NugetService : INugetService
+  internal class NugetService
   {
     private readonly ILogger _logger;
     private readonly NugetConfigService _configService;
     private readonly FileService _fileService;
     private readonly FrameworkService _frameworkService;
-
-    private NugetPackageSource? _selectedSource;
     
-    public NugetPackageSource SelectedSource
-    {
-      get
-      {
-        if (_selectedSource == null)
-        {
-          var key = EditorPrefs.GetString(nameof(SelectedSource), null);
-
-          SelectedSource = string.IsNullOrWhiteSpace(key) 
-            ? _configService.RequireDefaultPackageSource() 
-            : _configService.RequirePackageSource(key);
-        }
-
-        return _selectedSource!;
-      }
-      private set
-      {
-        _selectedSource = value;
-        EditorPrefs.SetString(nameof(SelectedSource), _selectedSource.Key);
-      }
-    }
-
-    public void ChangeActiveSource(string key) => SelectedSource = _configService.RequirePackageSource(key);
+    public NugetPackageSource Source { get; }
 
     public async Task<IEnumerable<PackageInfo>> SearchPackagesAsync(string filterString, int skip, int take, CancellationToken cancellationToken)
     {
-      var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
+      var repository = Repository.Factory.GetCoreV3(Source.ToPackageSource());
       var resource = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken);
       var searchFilter = new SearchFilter(true);
       var foundPackages =
@@ -68,7 +42,7 @@ namespace Rdds.Unity.Nuget.Services
       CancellationToken cancellationToken)
     {
       var cacheContext = new SourceCacheContext();
-      var repositories = new[] { Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource()) };
+      var repositories = new[] { Repository.Factory.GetCoreV3(Source.ToPackageSource()) };
       var currentFramework = _frameworkService.RequireCurrentFramework();
       var dependencies = new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default);
       
@@ -86,15 +60,10 @@ namespace Rdds.Unity.Nuget.Services
       };
     }
 
-
-    public Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, CancellationToken cancellationToken) => 
-      GetPackageAsync(identity, SelectedSource, cancellationToken);
-
-    public async Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, NugetPackageSource source,
-      CancellationToken cancellationToken)
+    public async Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
     {
       var cache = new SourceCacheContext();
-      var repository = Repository.Factory.GetCoreV3(source.ToPackageSource());
+      var repository = Repository.Factory.GetCoreV3(Source.ToPackageSource());
       var resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
       var packages =
         await resource.GetMetadataAsync(identity.Id, true, false, cache, _logger, cancellationToken);
@@ -105,7 +74,7 @@ namespace Rdds.Unity.Nuget.Services
     public async Task<IEnumerable<PackageVersion>> GetPackageVersionsAsync(string packageId, CancellationToken cancellationToken)
     {
       var cache = new SourceCacheContext();
-      var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
+      var repository = Repository.Factory.GetCoreV3(Source.ToPackageSource());
       var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
       var versions = await resource.GetAllVersionsAsync(packageId, cache, _logger, cancellationToken);
       versions = versions.OrderByDescending(v => v);
@@ -116,7 +85,7 @@ namespace Rdds.Unity.Nuget.Services
     public async Task<string?> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
     {
       var cache = new SourceCacheContext();
-      var repository = Repository.Factory.GetCoreV3(SelectedSource.ToPackageSource());
+      var repository = Repository.Factory.GetCoreV3(Source.ToPackageSource());
       var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
       var version = identity.Version.ToNugetVersion();
       var tempFilePath = _fileService.GetNupkgTempFilePath(identity);
@@ -171,12 +140,17 @@ namespace Rdds.Unity.Nuget.Services
       }
     }
 
-    public NugetService(ILogger logger, NugetConfigService configService, FileService fileService, FrameworkService frameworkService)
+    public NugetService(ILogger logger, 
+      NugetConfigService configService, 
+      FileService fileService, 
+      FrameworkService frameworkService, 
+      NugetPackageSource source)
     {
       _logger = logger;
       _configService = configService;
       _fileService = fileService;
       _frameworkService = frameworkService;
+      Source = source;
     }
   }
 }

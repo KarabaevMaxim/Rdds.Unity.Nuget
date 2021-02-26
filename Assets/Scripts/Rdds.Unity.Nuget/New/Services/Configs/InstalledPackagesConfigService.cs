@@ -89,6 +89,9 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
 
     public IEnumerable<string> RequireInstalledInAssemblies(string packageId) => 
       RequireInstalledPackage(packageId).InstalledInAssemblies;
+    
+    public IEnumerable<string>? GetInstalledInAssemblies(string packageId) => 
+      GetInstalledPackage(packageId)?.InstalledInAssemblies;
 
     private async Task SaveDefaultConfigFileAsync()
     {

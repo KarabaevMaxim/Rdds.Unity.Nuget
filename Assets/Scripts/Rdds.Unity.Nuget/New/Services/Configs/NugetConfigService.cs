@@ -22,7 +22,9 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
     // todo temp
     public string LocalRepositoryPath => @"D:\NugetRepository"; //_configFile.RepositoryPath;
     
-    public IEnumerable<string> RequireAvailableSources() => _configFile.PackageSources.Select(ps => ps.Key);
+    public IEnumerable<string> RequireAvailableSourcesKeys() => _configFile.PackageSources.Select(ps => ps.Key);
+    
+    public IEnumerable<NugetPackageSource> RequireAvailableSources() => _configFile.PackageSources;
 
     public NugetPackageSource RequirePackageSource(string key) => _configFile.PackageSources.First(ps => ps.Key == key);
     

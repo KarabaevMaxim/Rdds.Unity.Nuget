@@ -1,35 +1,78 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Rdds.Unity.Nuget.Entities;
+using Rdds.Unity.Nuget.New.Services;
+using Rdds.Unity.Nuget.New.Services.Configs;
 using Rdds.Unity.Nuget.New.UI;
 using Rdds.Unity.Nuget.New.UI.Controls.Models;
-using Rdds.Unity.Nuget.Other;
+using Rdds.Unity.Nuget.Utility;
+using UnityEngine;
 
 namespace Rdds.Unity.Nuget.New.Presenter
 {
   internal class AvailablePackagesPresenter
   {
+    private const int PageSize = 20;
+    
     private readonly IMainWindow _mainWindow;
+    private readonly RemotePackagesService _remotePackagesService;
+    private readonly InstalledPackagesConfigService _installedPackagesConfigService;
 
-    public void Initialize()
+    private CancellationTokenSource? _loadPackagesCancellationTokenSource;
+    private string _lastFilterString = null!;
+    
+    public async Task InitializeAsync()
     {
-      _mainWindow.AvailablePackages = new List<PackageRowPresentationModel>();
+      _lastFilterString = string.Empty;
+      await ReloadPackagesAsync();
+    }
+
+    public Task FilterByIdAsync(string idPart)
+    {
+      _lastFilterString = idPart;
+      return ReloadPackagesAsync();
+    }
+
+    public Task FilterBySourceAsync(string? source)
+    {
+      _remotePackagesService.ChangeActiveSource(source);
+      return ReloadPackagesAsync();
     }
     
-    public void FilterById(string idPart)
+    private async Task<PackageRowPresentationModel> CreatePresentationModelAsync(PackageInfo packageInfo)
     {
-      var filtered = _mainWindow.AvailablePackages
-        .Where(p => p.Id.ContainsIgnoreCase(idPart));
-      _mainWindow.AvailablePackages = filtered.ToList();
+      var id = packageInfo.Identity.Id;
+      var version = packageInfo.Identity.Version.ToString();
+      var icon = (packageInfo.IconPath == null
+                   ? Resources.Load<Texture>(Paths.DefaultIconResourceName)
+                   : await ImageHelper.LoadImageAsync(packageInfo.IconPath, CancellationToken.None)) 
+                 ?? ImageHelper.LoadImageFromResource(Paths.DefaultIconResourceName);
+      // todo take sources where package is available
+      // Must we have this property?
+      var sources = new List<string> { "Gitlab" };
+      var assemblies = _installedPackagesConfigService.GetInstalledInAssemblies(id) ?? new List<string>(0);
+      return new PackageRowPresentationModel(id, version, icon, sources, assemblies);
     }
 
-    public void FilterBySource(string? source)
+    private async Task ReloadPackagesAsync()
     {
-      // todo implement clear filter if source equals null
-      var filtered = _mainWindow.AvailablePackages
-        .Where(p => p.Sources.Contains(source));
-      _mainWindow.AvailablePackages = filtered.ToList();
+      _loadPackagesCancellationTokenSource?.Cancel();
+      _loadPackagesCancellationTokenSource = new CancellationTokenSource();
+      var tasks = (await _remotePackagesService.FindPackagesAsync(_lastFilterString, 0, PageSize, _loadPackagesCancellationTokenSource.Token))
+        .Select(CreatePresentationModelAsync);
+      var vms = await Task.WhenAll(tasks);
+      _mainWindow.AvailablePackages = vms;
     }
     
-    public AvailablePackagesPresenter(IMainWindow mainWindow) => _mainWindow = mainWindow;
+    public AvailablePackagesPresenter(IMainWindow mainWindow, 
+      RemotePackagesService remotePackagesService, 
+      InstalledPackagesConfigService installedPackagesConfigService)
+    {
+      _mainWindow = mainWindow;
+      _remotePackagesService = remotePackagesService;
+      _installedPackagesConfigService = installedPackagesConfigService;
+    }
   }
 }

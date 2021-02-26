@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using NuGet.Common;
 using Rdds.Unity.Nuget.New.Services.Configs;
@@ -10,7 +11,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
 {
   internal class SearchPackagesTabControl : TabControl
   {
-    private readonly INugetService _nugetService;
+    private readonly NugetService _nugetService;
     private readonly InstalledPackagesService _installedPackagesService;
     private readonly ILogger _logger;
 
@@ -47,9 +48,9 @@ namespace Rdds.Unity.Nuget.UI.Controls
       }
     }
 
-    private void OnSourcesControlValueChanged(ChangeEvent<string> args) => _nugetService.ChangeActiveSource(args.newValue);
+    private void OnSourcesControlValueChanged(ChangeEvent<string> args) => throw new NotImplementedException();
 
-    public SearchPackagesTabControl(VisualElement tabRoot, string title, INugetService nugetService,
+    public SearchPackagesTabControl(VisualElement tabRoot, string title, NugetService nugetService,
       NugetConfigService nugetConfigService, InstalledPackagesService installedPackagesService, ILogger logger) : base(tabRoot, title)
     {
       _nugetService = nugetService;
@@ -60,8 +61,8 @@ namespace Rdds.Unity.Nuget.UI.Controls
       searchButton.clickable.clicked += OnSearchButtonClicked;
       _filterStringTextField = tabRoot.Q<TextField>("FilterStringTextField");
       _header = tabRoot.Q<VisualElement>("Header");
-      _sourcesControl = new PopupField<string>(nugetConfigService.RequireAvailableSources().ToList(), 0);
-      InitializeSourcesControl(_nugetService.SelectedSource.Key);
+      _sourcesControl = new PopupField<string>(nugetConfigService.RequireAvailableSourcesKeys().ToList(), 0);
+      InitializeSourcesControl(null);
     }
   }
 }

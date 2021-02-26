@@ -73,6 +73,7 @@ namespace Rdds.Unity.Nuget.New.Services
       if (!File.Exists(filePath))
         return null;
       
+      // todo File.Create("", 4096, FileOptions.Asynchronous);
       using var stream = File.OpenRead(filePath);
       var bytes = new byte[stream.Length];
       await stream.ReadAsync(bytes, 0, (int)stream.Length, cancellationToken);

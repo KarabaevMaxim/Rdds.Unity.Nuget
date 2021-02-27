@@ -114,17 +114,18 @@ namespace Rdds.Unity.Nuget.New.Presenter
       
       //todo check it with ConfigureAwait(true/false)
       // args.newValue not working with async method
-      _installedPackagesPresenter.FilterById(idPart);
-      await _availablePackagesPresenter.FilterByIdAsync(idPart);
+      await Task.WhenAll(_installedPackagesPresenter.FilterByIdAsync(idPart),
+        _availablePackagesPresenter.FilterByIdAsync(idPart));
     }
     
-    private void FilterByAssembly(string assembly) => 
-      _installedPackagesPresenter.FilterByAssembly(assembly == AllAssemblies ? null : assembly);
+    private async void FilterByAssembly(string assembly) => 
+      await _installedPackagesPresenter.FilterByAssemblyAsync(assembly == AllAssemblies ? null : assembly);
 
     private async void FilterBySourceAsync(string source)
     {
-      _installedPackagesPresenter.FilterBySource(source == AllSources ? null : source);
-      await _availablePackagesPresenter.FilterBySourceAsync(source == AllSources ? null : source);
+      var filterSource = source == AllSources ? null : source;
+      await Task.WhenAll(_installedPackagesPresenter.FilterBySourceAsync(filterSource),
+        _availablePackagesPresenter.FilterBySourceAsync(filterSource));
     }
 
     #endregion
@@ -134,6 +135,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
       var sources = new List<string> { AllSources };
       sources.AddRange(_nugetConfigService.RequireAvailableSourcesKeys());
       _mainWindow.Sources = sources;
+      _mainWindow.SetSource(_remotePackagesService.SelectedSource?.Key ?? AllSources);
     }
 
     private async Task InitializeAssembliesAsync()
@@ -157,7 +159,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
       _nugetConfigService = nugetConfigService;
       _assembliesService = assembliesService;
       _remotePackagesService = remotePackagesService;
-      _installedPackagesPresenter = new InstalledPackagesPresenter(_mainWindow, localPackagesService, _installedPackagesConfigService);
+      _installedPackagesPresenter = new InstalledPackagesPresenter(_mainWindow, localPackagesService, _remotePackagesService, _installedPackagesConfigService);
       _availablePackagesPresenter = new AvailablePackagesPresenter(_mainWindow, _remotePackagesService, _installedPackagesConfigService);
       _packageDetailsPresenter = new PackageDetailsPresenter(_mainWindow.PackageDetailsControl);
       

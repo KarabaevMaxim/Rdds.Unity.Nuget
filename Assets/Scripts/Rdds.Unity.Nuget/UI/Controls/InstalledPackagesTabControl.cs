@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using Rdds.Unity.Nuget.New.Services;
 using Rdds.Unity.Nuget.Services;
 using UnityEngine.UIElements;
 

@@ -13,10 +13,12 @@ namespace Rdds.Unity.Nuget.New.UI
     
     PackageDetailsControl PackageDetailsControl { get; }
     
-    public IEnumerable<string> Sources { get; set; }
+    IEnumerable<string> Sources { get; set; }
     
-    public IEnumerable<string> Assemblies { get; set; }
+    IEnumerable<string> Assemblies { get; set; }
 
+    void SetSource(string key);
+    
     event Action<PackageRowPresentationModel>? PackageRowSelected;
     
     event Action<string>? FilterTextChanged;

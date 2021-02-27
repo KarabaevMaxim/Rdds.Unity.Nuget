@@ -17,68 +17,96 @@ namespace Rdds.Unity.Nuget.New.Presenter
   {
     private readonly IMainWindow _mainWindow;
     private readonly LocalPackagesService _localPackagesService;
+    private readonly RemotePackagesService _remotePackagesService;
     private readonly InstalledPackagesConfigService _installedPackagesConfigService;
-
-    private readonly List<PackageRowPresentationModel> _installedPackages;
+    
+    private readonly Dictionary<string, CancellationTokenSource?> _createModelCancellationTokenSources;
+    private CancellationTokenSource? _reloadPackagesCancellationTokenSource;
+    
+    private string _lastFilterString = null!;
+    private string? _lastSelectedAssembly;
+    private string? _lastSelectedSource;
 
     public async Task InitializeAsync()
     {
-      var identities = _localPackagesService.RequireInstalledPackages();
-
-      foreach (var identity in identities)
-      {
-        var packageInfo = await _localPackagesService.RequireInstalledPackageInfoAsync(identity.Id);
-        var pm = await CreatePresentationModelAsync(packageInfo);
-        _installedPackages.Add(pm);
-      }
-      
-      _mainWindow.InstalledPackages = _installedPackages;
+      _lastFilterString = string.Empty;
+      await ReloadPackagesAsync();
     }
     
-    public void FilterById(string idPart)
+    public Task FilterByIdAsync(string idPart)
     {
-      var filtered = _mainWindow.InstalledPackages
-        .Where(p => p.Id.ContainsIgnoreCase(idPart));
-      _mainWindow.InstalledPackages = filtered;
+      _lastFilterString = idPart;
+      return ReloadPackagesAsync();
     }
     
-    public void FilterByAssembly(string? assembly)
+    public Task FilterByAssemblyAsync(string? assembly)
     {
-      // todo implement clear filter if assembly equals null
-      var filtered = _mainWindow.InstalledPackages
-        .Where(p => p.InstalledInAssemblies.Contains(assembly));
-      _mainWindow.InstalledPackages = filtered;
+      _lastSelectedAssembly = assembly;
+      return ReloadPackagesAsync();
     }
     
-    public void FilterBySource(string? source)
+    public Task FilterBySourceAsync(string? source)
     {
-      // todo implement clear filter if source equals null
-      var filtered = _mainWindow.InstalledPackages
-        .Where(p => p.Sources.Contains(source));
-      _mainWindow.InstalledPackages = filtered;
+      _lastSelectedSource = source;
+      return ReloadPackagesAsync();
     }
 
     private async Task<PackageRowPresentationModel> CreatePresentationModelAsync(PackageInfo packageInfo)
     {
+      if (_createModelCancellationTokenSources.TryGetValue(packageInfo.Identity.Id, out var cancellationTokenSource))
+        cancellationTokenSource?.Cancel();
+      
+      _createModelCancellationTokenSources[packageInfo.Identity.Id] = new CancellationTokenSource();
+      var token = _createModelCancellationTokenSources[packageInfo.Identity.Id]!.Token;
+      
       var id = packageInfo.Identity.Id;
       var version = packageInfo.Identity.Version.ToString();
       var icon = (packageInfo.IconPath == null
                    ? Resources.Load<Texture>(Paths.DefaultIconResourceName)
-                   : await ImageHelper.LoadImageAsync(packageInfo.IconPath, CancellationToken.None)) 
+                   : await ImageHelper.LoadImageAsync(packageInfo.IconPath, token)) 
                  ?? ImageHelper.LoadImageFromResource(Paths.DefaultIconResourceName);
-      // todo take sources where package is available
-      // Must we have this property?
-      var sources = new List<string> { "Gitlab" };
+      
       var assemblies = _installedPackagesConfigService.RequireInstalledInAssemblies(id);
+      var sources = await _remotePackagesService.FindSourcesForPackageAsync(id, token);
       return new PackageRowPresentationModel(id, version, icon, sources, assemblies);
     }
+    
+    private async Task ReloadPackagesAsync()
+    {
+      _reloadPackagesCancellationTokenSource?.Cancel();
+      _reloadPackagesCancellationTokenSource = new CancellationTokenSource();
+      
+      var identities = _localPackagesService.RequireInstalledPackages()
+        .Where(i => i.Id.ContainsIgnoreCase(_lastFilterString));
+      
+      var tasks = identities.Select(async i =>
+      {
+        var packageInfo = await _localPackagesService.RequireInstalledPackageInfoAsync(i.Id);
+        return await CreatePresentationModelAsync(packageInfo);
+      });
 
-    public InstalledPackagesPresenter(IMainWindow mainWindow, LocalPackagesService localPackagesService, InstalledPackagesConfigService installedPackagesConfigService)
+      // todo break method if _reloadPackagesCancellationTokenSource.Cancelled
+      IEnumerable<PackageRowPresentationModel> packages = await Task.WhenAll(tasks);
+
+      if (!string.IsNullOrWhiteSpace(_lastSelectedAssembly))
+        packages = packages.Where(p => p.InstalledInAssemblies.Contains(_lastSelectedAssembly));
+
+      if (!string.IsNullOrWhiteSpace(_lastSelectedSource))
+        packages = packages.Where(p => p.Sources.Contains(_lastSelectedSource));
+
+      _mainWindow.InstalledPackages = packages;
+    }
+
+    public InstalledPackagesPresenter(IMainWindow mainWindow, 
+      LocalPackagesService localPackagesService, 
+      RemotePackagesService remotePackagesService,
+      InstalledPackagesConfigService installedPackagesConfigService)
     {
       _mainWindow = mainWindow;
       _localPackagesService = localPackagesService;
+      _remotePackagesService = remotePackagesService;
       _installedPackagesConfigService = installedPackagesConfigService;
-      _installedPackages = new List<PackageRowPresentationModel>();
+      _createModelCancellationTokenSources = new Dictionary<string, CancellationTokenSource?>();
     }
   }
 }

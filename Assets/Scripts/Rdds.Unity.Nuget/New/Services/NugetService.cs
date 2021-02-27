@@ -10,13 +10,12 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.NugetConfig;
-using Rdds.Unity.Nuget.New.Services;
 using Rdds.Unity.Nuget.New.Services.Configs;
 using Rdds.Unity.Nuget.Utility;
 using PackageIdentity = Rdds.Unity.Nuget.Entities.PackageIdentity;
 using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
-namespace Rdds.Unity.Nuget.Services
+namespace Rdds.Unity.Nuget.New.Services
 {
   internal class NugetService
   {

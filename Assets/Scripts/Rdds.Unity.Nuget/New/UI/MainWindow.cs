@@ -29,6 +29,7 @@ namespace Rdds.Unity.Nuget.New.UI
 
     private PackagesListControl? _installedListControl;
     private PackagesListControl? _availableListControl;
+    private PopupField<string> _sourcesPopup = null!;
 
     #endregion
 
@@ -97,7 +98,7 @@ namespace Rdds.Unity.Nuget.New.UI
 
     #endregion
 
-    #region Unity methods
+    #region Methods
 
     private void OnEnable()
     {
@@ -120,6 +121,8 @@ namespace Rdds.Unity.Nuget.New.UI
       PackageDetailsControl = new PackageDetailsControl(_rightPanel);
     }
 
+    public void SetSource(string key) => _sourcesPopup.value = key;
+
     #endregion
 
     #region Controls creating methods
@@ -133,9 +136,9 @@ namespace Rdds.Unity.Nuget.New.UI
 
     private void AddSourcesListPopup(List<string> items)
     {
-      var popup = new PopupField<string>(items, 0);
-      _sourcesListPlaceholder.Add(popup);
-      popup.RegisterValueChangedCallback(OnSourcesListPopupValueChanged);
+      _sourcesPopup = new PopupField<string>(items, 0);
+      _sourcesListPlaceholder.Add(_sourcesPopup);
+      _sourcesPopup.RegisterValueChangedCallback(OnSourcesListPopupValueChanged);
     }
 
     #endregion

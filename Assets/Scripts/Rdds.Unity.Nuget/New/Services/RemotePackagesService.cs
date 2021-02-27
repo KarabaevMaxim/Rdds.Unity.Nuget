@@ -24,7 +24,8 @@ namespace Rdds.Unity.Nuget.New.Services
     private Dictionary<string, NugetService> _nugetServices = null!;
 
     private NugetPackageSource? _selectedSource;
-
+    private IEnumerable<PackageInfoSourceWrapper>? _cachedLastPackages;
+    
     public NugetPackageSource? SelectedSource
     {
       get
@@ -59,14 +60,18 @@ namespace Rdds.Unity.Nuget.New.Services
         var tasks = _nugetServices
           .Select(p => p.Value)
           .Select(async service => (await service.SearchPackagesAsync(filterString, skip, take, cancellationToken))
-            .Select(package => new PackageInfoSourceWrapper(package, new []{ service.Source.Key })));
-        var allPackages = await Task.WhenAll(tasks);
-        return allPackages.SelectMany(p => p);
+            .Select(package => new PackageInfoSourceWrapper(package, new []{ service.Source.Key }))); // todo to think about collecting sources keys 
+        var packages = await Task.WhenAll(tasks);
+        _cachedLastPackages = packages.SelectMany(p => p);
       }
-
-      var packages = await _nugetServices[SelectedSource.Key]
-        .SearchPackagesAsync(filterString, skip, take, cancellationToken);
-      return packages.Select(p => new PackageInfoSourceWrapper(p, new []{ SelectedSource.Key }));
+      else
+      {
+        var packages = await _nugetServices[SelectedSource.Key]
+          .SearchPackagesAsync(filterString, skip, take, cancellationToken);
+        _cachedLastPackages = packages.Select(p => new PackageInfoSourceWrapper(p, new []{ SelectedSource.Key }));
+      }
+      
+      return _cachedLastPackages;
     }
 
     public IEnumerable<PackageVersion> FindPackageVersions(string packageId)
@@ -92,6 +97,12 @@ namespace Rdds.Unity.Nuget.New.Services
       var nugetServices = _nugetConfigService.RequireAvailableSources()
         .Select(source => new NugetService(_logger, _nugetConfigService, _fileService, _frameworkService, source));
       _nugetServices = nugetServices.ToDictionary(s => s.Source.Key);
+    }
+
+    public async Task<IEnumerable<string>> FindSourcesForPackageAsync(string packageId, CancellationToken cancellationToken)
+    {
+      var packages = await FindPackagesAsync(packageId, 0, 1, cancellationToken);
+      return packages.SelectMany(p => p.SourceKeys);
     }
 
     #region Constructor

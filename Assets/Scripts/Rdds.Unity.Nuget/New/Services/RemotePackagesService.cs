@@ -7,7 +7,6 @@ using NuGet.Common;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.NugetConfig;
 using Rdds.Unity.Nuget.New.Services.Configs;
-using Rdds.Unity.Nuget.Services;
 using UnityEditor;
 using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
@@ -60,7 +59,7 @@ namespace Rdds.Unity.Nuget.New.Services
         var tasks = _nugetServices
           .Select(p => p.Value)
           .Select(async service => (await service.SearchPackagesAsync(filterString, skip, take, cancellationToken))
-            .Select(package => new PackageInfoSourceWrapper(package, new []{ service.Source.Key }))); // todo to think about collecting sources keys 
+            .Select(package => new PackageInfoSourceWrapper(package, new[] { service.Source.Key }))); // todo to think about collecting sources keys 
         var packages = await Task.WhenAll(tasks);
         _cachedLastPackages = packages.SelectMany(p => p);
       }
@@ -68,17 +67,30 @@ namespace Rdds.Unity.Nuget.New.Services
       {
         var packages = await _nugetServices[SelectedSource.Key]
           .SearchPackagesAsync(filterString, skip, take, cancellationToken);
-        _cachedLastPackages = packages.Select(p => new PackageInfoSourceWrapper(p, new []{ SelectedSource.Key }));
+        _cachedLastPackages = packages.Select(p => new PackageInfoSourceWrapper(p, new[] { SelectedSource.Key }));
       }
       
       return _cachedLastPackages;
     }
-
-    public IEnumerable<PackageVersion> FindPackageVersions(string packageId)
+    
+    public async Task<PackageInfoSourceWrapper?> GetPackageInfoAsync(PackageIdentity identity, string sourceKey, CancellationToken cancellationToken)
     {
-      throw new NotImplementedException();
+      PackageInfo? package;
+      
+      try
+      {
+        package = await _nugetServices[sourceKey].GetPackageAsync(identity, cancellationToken);
+      }
+      catch (TaskCanceledException)
+      {
+        package = null;
+      }
+      
+      return package == null 
+        ? (PackageInfoSourceWrapper?)null 
+        : new PackageInfoSourceWrapper(package, new[] { sourceKey });
     }
-
+    
     public IEnumerable<FrameworkGroup> FindDependencies(PackageIdentity packageIdentity)
     {
       throw new NotImplementedException();
@@ -92,6 +104,12 @@ namespace Rdds.Unity.Nuget.New.Services
       throw new NotImplementedException();
     }
 
+    public async Task<IEnumerable<PackageVersionSourceWrapper>> FindPackageVersionsAsync(string packageId, string sourceKey, CancellationToken cancellationToken)
+    {
+      var versions = await _nugetServices[sourceKey].GetPackageVersionsAsync(packageId, cancellationToken);
+      return versions.Select(v => new PackageVersionSourceWrapper(v, sourceKey));
+    }
+    
     public void InitializeSources()
     {
       var nugetServices = _nugetConfigService.RequireAvailableSources()

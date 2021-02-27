@@ -19,6 +19,7 @@ namespace Rdds.Unity.Nuget.New.UI
     private IEnumerable<PackageRowPresentationModel> _availablePackages = null!;
     private IEnumerable<string> _sources = null!;
     private IEnumerable<string> _assemblies = null!;
+    private PackageDetailsPresentationModel? _selectedPackage;
     
     private VisualElement _leftPanel = null!;
     private VisualElement _rightPanel = null!;
@@ -30,7 +31,8 @@ namespace Rdds.Unity.Nuget.New.UI
     private PackagesListControl? _installedListControl;
     private PackagesListControl? _availableListControl;
     private PopupField<string> _sourcesPopup = null!;
-
+    private PackageDetailsControl _packageDetailsControl = null!;
+    
     #endregion
 
     #region Properties
@@ -85,7 +87,15 @@ namespace Rdds.Unity.Nuget.New.UI
       }
     }
 
-    public PackageDetailsControl PackageDetailsControl { get; private set; } = null!;
+    public PackageDetailsPresentationModel? SelectedPackage
+    {
+      get => _selectedPackage;
+      set
+      {
+        _selectedPackage = value;
+        _packageDetailsControl.Details = _selectedPackage;
+      }
+    } 
 
     #endregion
 
@@ -118,7 +128,7 @@ namespace Rdds.Unity.Nuget.New.UI
       _root.fixedPaneIndex = 1;
       _root.fixedPaneInitialDimension = 300;
 
-      PackageDetailsControl = new PackageDetailsControl(_rightPanel);
+      _packageDetailsControl = new PackageDetailsControl(_rightPanel);
     }
 
     public void SetSource(string key) => _sourcesPopup.value = key;

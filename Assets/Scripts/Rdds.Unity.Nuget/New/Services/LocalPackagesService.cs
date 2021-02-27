@@ -62,6 +62,12 @@ namespace Rdds.Unity.Nuget.New.Services
       return _nuspecFileService.RequirePackageInfoFromNuspecAsync(path);
     }
 
+    public bool IsPackageInstalled(string packageId)
+    {
+      var package = _installedPackagesConfigService.GetInstalledPackage(packageId);
+      return package != null;
+    }
+
     public LocalPackagesService(InstalledPackagesConfigService installedPackagesConfigService,
       LocalPackagesConfigService localPackagesConfigService,
       NuspecFileService nuspecFileService,

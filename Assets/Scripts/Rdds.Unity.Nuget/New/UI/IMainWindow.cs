@@ -11,8 +11,8 @@ namespace Rdds.Unity.Nuget.New.UI
     
     IEnumerable<PackageRowPresentationModel> AvailablePackages { get; set; }
     
-    PackageDetailsControl PackageDetailsControl { get; }
-    
+    PackageDetailsPresentationModel? SelectedPackage { get; set; }
+
     IEnumerable<string> Sources { get; set; }
     
     IEnumerable<string> Assemblies { get; set; }

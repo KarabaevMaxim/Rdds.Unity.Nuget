@@ -26,8 +26,8 @@
                 <engine:Label name="DependenciesLabel" />
             </engine:Foldout>
 
-            <engine:Foldout name="AssembliesPanel" text="Assemblies" class="Block">
-                <engine:Label name="AssembliesNotFoundLabel" text="Assemblies not found"/>
+            <engine:Foldout name="AssembliesPanel" text="Installed in" class="Block">
+                <engine:Label name="AssembliesNotFoundLabel" text="Not installed"/>
                 <engine:ListView name="ListView" class="">
                 </engine:ListView>
             </engine:Foldout>

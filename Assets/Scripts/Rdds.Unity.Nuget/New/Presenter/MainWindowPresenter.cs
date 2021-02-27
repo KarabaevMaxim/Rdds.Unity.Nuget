@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.New.Services;
 using Rdds.Unity.Nuget.New.Services.Configs;
 using Rdds.Unity.Nuget.New.UI;
@@ -28,9 +27,10 @@ namespace Rdds.Unity.Nuget.New.Presenter
     private readonly InstalledPackagesPresenter _installedPackagesPresenter;
     private readonly AvailablePackagesPresenter _availablePackagesPresenter;
     private readonly PackageDetailsPresenter _packageDetailsPresenter;
-
-    private CancellationTokenSource? _loadDetailsCancellationTokenSource;
+    
     private CancellationTokenSource? _filterByStringDelayCancellationTokenSource;
+
+    private PackageRowPresentationModel? _lastSelectedPackageRow;
     
     #endregion
 
@@ -48,51 +48,13 @@ namespace Rdds.Unity.Nuget.New.Presenter
       await Task.WhenAll(_installedPackagesPresenter.InitializeAsync(), _availablePackagesPresenter.InitializeAsync());
     }
     
-    private void SelectPackageRow(PackageRowPresentationModel selected)
+    private async void SelectPackageRowAsync(PackageRowPresentationModel selected)
     {
-      _packageDetailsPresenter.Reset();
-      _loadDetailsCancellationTokenSource?.Cancel();
-      _loadDetailsCancellationTokenSource = new CancellationTokenSource();
-      var identity = new PackageIdentity(selected.Id, PackageVersion.Parse(selected.Version)); 
-      // var installed = EditorContext.InstalledPackagesService.IsPackageInstalled(selected.Id);
-      // var installIcon = installed
-      //   ? ImageHelper.LoadImageFromResource(Paths.InstallPackageButtonIconResourceName)
-      //   : ImageHelper.LoadImageFromResource(Paths.RemovePackageButtonIconResourceName);
-      // Action installAction = () => { };
-      // Action? updateAction = installed && !EditorContext.InstalledPackagesService.EqualInstalledPackageVersion(identity)
-      //                    ? () => { }
-      //                    : (Action?)null;
-      //
-      // var assemblies = _assemblies
-      //   .Select(a =>
-      //     new AssemblyPackageDetailsPresentationModel(ImageHelper.LoadBuiltinImage("AssemblyDefinitionAsset Icon"),
-      //       a.Name, null, ImageHelper.LoadImageFromResource(Paths.InstallPackageButtonIconResourceName), () => { }))
-      //   .ToList();
-      // var details = new PackageDetailsPresentationModel(selected.Id, selected.Icon, selected.Version,
-      //   new List<string> {selected.Version}, selected.Sources.First(), selected.Sources, null,
-      //   null, installIcon, installAction, updateAction, assemblies);
-      // _packageDetailsControl.Details = details;
-      //
-      // var versions = await EditorContext.NugetService.GetPackageVersionsAsync(selected.Id, _loadDetailsCancellationTokenSource.Token);
-      // details.Versions = versions.Select(v => v.ToString()).ToList();
-      // // delayed adding versions
-      // _packageDetailsControl.Details = details;
-      //
-      // var detailInfo = await EditorContext.NugetService.GetPackageAsync(identity, _loadDetailsCancellationTokenSource.Token);
-      //
-      // if (detailInfo == null)
-      // {
-      //   LogHelper.LogWarning($"Package {identity.Id} with version {identity.Version} not found in online sources");
-      //   return;
-      // }
-      //
-      // details.Dependencies = detailInfo.Dependencies?
-      // .Select(d => new DependenciesPresentationModel(d.TargetFramework.Name, d.Dependencies
-      //   .Select(dd => new DependencyPresentationModel(dd.Id, dd.Version.ToString()))));
-      // details.Description = detailInfo.Description;
-      //
-      // // delayed adding dependencies and description
-      // _packageDetailsControl.Details = details;
+      if (_lastSelectedPackageRow.HasValue && _lastSelectedPackageRow.Value.Id == selected.Id)
+        return;
+      
+      _lastSelectedPackageRow = selected;
+      await _packageDetailsPresenter.ChangeSelectedPackageRowAsync(selected);
     }
 
     #region Filtration methods
@@ -161,9 +123,9 @@ namespace Rdds.Unity.Nuget.New.Presenter
       _remotePackagesService = remotePackagesService;
       _installedPackagesPresenter = new InstalledPackagesPresenter(_mainWindow, localPackagesService, _remotePackagesService, _installedPackagesConfigService);
       _availablePackagesPresenter = new AvailablePackagesPresenter(_mainWindow, _remotePackagesService, _installedPackagesConfigService);
-      _packageDetailsPresenter = new PackageDetailsPresenter(_mainWindow.PackageDetailsControl);
+      _packageDetailsPresenter = new PackageDetailsPresenter(_mainWindow, localPackagesService, _installedPackagesConfigService, _remotePackagesService);
       
-      _mainWindow.PackageRowSelected += SelectPackageRow; 
+      _mainWindow.PackageRowSelected += SelectPackageRowAsync; 
       _mainWindow.FilterTextChanged += FilterByIdAsync;
       _mainWindow.AssemblyChanged += FilterByAssembly;
       _mainWindow.SourceChanged += FilterBySourceAsync;

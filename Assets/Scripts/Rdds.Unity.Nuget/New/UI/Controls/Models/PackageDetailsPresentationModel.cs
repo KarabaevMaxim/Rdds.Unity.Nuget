@@ -12,11 +12,11 @@ namespace Rdds.Unity.Nuget.New.UI.Controls.Models
     
     public string SelectedVersion { get; }
     
-    public List<string> Versions { get; set; }
+    public IEnumerable<string> Versions { get; set; }
     
     public string SelectedSource { get; }
     
-    public List<string> AvailableInSources { get; }
+    public IEnumerable<string> AvailableInSources { get; }
     
     public string? Description { get; set; }
 
@@ -24,17 +24,24 @@ namespace Rdds.Unity.Nuget.New.UI.Controls.Models
     
     public Texture InstallRemoveButtonIcon { get; }
     
-    public List<AssemblyPackageDetailsPresentationModel> Assemblies { get; }
+    public IEnumerable<AssemblyPackageDetailsPresentationModel> Assemblies { get; }
     
     public Action? InstallRemoveButtonAction { get; }
     
     public Action? UpdateButtonAction { get; }
 
-    public PackageDetailsPresentationModel(string id, Texture icon, string selectedVersion, List<string> versions,
-      string selectedSource, List<string> availableInSources, string? description,
-      IEnumerable<DependenciesPresentationModel>? dependencies, Texture installRemoveButtonIcon,
-      Action? installRemoveButtonAction, Action? updateButtonAction,
-      List<AssemblyPackageDetailsPresentationModel> assemblies)
+    public PackageDetailsPresentationModel(string id, 
+      Texture icon, 
+      string selectedVersion, 
+      IEnumerable<string> versions,
+      string selectedSource, 
+      IEnumerable<string> availableInSources, 
+      string? description,
+      IEnumerable<DependenciesPresentationModel>? dependencies, 
+      Texture installRemoveButtonIcon,
+      Action? installRemoveButtonAction, 
+      Action? updateButtonAction,
+      IEnumerable<AssemblyPackageDetailsPresentationModel> assemblies)
     {
       Id = id;
       Icon = icon;

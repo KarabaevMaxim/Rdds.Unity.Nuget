@@ -23,8 +23,7 @@ namespace Rdds.Unity.Nuget.New.Services
     private Dictionary<string, NugetService> _nugetServices = null!;
 
     private NugetPackageSource? _selectedSource;
-    private IEnumerable<PackageInfoSourceWrapper>? _cachedLastPackages;
-    
+
     public NugetPackageSource? SelectedSource
     {
       get
@@ -52,25 +51,31 @@ namespace Rdds.Unity.Nuget.New.Services
     public void ChangeActiveSource(string? key) => 
       SelectedSource = string.IsNullOrWhiteSpace(key) ? null : _nugetConfigService.RequirePackageSource(key!);
 
-    public async Task<IEnumerable<PackageInfoSourceWrapper>> FindPackagesAsync(string filterString, int skip, int take, CancellationToken cancellationToken)
+    public async Task<IEnumerable<PackageInfoSourceWrapper>> FindPackagesAsync(string filterString, 
+      int skip, 
+      int take, 
+      CancellationToken cancellationToken)
     {
       if (SelectedSource == null)
       {
-        var tasks = _nugetServices
-          .Select(p => p.Value)
-          .Select(async service => (await service.SearchPackagesAsync(filterString, skip, take, cancellationToken))
-            .Select(package => new PackageInfoSourceWrapper(package, new[] { service.Source.Key }))); // todo to think about collecting sources keys 
-        var packages = await Task.WhenAll(tasks);
-        _cachedLastPackages = packages.SelectMany(p => p);
+        var tasks = _nugetServices.Select(p =>
+          FindPackagesInternalAsync(filterString, skip, take, p.Key, cancellationToken));
+
+        return (await Task.WhenAll(tasks)).SelectMany(p => p);
       }
-      else
-      {
-        var packages = await _nugetServices[SelectedSource.Key]
-          .SearchPackagesAsync(filterString, skip, take, cancellationToken);
-        _cachedLastPackages = packages.Select(p => new PackageInfoSourceWrapper(p, new[] { SelectedSource.Key }));
-      }
-      
-      return _cachedLastPackages;
+
+      return await FindPackagesInternalAsync(filterString, skip, take, SelectedSource.Key, cancellationToken);
+    }
+
+    private async Task<IEnumerable<PackageInfoSourceWrapper>> FindPackagesInternalAsync(string filterString, 
+      int skip,
+      int take, 
+      string sourceKey, 
+      CancellationToken cancellationToken)
+    {
+      var packages = await _nugetServices[sourceKey]
+        .SearchPackagesAsync(filterString, skip, take, cancellationToken);
+      return packages.Select(p => new PackageInfoSourceWrapper(p, new []{sourceKey}));
     }
     
     public async Task<PackageInfoSourceWrapper?> GetPackageInfoAsync(PackageIdentity identity, string sourceKey, CancellationToken cancellationToken)

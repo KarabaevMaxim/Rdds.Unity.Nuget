@@ -121,7 +121,12 @@ namespace Rdds.Unity.Nuget.New.UI.Controls
     private void CreateVersionsControl(string selectedVersion, IEnumerable<string> versions)
     {
       _versionsControl?.RemoveFromHierarchy();
-      _versionsControl = new PopupField<string>(versions.ToList(), 0);
+      var items = versions.ToList();
+
+      if (items.Count == 0)
+        return;
+
+      _versionsControl = new PopupField<string>(items, 0);
       _versionsControl.value = selectedVersion;
       _versionsControl.style.height = new StyleLength(new Length(100, LengthUnit.Percent));
       _versionsPlaceholder.Add(_versionsControl);
@@ -131,7 +136,13 @@ namespace Rdds.Unity.Nuget.New.UI.Controls
     private void CreateSourcesControl(string selectedSource, IEnumerable<string> sources)
     {
       _sourcesControl?.RemoveFromHierarchy();
-      _sourcesControl = new PopupField<string>(sources.ToList(), 0);
+      
+      var items = sources.ToList();
+
+      if (items.Count == 0)
+        return;
+      
+      _sourcesControl = new PopupField<string>(items, 0);
       _sourcesControl.value = selectedSource;
       _sourcesControl.style.height = new StyleLength(new Length(100, LengthUnit.Percent));
       _sourcesPlaceholder.Add(_sourcesControl);

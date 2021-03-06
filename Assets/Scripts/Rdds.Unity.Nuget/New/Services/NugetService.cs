@@ -8,6 +8,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.NugetConfig;
 using Rdds.Unity.Nuget.New.Services.Configs;
@@ -74,8 +75,25 @@ namespace Rdds.Unity.Nuget.New.Services
     {
       var cache = new SourceCacheContext();
       var repository = Repository.Factory.GetCoreV3(Source.ToPackageSource());
-      var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
-      var versions = await resource.GetAllVersionsAsync(packageId, cache, _logger, cancellationToken);
+      IEnumerable<NuGetVersion>? versions;
+
+      try
+      {
+        var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
+        versions = await resource.GetAllVersionsAsync(packageId, cache, _logger, cancellationToken);
+      }
+      catch (TaskCanceledException)
+      {
+        return Enumerable.Empty<PackageVersion>();
+      }
+      catch(FatalProtocolException ex)
+      {
+        if (ex.InnerException?.GetType() != typeof(TaskCanceledException)) 
+          LogHelper.LogWarningException(ex);
+        
+        return Enumerable.Empty<PackageVersion>();
+      }
+      
       versions = versions.OrderByDescending(v => v);
       var last = versions.First();
       return versions.Where(v => !v.IsPrerelease || v == last).Select(v => v.ToPackageVersion());

@@ -53,12 +53,12 @@ namespace Rdds.Unity.Nuget.New.UI.Controls
       };
     }
 
-    public PackagesListControl(VisualElement parent, int indexInParent, string title, int listViewHeight, List<PackageRowPresentationModel> sourceItems,
+    public PackagesListControl(VisualElement parent, string title, int listViewHeight, List<PackageRowPresentationModel> sourceItems,
       Action<PackageRowPresentationModel> selectionChangeHandler)
     {
       var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.PackagesListControlLayout);
       var root = visualTree.CloneTree();
-      parent.Insert(indexInParent, root);
+      parent.Add(root);
 
       _rowTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.PackageRowLayout);
       _titleLabel = root.Q<Label>("Title");

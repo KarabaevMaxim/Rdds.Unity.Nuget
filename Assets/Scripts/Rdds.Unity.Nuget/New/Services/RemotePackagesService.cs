@@ -4,15 +4,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.NugetConfig;
 using Rdds.Unity.Nuget.New.Services.Configs;
 using UnityEditor;
-using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
 namespace Rdds.Unity.Nuget.New.Services
 {
-  internal class RemotePackagesService
+  internal class RemotePackagesService : IDisposable
   {
     #region Fields and properties
 
@@ -67,17 +67,6 @@ namespace Rdds.Unity.Nuget.New.Services
       return await FindPackagesInternalAsync(filterString, skip, take, SelectedSource.Key, cancellationToken);
     }
 
-    private async Task<IEnumerable<PackageInfoSourceWrapper>> FindPackagesInternalAsync(string filterString, 
-      int skip,
-      int take, 
-      string sourceKey, 
-      CancellationToken cancellationToken)
-    {
-      var packages = await _nugetServices[sourceKey]
-        .SearchPackagesAsync(filterString, skip, take, cancellationToken);
-      return packages.Select(p => new PackageInfoSourceWrapper(p, new []{sourceKey}));
-    }
-    
     public async Task<PackageInfoSourceWrapper?> GetPackageInfoAsync(PackageIdentity identity, string sourceKey, CancellationToken cancellationToken)
     {
       var package = await _nugetServices[sourceKey].GetPackageAsync(identity, cancellationToken);
@@ -86,11 +75,8 @@ namespace Rdds.Unity.Nuget.New.Services
         : new PackageInfoSourceWrapper(package, new[] { sourceKey });
     }
     
-    public IEnumerable<FrameworkGroup> FindDependencies(PackageIdentity packageIdentity)
-    {
-      throw new NotImplementedException();
-    }
-    
+    public IEnumerable<FrameworkGroup> FindDependencies(PackageIdentity packageIdentity) => throw new NotImplementedException();
+
     public string DownloadPackage(PackageIdentity identity)
     { 
       // загружает архив из сети
@@ -108,7 +94,7 @@ namespace Rdds.Unity.Nuget.New.Services
     public void InitializeSources()
     {
       var nugetServices = _nugetConfigService.RequireAvailableSources()
-        .Select(source => new NugetService(_logger, _nugetConfigService, _fileService, _frameworkService, source));
+        .Select(source => new NugetService(_logger, _nugetConfigService, _fileService, _frameworkService, source, new SourceCacheContext()));
       _nugetServices = nugetServices.ToDictionary(s => s.Source.Key);
     }
 
@@ -118,6 +104,33 @@ namespace Rdds.Unity.Nuget.New.Services
       return packages.SelectMany(p => p.SourceKeys);
     }
 
+    #region IDisposable
+
+    public void Dispose()
+    {
+      foreach (var pair in _nugetServices) 
+        pair.Value.Dispose();
+
+      _nugetServices.Clear();
+    }
+
+    #endregion
+
+    #region Private methods
+
+    private async Task<IEnumerable<PackageInfoSourceWrapper>> FindPackagesInternalAsync(string filterString, 
+      int skip,
+      int take, 
+      string sourceKey, 
+      CancellationToken cancellationToken)
+    {
+      var packages = await _nugetServices[sourceKey]
+        .SearchPackagesAsync(filterString, skip, take, cancellationToken);
+      return packages.Select(p => new PackageInfoSourceWrapper(p, new []{sourceKey}));
+    }
+
+    #endregion
+    
     #region Constructor
 
     public RemotePackagesService(NugetConfigService nugetConfigService, 

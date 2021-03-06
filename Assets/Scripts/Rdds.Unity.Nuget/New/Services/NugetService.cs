@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -18,14 +19,21 @@ using PackageInfo = Rdds.Unity.Nuget.Entities.PackageInfo;
 
 namespace Rdds.Unity.Nuget.New.Services
 {
-  internal class NugetService
+  internal class NugetService : IDisposable
   {
+    #region Fields and properties
+
     private readonly ILogger _logger;
     private readonly NugetConfigService _configService;
     private readonly FileService _fileService;
     private readonly FrameworkService _frameworkService;
-    
+    private readonly SourceCacheContext _cacheContext;
+
     public NugetPackageSource Source { get; }
+
+    #endregion
+
+    #region Public methods
 
     public async Task<IEnumerable<PackageInfo>> SearchPackagesAsync(string filterString, int skip, int take, CancellationToken cancellationToken)
     {
@@ -41,7 +49,6 @@ namespace Rdds.Unity.Nuget.New.Services
     public async Task<IEnumerable<FrameworkGroup>> FindDependenciesAsync(PackageIdentity packageIdentity,
       CancellationToken cancellationToken)
     {
-      var cacheContext = new SourceCacheContext();
       var repositories = new[] { Repository.Factory.GetCoreV3(Source.ToPackageSource()) };
       var currentFramework = _frameworkService.RequireCurrentFramework();
       var dependencies = new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default);
@@ -49,7 +56,7 @@ namespace Rdds.Unity.Nuget.New.Services
       await FindPackageDependenciesRecursive(
         packageIdentity.ToNugetPackageIdentity(),
         currentFramework.ToNugetFramework(),
-        cacheContext,
+        _cacheContext,
         repositories,
         dependencies,
         cancellationToken);
@@ -62,25 +69,23 @@ namespace Rdds.Unity.Nuget.New.Services
 
     public async Task<PackageInfo?> GetPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
     {
-      var cache = new SourceCacheContext();
       var repository = Repository.Factory.GetCoreV3(Source.ToPackageSource());
       var resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
       var packages =
-        await resource.GetMetadataAsync(identity.Id, true, false, cache, _logger, cancellationToken);
+        await resource.GetMetadataAsync(identity.Id, true, false, _cacheContext, _logger, cancellationToken);
       return packages.Select(p => p.ToPackageInfo()).FirstOrDefault(p => p.Identity.Version.Equals(identity.Version));
     }
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public async Task<IEnumerable<PackageVersion>> GetPackageVersionsAsync(string packageId, CancellationToken cancellationToken)
     {
-      var cache = new SourceCacheContext();
       var repository = Repository.Factory.GetCoreV3(Source.ToPackageSource());
       IEnumerable<NuGetVersion>? versions;
 
       try
       {
         var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
-        versions = await resource.GetAllVersionsAsync(packageId, cache, _logger, cancellationToken);
+        versions = await resource.GetAllVersionsAsync(packageId, _cacheContext, _logger, cancellationToken);
       }
       catch (TaskCanceledException)
       {
@@ -101,7 +106,6 @@ namespace Rdds.Unity.Nuget.New.Services
 
     public async Task<string?> DownloadPackageAsync(PackageIdentity identity, CancellationToken cancellationToken)
     {
-      var cache = new SourceCacheContext();
       var repository = Repository.Factory.GetCoreV3(Source.ToPackageSource());
       var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
       var version = identity.Version.ToNugetVersion();
@@ -109,7 +113,7 @@ namespace Rdds.Unity.Nuget.New.Services
 
       using (var stream = _fileService.CreateWriteFileStream(tempFilePath))
       {
-        var result = await resource.CopyNupkgToStreamAsync(identity.Id, version, stream, cache, _logger, cancellationToken);
+        var result = await resource.CopyNupkgToStreamAsync(identity.Id, version, stream, _cacheContext, _logger, cancellationToken);
 
         if (!result)
         {
@@ -126,6 +130,16 @@ namespace Rdds.Unity.Nuget.New.Services
       return packageDirectoryPath;
     }
 
+    #endregion
+
+    #region IDisposable
+
+    public void Dispose() => _cacheContext.Dispose();
+
+    #endregion
+
+    #region Private methods
+    
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     private async Task FindPackageDependenciesRecursive(NuGet.Packaging.Core.PackageIdentity package,
       NuGetFramework framework,
@@ -157,18 +171,26 @@ namespace Rdds.Unity.Nuget.New.Services
       }
     }
 
+    #endregion
+
+    #region Constructor
+
     public NugetService(ILogger logger, 
       NugetConfigService configService, 
       FileService fileService, 
       FrameworkService frameworkService, 
-      NugetPackageSource source)
+      NugetPackageSource source,
+      SourceCacheContext cacheContext)
     {
       _logger = logger;
       _configService = configService;
       _fileService = fileService;
       _frameworkService = frameworkService;
+      _cacheContext = cacheContext;
       Source = source;
     }
+
+    #endregion
   }
 }
   

@@ -28,6 +28,8 @@ namespace Rdds.Unity.Nuget.New.UI
     private TwoPaneSplitView _root = null!;
     private TextField _filterTextField = null!;
     private Label _loadingLabel = null!;
+    private VisualElement _installedPackagesPlaceholder = null!;
+    private VisualElement _availablePackagesPlaceholder = null!;
 
     private PackagesListControl? _installedListControl;
     private PackagesListControl? _availableListControl;
@@ -48,7 +50,7 @@ namespace Rdds.Unity.Nuget.New.UI
         _installedPackages = value;
 
         if (_installedListControl == null)
-          _installedListControl = new PackagesListControl(_leftPanel, 1, "Installed", 200, _installedPackages.ToList(),
+          _installedListControl = new PackagesListControl(_installedPackagesPlaceholder, "Installed", 200, _installedPackages.ToList(),
             OnPackagesListSelectionChanged);
         else
           _installedListControl.Refresh(_installedPackages.ToList());
@@ -63,7 +65,7 @@ namespace Rdds.Unity.Nuget.New.UI
         _availablePackages = value;
 
         if (_availableListControl == null)
-          _availableListControl = new PackagesListControl(_leftPanel, 2, "Available", 200, AvailablePackages.ToList(),
+          _availableListControl = new PackagesListControl(_availablePackagesPlaceholder, "Available", 200, AvailablePackages.ToList(),
             OnPackagesListSelectionChanged);
         else
           _availableListControl.Refresh(_availablePackages.ToList());
@@ -140,6 +142,8 @@ namespace Rdds.Unity.Nuget.New.UI
       _filterTextField = _leftPanel.Q<TextField>("FilterTextField");
       _filterTextField.RegisterValueChangedCallback(OnFilterTextValueChanged);
       _loadingLabel = _leftPanel.Q<Label>("LoadingLabel");
+      _installedPackagesPlaceholder = _leftPanel.Q<VisualElement>("InstalledPackagesPlaceholder");
+      _availablePackagesPlaceholder = _leftPanel.Q<VisualElement>("AvailablePackagesPlaceholder");
       
       _root.fixedPaneIndex = 1;
       _root.fixedPaneInitialDimension = 300;

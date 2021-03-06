@@ -76,8 +76,8 @@ namespace Rdds.Unity.Nuget.New.Presenter
       
       try
       {
-        // wait for 1 sec after last input
-        await Task.Delay(1000, _filterByStringDelayCancellationTokenSource.Token).ConfigureAwait(true);
+        // wait for 0.5 sec after last input
+        await Task.Delay(TimeSpan.FromSeconds(0.5f), _filterByStringDelayCancellationTokenSource.Token).ConfigureAwait(true);
       }
       catch (TaskCanceledException)
       {

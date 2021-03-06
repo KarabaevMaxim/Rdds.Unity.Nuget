@@ -55,7 +55,15 @@ namespace Rdds.Unity.Nuget.New.Presenter
       // delayed adding versions
       _mainWindow.SelectedPackage = selectedDetails;
 
-      var detailInfo = await _remotePackagesService.GetPackageInfoAsync(identity, selected.Sources.First(), _loadDetailsCancellationTokenSource.Token);
+      PackageInfoSourceWrapper? detailInfo = null;
+      
+      try
+      {
+        detailInfo = await _remotePackagesService.GetPackageInfoAsync(identity, selected.Sources.First(), _loadDetailsCancellationTokenSource.Token);
+      }
+      catch (TaskCanceledException)
+      {
+      }
       
       if (!detailInfo.HasValue)
       {

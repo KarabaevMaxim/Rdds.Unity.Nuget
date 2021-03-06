@@ -80,17 +80,7 @@ namespace Rdds.Unity.Nuget.New.Services
     
     public async Task<PackageInfoSourceWrapper?> GetPackageInfoAsync(PackageIdentity identity, string sourceKey, CancellationToken cancellationToken)
     {
-      PackageInfo? package;
-      
-      try
-      {
-        package = await _nugetServices[sourceKey].GetPackageAsync(identity, cancellationToken);
-      }
-      catch (TaskCanceledException)
-      {
-        package = null;
-      }
-      
+      var package = await _nugetServices[sourceKey].GetPackageAsync(identity, cancellationToken);
       return package == null 
         ? (PackageInfoSourceWrapper?)null 
         : new PackageInfoSourceWrapper(package, new[] { sourceKey });

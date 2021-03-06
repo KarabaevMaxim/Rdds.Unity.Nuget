@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
     private const string AllAssemblies = "All assemblies";
     private const string AllSources = "All sources";
 
-    #region Fields
+    #region Fields and properties
 
     private readonly IMainWindow _mainWindow;
     private readonly InstalledPackagesConfigService _installedPackagesConfigService;
@@ -31,21 +32,30 @@ namespace Rdds.Unity.Nuget.New.Presenter
     private CancellationTokenSource? _filterByStringDelayCancellationTokenSource;
 
     private PackageRowPresentationModel? _lastSelectedPackageRow;
+
+    private bool IsLoading
+    {
+      set => _mainWindow.IsLoading = value;
+    }
     
     #endregion
 
     public async Task InitializeAsync()
     {
-      await Task.WhenAll(_installedPackagesConfigService.LoadConfigFileAsync(),
-        _localPackagesConfigService.LoadConfigFileAsync(), 
-        _nugetConfigService.LoadConfigFileAsync());
+      Func<Task> action = async () =>
+      {
+        await Task.WhenAll(_installedPackagesConfigService.LoadConfigFileAsync(),
+          _localPackagesConfigService.LoadConfigFileAsync(), 
+          _nugetConfigService.LoadConfigFileAsync());
       
-      _remotePackagesService.InitializeSources();
+        _remotePackagesService.InitializeSources();
       
-      InitializeSources();
-      await InitializeAssembliesAsync();
+        InitializeSources();
+        await InitializeAssembliesAsync();
 
-      await Task.WhenAll(_installedPackagesPresenter.InitializeAsync(), _availablePackagesPresenter.InitializeAsync());
+        await Task.WhenAll(_installedPackagesPresenter.InitializeAsync(), _availablePackagesPresenter.InitializeAsync());
+      };
+      await StartLoadingOperationAsync(action);
     }
     
     private async void SelectPackageRowAsync(PackageRowPresentationModel selected)
@@ -76,18 +86,19 @@ namespace Rdds.Unity.Nuget.New.Presenter
       
       //todo check it with ConfigureAwait(true/false)
       // args.newValue not working with async method
-      await Task.WhenAll(_installedPackagesPresenter.FilterByIdAsync(idPart),
-        _availablePackagesPresenter.FilterByIdAsync(idPart));
+      await StartLoadingOperationAsync(() => Task.WhenAll(
+        _installedPackagesPresenter.FilterByIdAsync(idPart),
+        _availablePackagesPresenter.FilterByIdAsync(idPart)));
     }
     
     private async void FilterByAssembly(string assembly) => 
-      await _installedPackagesPresenter.FilterByAssemblyAsync(assembly == AllAssemblies ? null : assembly);
+      await StartLoadingOperationAsync(() => _installedPackagesPresenter.FilterByAssemblyAsync(assembly == AllAssemblies ? null : assembly));
 
     private async void FilterBySourceAsync(string source)
     {
       var filterSource = source == AllSources ? null : source;
-      await Task.WhenAll(_installedPackagesPresenter.FilterBySourceAsync(filterSource),
-        _availablePackagesPresenter.FilterBySourceAsync(filterSource));
+      await StartLoadingOperationAsync(() => 
+        Task.WhenAll(_installedPackagesPresenter.FilterBySourceAsync(filterSource), _availablePackagesPresenter.FilterBySourceAsync(filterSource)));
     }
 
     #endregion
@@ -105,6 +116,13 @@ namespace Rdds.Unity.Nuget.New.Presenter
       var assemblies = new List<string> { AllAssemblies };
       assemblies.AddRange((await _assembliesService.RequireAllAssembliesAsync()).Select(a => a.Name));
       _mainWindow.Assemblies = assemblies;
+    }
+
+    private async Task StartLoadingOperationAsync(Func<Task> action)
+    {
+      IsLoading = true;
+      await action.Invoke();
+      IsLoading = false;
     }
 
     public MainWindowPresenter(IMainWindow mainWindow, 

@@ -16,6 +16,8 @@ namespace Rdds.Unity.Nuget.New.UI
     IEnumerable<string> Sources { get; set; }
     
     IEnumerable<string> Assemblies { get; set; }
+    
+    bool IsLoading { set; }
 
     void SetSource(string key);
     

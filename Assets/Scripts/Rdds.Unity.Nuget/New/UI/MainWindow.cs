@@ -27,11 +27,14 @@ namespace Rdds.Unity.Nuget.New.UI
     private VisualElement _sourcesListPlaceholder = null!;
     private TwoPaneSplitView _root = null!;
     private TextField _filterTextField = null!;
+    private Label _loadingLabel = null!;
 
     private PackagesListControl? _installedListControl;
     private PackagesListControl? _availableListControl;
-    private PopupField<string> _sourcesPopup = null!;
+    private PopupField<string>? _sourcesPopup;
+    private PopupField<string>? _assembliesPopup;
     private PackageDetailsControl _packageDetailsControl = null!;
+    private bool _isLoading;
     
     #endregion
 
@@ -45,7 +48,7 @@ namespace Rdds.Unity.Nuget.New.UI
         _installedPackages = value;
 
         if (_installedListControl == null)
-          _installedListControl = new PackagesListControl(_leftPanel, "Installed", 200, _installedPackages.ToList(),
+          _installedListControl = new PackagesListControl(_leftPanel, 1, "Installed", 200, _installedPackages.ToList(),
             OnPackagesListSelectionChanged);
         else
           _installedListControl.Refresh(_installedPackages.ToList());
@@ -60,7 +63,7 @@ namespace Rdds.Unity.Nuget.New.UI
         _availablePackages = value;
 
         if (_availableListControl == null)
-          _availableListControl = new PackagesListControl(_leftPanel, "Available", 200, AvailablePackages.ToList(),
+          _availableListControl = new PackagesListControl(_leftPanel, 2, "Available", 200, AvailablePackages.ToList(),
             OnPackagesListSelectionChanged);
         else
           _availableListControl.Refresh(_availablePackages.ToList());
@@ -95,7 +98,19 @@ namespace Rdds.Unity.Nuget.New.UI
         _selectedPackage = value;
         _packageDetailsControl.Details = _selectedPackage;
       }
-    } 
+    }
+
+    public bool IsLoading
+    {
+      set
+      {
+        if (_isLoading == value)
+          return;
+
+        _isLoading = value;
+        _loadingLabel.visible = _isLoading;
+      }
+    }
 
     #endregion
 
@@ -124,6 +139,7 @@ namespace Rdds.Unity.Nuget.New.UI
       _sourcesListPlaceholder = _leftPanel.Q<VisualElement>("SourcesListPlaceholder");
       _filterTextField = _leftPanel.Q<TextField>("FilterTextField");
       _filterTextField.RegisterValueChangedCallback(OnFilterTextValueChanged);
+      _loadingLabel = _leftPanel.Q<Label>("LoadingLabel");
       
       _root.fixedPaneIndex = 1;
       _root.fixedPaneInitialDimension = 300;
@@ -131,7 +147,7 @@ namespace Rdds.Unity.Nuget.New.UI
       _packageDetailsControl = new PackageDetailsControl(_rightPanel);
     }
 
-    public void SetSource(string key) => _sourcesPopup.value = key;
+    public void SetSource(string key) => _sourcesPopup!.SetValueWithoutNotify(key);
 
     #endregion
 
@@ -139,13 +155,15 @@ namespace Rdds.Unity.Nuget.New.UI
 
     private void AddAssembliesListPopup(List<string> items)
     {
-      var popup = new PopupField<string>(items, 0);
-      _assembliesPopupPlaceholder.Add(popup);
-      popup.RegisterValueChangedCallback(OnAssembliesListPopupValueChanged);
+      _assembliesPopup?.RemoveFromHierarchy();
+      _assembliesPopup = new PopupField<string>(items, 0);
+      _assembliesPopupPlaceholder.Add(_assembliesPopup);
+      _assembliesPopup.RegisterValueChangedCallback(OnAssembliesListPopupValueChanged);
     }
 
     private void AddSourcesListPopup(List<string> items)
     {
+      _sourcesPopup?.RemoveFromHierarchy();
       _sourcesPopup = new PopupField<string>(items, 0);
       _sourcesListPlaceholder.Add(_sourcesPopup);
       _sourcesPopup.RegisterValueChangedCallback(OnSourcesListPopupValueChanged);

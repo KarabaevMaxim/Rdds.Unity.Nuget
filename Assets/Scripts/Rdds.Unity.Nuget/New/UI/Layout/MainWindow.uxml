@@ -11,6 +11,7 @@
                 <engine:VisualElement name="AssembliesPopupPlaceholder" class="StackExpandedElement" />
                 <engine:VisualElement name="SourcesListPlaceholder" class="StackExpandedElement"/>
             </engine:VisualElement>
+            <engine:Label name="LoadingLabel" text="Loading..."/>
         </engine:VisualElement>
         <engine:ScrollView name="RightPanel">
 

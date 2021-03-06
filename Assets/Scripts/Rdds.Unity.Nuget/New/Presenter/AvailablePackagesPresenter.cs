@@ -58,8 +58,21 @@ namespace Rdds.Unity.Nuget.New.Presenter
     {
       _loadPackagesCancellationTokenSource?.Cancel();
       _loadPackagesCancellationTokenSource = new CancellationTokenSource();
-      var tasks = (await _remotePackagesService.FindPackagesAsync(_lastFilterString, 0, PageSize, _loadPackagesCancellationTokenSource.Token))
-        .Select(CreatePresentationModelAsync);
+
+      IEnumerable<PackageInfoSourceWrapper> packages;
+      
+      try
+      {
+        packages = 
+          await _remotePackagesService.FindPackagesAsync(_lastFilterString, 0, PageSize, _loadPackagesCancellationTokenSource.Token);
+      }
+      catch (TaskCanceledException)
+      {
+        _mainWindow.AvailablePackages = Enumerable.Empty<PackageRowPresentationModel>();
+        return;
+      }
+      
+      var tasks = packages.Select(CreatePresentationModelAsync);
       var vms = await Task.WhenAll(tasks);
       _mainWindow.AvailablePackages = vms;
     }

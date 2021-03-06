@@ -84,8 +84,6 @@ namespace Rdds.Unity.Nuget.New.Presenter
         return;
       }
       
-      //todo check it with ConfigureAwait(true/false)
-      // args.newValue not working with async method
       await StartLoadingOperationAsync(() => Task.WhenAll(
         _installedPackagesPresenter.FilterByIdAsync(idPart),
         _availablePackagesPresenter.FilterByIdAsync(idPart)));

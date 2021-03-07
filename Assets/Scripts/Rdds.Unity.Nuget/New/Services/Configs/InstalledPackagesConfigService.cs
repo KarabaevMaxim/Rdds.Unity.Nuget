@@ -37,7 +37,8 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
       }
       catch (JsonException ex)
       {
-        LogHelper.LogWarningException($"An error occurred while reading {ConfigName} file, a new file will be created", ex);
+        var backupPath = await _fileService.BackupFileAsync(ConfigName, CancellationToken.None);
+        LogHelper.LogWarningException($"An error occurred while reading {ConfigName} file, a new file will be created. Copy of old file placed at {backupPath}", ex);
         await SaveDefaultConfigFileAsync();
       }
     }

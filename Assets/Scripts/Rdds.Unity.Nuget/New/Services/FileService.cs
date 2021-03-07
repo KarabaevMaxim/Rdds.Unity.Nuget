@@ -82,9 +82,14 @@ namespace Rdds.Unity.Nuget.New.Services
       return bytes;
     }
     
-    public async Task WriteToFileAsync(string filePath, string content)
+    public Task WriteToFileAsync(string filePath, string content)
     {
       var bytes = Encoding.Default.GetBytes(content);
+      return WriteToFileAsync(filePath, bytes);
+    }
+    
+    public async Task WriteToFileAsync(string filePath, byte[] bytes)
+    {
       using var stream = CreateWriteFileStream(filePath);
       stream.Seek(0, SeekOrigin.End);
       await stream.WriteAsync(bytes, 0, bytes.Length);
@@ -142,9 +147,6 @@ namespace Rdds.Unity.Nuget.New.Services
         copiedAssets.Add(assetPath);
       }
 
-      // if (copiedAssets.Count > 0) 
-      //   ThreadHelper.RunInMainThread(AssetDatabase.Refresh);
-
       return copiedAssets;
     }
 
@@ -171,6 +173,18 @@ namespace Rdds.Unity.Nuget.New.Services
       }
       
       return newFilePath;
+    }
+
+    public async Task<string?> BackupFileAsync(string sourceFile, CancellationToken cancellationToken)
+    {
+      var bytes = await ReadBytesAsync(sourceFile, cancellationToken);
+
+      if (bytes == null)
+        return null;
+
+      var backupFilePath = Path.Combine(TempDirectoryPath, "Backup", Path.GetFileName(sourceFile));
+      await WriteToFileAsync(backupFilePath, bytes);
+      return backupFilePath;
     }
   }
 }

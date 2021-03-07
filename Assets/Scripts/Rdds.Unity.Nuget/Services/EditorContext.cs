@@ -32,10 +32,9 @@ namespace Rdds.Unity.Nuget.Services
       LocalPackagesConfigService = new LocalPackagesConfigService(FileService);
       DllFilesService = new DllFilesService(FileService, LocalPackagesConfigService);
       InstalledPackagesConfigService = new InstalledPackagesConfigService(FileService);
-      AssembliesService = new AssembliesService(FileService);
+      AssembliesService = new AssembliesService(FileService, InstalledPackagesConfigService);
       NugetConfigService = new NugetConfigService(FileService);
       NuspecFileService = new NuspecFileService(FileService);
-
       RemotePackagesService = new RemotePackagesService(NugetConfigService, FileService, FrameworkService, LocalPackagesConfigService, Logger);
       LocalPackagesService = new LocalPackagesService(InstalledPackagesConfigService, LocalPackagesConfigService, NuspecFileService, DllFilesService, AssembliesService);
     }

@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rdds.Unity.Nuget.Entities;
+using Rdds.Unity.Nuget.Exceptions;
+using Rdds.Unity.Nuget.Services.Configs;
 using Rdds.Unity.Nuget.Utility;
 
 namespace Rdds.Unity.Nuget.Services
@@ -17,6 +19,7 @@ namespace Rdds.Unity.Nuget.Services
     private const string CodeRootDirectory = "Assets/Scripts";
     
     private readonly FileService _fileService;
+    private readonly InstalledPackagesConfigService _installedPackagesConfigService;
 
     public async Task<IEnumerable<AssemblyModel>> RequireAllAssembliesAsync()
     {
@@ -78,6 +81,22 @@ namespace Rdds.Unity.Nuget.Services
         success &= await RemoveDllReferencesInternalAsync(assembly, dllNames);
 
       return success;
+    }
+
+    public bool IsPackageInstalledInAssembly(string packageId, string assemblyName)
+    {
+      var package = _installedPackagesConfigService.GetInstalledInAssemblies(packageId);
+      return package != null && package.Any(a => a == assemblyName);
+    }
+    
+    public string RequireInstalledPackageVersion(string packageId, string assemblyName)
+    {
+      var package = _installedPackagesConfigService.RequireInstalledPackage(packageId);
+
+      if (package.InstalledInAssemblies.All(a => a != assemblyName))
+        throw new PackageNotInstalledException(packageId);
+
+      return package.Version;
     }
      
     private async Task<bool> AddDllReferencesInternalAsync(AssemblyModel assembly, IEnumerable<string> dllPaths)
@@ -155,6 +174,10 @@ namespace Rdds.Unity.Nuget.Services
       return true;
     }
 
-    public AssembliesService(FileService fileService) => _fileService = fileService;
+    public AssembliesService(FileService fileService, InstalledPackagesConfigService installedPackagesConfigService)
+    {
+      _fileService = fileService;
+      _installedPackagesConfigService = installedPackagesConfigService;
+    }
   }
 }

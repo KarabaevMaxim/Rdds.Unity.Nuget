@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Rdds.Unity.Nuget.Services.Configs;
 using Rdds.Unity.Nuget.UI;
 using Rdds.Unity.Nuget.UI.Controls.Models;
 using Rdds.Unity.Nuget.Utility;
+using UnityEngine;
 
 namespace Rdds.Unity.Nuget.Presenter
 {
@@ -63,33 +65,34 @@ namespace Rdds.Unity.Nuget.Presenter
       var identity = new PackageIdentity(selected.Id, PackageVersion.Parse(selected.Version));
       
       var installed = _localPackagesService.IsPackageInstalled(selected.Id);
-      var installIcon = installed
-        ? ImageHelper.LoadImageFromResource(Paths.RemovePackageButtonIconResourceName)
-        : ImageHelper.LoadImageFromResource(Paths.InstallPackageButtonIconResourceName);
-      Action installAction = installed ? RemovePackageAsync : (Action)InstallPackageAsync;
-      Action? updateAction = installed
-                         ? () => { }
-                         : (Action?)null;
-
-      var assemblies = _installedPackagesConfigService.GetInstalledInAssemblies(selected.Id)?
-        .Select(a =>
+      var installIcon = RequireInstallOrRemoveIcon(installed);
+      Action installAction = RequireInstallOrRemoveAction(installed);
+      
+      // var assemblies = _installedPackagesConfigService.GetInstalledInAssemblies(selected.Id)?
+      var assemblies = (await _assembliesService.RequireAllAssembliesAsync())
+        .Select(assembly =>
         {
           var icon = ImageHelper.LoadBuiltinImage(Paths.AssemblyDefinitionAssetIconBuiltInResourceName);
-          var buttonIcon = ImageHelper.LoadImageFromResource(Paths.InstallPackageButtonIconResourceName);
-          Action buttonAction = () => { };
-          return new AssemblyPackageDetailsPresentationModel(icon, a, null, buttonIcon, buttonAction);
-        }) ?? new AssemblyPackageDetailsPresentationModel[0];
+          var installedInAssembly = _assembliesService.IsPackageInstalledInAssembly(selected.Id, assembly.Name);
+          var version = installedInAssembly
+            ? _assembliesService.RequireInstalledPackageVersion(selected.Id, assembly.Name)
+            : null;
+          var buttonIcon = RequireInstallOrRemoveIcon(installedInAssembly);
+          // ReSharper disable once ConvertToLocalFunction
+          Action buttonAction = RequireInstallOrRemoveAction(installedInAssembly, new[] { assembly.Name });
+          return new AssemblyPackageDetailsPresentationModel(icon, assembly.Name, version, buttonIcon, buttonAction);
+        });
 
       var selectedDetails = new PackageDetailsPresentationModel(selected.Id, selected.Icon, selected.Version,
         new[] { selected.Version }, selected.Sources.FirstOrDefault() ?? string.Empty, selected.Sources, null,
-        null, installIcon, installAction, updateAction, assemblies);
+        null, installIcon, installAction, null, assemblies);
       _mainWindow.SelectedPackage = selectedDetails;
 
       if (!string.IsNullOrWhiteSpace(selectedDetails.SelectedSource))
       {
         // delayed adding versions
         await SetVersionsAsync(selectedDetails, selected, _loadDetailsCancellationTokenSource.Token);
-        PackageInfoSourceWrapper? detailInfo = null;
+        PackageInfoSourceWrapper? detailInfo;
       
         try
         {
@@ -98,6 +101,7 @@ namespace Rdds.Unity.Nuget.Presenter
         }
         catch (TaskCanceledException)
         {
+          return;
         }
       
         if (!detailInfo.HasValue)
@@ -111,7 +115,7 @@ namespace Rdds.Unity.Nuget.Presenter
       }
     }
 
-    private async void InstallPackageAsync()
+    private async Task InstallPackageAsync(IEnumerable<string>? assemblyNames)
     {
       try
       {
@@ -131,7 +135,7 @@ namespace Rdds.Unity.Nuget.Presenter
             return true;
           }
       
-          var assemblies = (await _assembliesService.RequireAllAssembliesAsync()).Select(a => a.Name);
+          var assemblies = assemblyNames ?? (await _assembliesService.RequireAllAssembliesAsync()).Select(a => a.Name);
           var framework = _frameworkService.RequireCurrentFramework();
           return await _localPackagesService.InstallPackageAsync(identity, assemblies, framework);
         }, _installCancellationTokenSource.Token);
@@ -152,7 +156,7 @@ namespace Rdds.Unity.Nuget.Presenter
       }
     }
     
-    private async void RemovePackageAsync()
+    private async Task RemovePackageAsync(IEnumerable<string>? assemblyNames)
     {
       try
       {
@@ -162,7 +166,7 @@ namespace Rdds.Unity.Nuget.Presenter
 
         var removeTask = Task.Run(async () =>
         {
-          var assemblies = (await _assembliesService.RequireAllAssembliesAsync()).Select(a => a.Name);
+          var assemblies = assemblyNames ?? (await _assembliesService.RequireAllAssembliesAsync()).Select(a => a.Name);
           return await _localPackagesService.RemovePackageAsync(_selectedPackage!.Value.Id, assemblies);
         }, _removeCancellationTokenSource.Token);
       
@@ -198,6 +202,20 @@ namespace Rdds.Unity.Nuget.Presenter
       details.Description = detailInfo.PackageInfo.Description;
       
       _mainWindow.SelectedPackage = details;
+    }
+
+    private Texture RequireInstallOrRemoveIcon(bool packageInstalled)
+    {
+      return packageInstalled
+        ? ImageHelper.LoadImageFromResource(Paths.RemovePackageButtonIconResourceName)
+        : ImageHelper.LoadImageFromResource(Paths.InstallPackageButtonIconResourceName);
+    }
+
+    private Action RequireInstallOrRemoveAction(bool packageInstalled, IEnumerable<string>? assemblies = null)
+    {
+      return packageInstalled 
+        ? async () => await RemovePackageAsync(assemblies) : 
+        (Action)(async () => await InstallPackageAsync(assemblies));
     }
     
     #region Constructor

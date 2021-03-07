@@ -23,6 +23,9 @@ namespace Rdds.Unity.Nuget.Entities
     public override bool Equals(object obj) => 
       ReferenceEquals(this, obj) || (obj is AssemblyModel other && Equals(other));
 
+    // ReSharper disable once NonReadonlyMemberInGetHashCode
+    public override int GetHashCode() => Name.GetHashCode();
+
     private bool Equals(AssemblyModel other) => Name == other.Name;
   }
 }

@@ -16,6 +16,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
 
     private static readonly VisualTreeAsset _mainTreeAsset;
     private static readonly VisualTreeAsset _assemblyRowTreeAsset;
+    private static readonly StyleSheet _styles;
     
     private readonly Image _headerIcon;
     private readonly Label _headerId;
@@ -221,6 +222,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
       _sourcesControl?.SetEnabled(false);
       _installRemoveInAllAssembliesButton.SetEnabled(false);
       _updateInAllAssembliesButton.SetEnabled(false);
+      FindAssembliesButtons().ForEach(b => b.SetEnabled(false));
     }
 
     private void EnableControls()
@@ -229,8 +231,11 @@ namespace Rdds.Unity.Nuget.UI.Controls
       _sourcesControl?.SetEnabled(true);
       _installRemoveInAllAssembliesButton.SetEnabled(true);
       _updateInAllAssembliesButton.SetEnabled(true);
+      FindAssembliesButtons().ForEach(b => b.SetEnabled(true));
     }
-    
+
+    private List<Button> FindAssembliesButtons() => _assembliesListView.Query<Button>("ActionButton").Build().ToList();
+
     private void OnSourcesControlValueChanged(ChangeEvent<string> evt)
     {
     }
@@ -259,7 +264,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
     public PackageDetailsControl(VisualElement parent)
     {
       var root = _mainTreeAsset.CloneTree();
-      root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(Paths.PackageDetailsStyles));
+      root.styleSheets.Add(_styles);
       parent.Add(root);
 
       var header = root.Q<VisualElement>("Header");
@@ -289,6 +294,7 @@ namespace Rdds.Unity.Nuget.UI.Controls
     {
       _mainTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.PackageDetailControlLayout);
       _assemblyRowTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.AssemblyRowLayout);
+      _styles = AssetDatabase.LoadAssetAtPath<StyleSheet>(Paths.PackageDetailsStyles);
     }
 
     #endregion

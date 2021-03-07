@@ -1,0 +1,8 @@
+{
+  "name": "TestAssembly2",
+  "rootNameSpace": "TestAssembly2",
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "Rdds.Dto.dll"
+  ]
+}

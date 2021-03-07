@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Rdds.Unity.Nuget.Entities;
+using Rdds.Unity.Nuget.Other;
 using Rdds.Unity.Nuget.Utility;
 using PackageIdentity = Rdds.Unity.Nuget.Entities.PackageIdentity;
 
@@ -56,6 +58,7 @@ namespace Rdds.Unity.Nuget.New.Services
     private async Task<PackageInfo> ParseNuspecFileAsync(string nuspecFile)
     {
       var xml = (await _fileService.ReadFromFileAsync(nuspecFile, CancellationToken.None))!;
+      xml = xml.RemoveUTF8Preamble();
       var xDoc = XDocument.Parse(xml); 
       var root = xDoc.Root!; 
       var xNamespace = root.GetDefaultNamespace().NamespaceName;
@@ -94,7 +97,7 @@ namespace Rdds.Unity.Nuget.New.Services
       return new PackageInfo(title, authors, description, iconPath, owners, null,
         new PackageIdentity(id, PackageVersion.Parse(version)), dependencies);
     }
-    
+
     public NuspecFileService(FileService fileService) => _fileService = fileService;
   }
 }

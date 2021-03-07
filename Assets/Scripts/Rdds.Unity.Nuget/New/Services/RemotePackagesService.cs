@@ -107,8 +107,12 @@ namespace Rdds.Unity.Nuget.New.Services
 
     public async Task<IEnumerable<string>> FindSourcesForPackageAsync(string packageId, CancellationToken cancellationToken)
     {
-      var packages = await FindPackagesAsync(packageId, 0, 1, cancellationToken);
-      return packages.SelectMany(p => p.SourceKeys);
+      var tasks = _nugetServices.Select(p =>
+        FindPackagesInternalAsync(packageId, 0, 1, p.Key, cancellationToken));
+
+      return (await Task.WhenAll(tasks))
+        .SelectMany(p => p)
+        .SelectMany(p => p.SourceKeys);
     }
 
     #endregion

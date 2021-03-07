@@ -8,6 +8,7 @@ using NuGet.Protocol.Core.Types;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Entities.NugetConfig;
 using Rdds.Unity.Nuget.New.Services.Configs;
+using Rdds.Unity.Nuget.Utility;
 using UnityEditor;
 
 namespace Rdds.Unity.Nuget.New.Services
@@ -80,9 +81,23 @@ namespace Rdds.Unity.Nuget.New.Services
     
     public IEnumerable<FrameworkGroup> FindDependencies(PackageIdentity packageIdentity) => throw new NotImplementedException();
 
-    public async Task<string?> DownloadPackageAsync(PackageIdentity identity, string sourceKey, CancellationToken cancellationToken)
+    public async Task<string?> DownloadPackageAsync(PackageIdentity identity, string sourceKey, bool forcedRemote, CancellationToken cancellationToken)
     {
-      var packagePath = await _nugetServices[sourceKey].DownloadPackageAsync(identity, cancellationToken);
+      string? packagePath;
+      
+      if (!forcedRemote)
+      {
+        // try to get the path of already downloaded package 
+        packagePath = _localPackagesConfigService.GetPackagePath(identity);
+
+        if (!string.IsNullOrWhiteSpace(packagePath))
+        {
+          LogHelper.LogInfo("Found already downloaded package, won't download again");
+          return packagePath;
+        }
+      }
+      
+      packagePath = await _nugetServices[sourceKey].DownloadPackageAsync(identity, cancellationToken);
 
       if (string.IsNullOrWhiteSpace(packagePath))
         return null;

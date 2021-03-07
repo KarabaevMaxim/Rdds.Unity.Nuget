@@ -142,8 +142,8 @@ namespace Rdds.Unity.Nuget.New.Services
         copiedAssets.Add(assetPath);
       }
 
-      if (copiedAssets.Count > 0) 
-        ThreadHelper.RunInMainThread(AssetDatabase.Refresh);
+      // if (copiedAssets.Count > 0) 
+      //   ThreadHelper.RunInMainThread(AssetDatabase.Refresh);
 
       return copiedAssets;
     }

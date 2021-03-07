@@ -9,7 +9,6 @@ using Rdds.Unity.Nuget.New.UI;
 using Rdds.Unity.Nuget.New.UI.Controls.Models;
 using Rdds.Unity.Nuget.Services;
 using Rdds.Unity.Nuget.Utility;
-using UnityEditor;
 
 namespace Rdds.Unity.Nuget.New.Presenter
 {
@@ -40,10 +39,11 @@ namespace Rdds.Unity.Nuget.New.Presenter
       {
         _mainWindow.IsDetailsLoading = value;
 
-        if (value)
-          AssetDatabase.StartAssetEditing();
-        else
-          AssetDatabase.StopAssetEditing();
+        // disabled because it calling some bugs with manual refreshing asset database.
+        // if (value)
+        //   AssetDatabase.StartAssetEditing();
+        // else
+        //   AssetDatabase.StopAssetEditing();
       }
     }
 
@@ -125,7 +125,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
         {
           try
           {
-            await _remotePackagesService.DownloadPackageAsync(identity, SelectedSource!, _installCancellationTokenSource.Token);
+            await _remotePackagesService.DownloadPackageAsync(identity, SelectedSource!, false, _installCancellationTokenSource.Token);
           }
           catch (TaskCanceledException)
           {

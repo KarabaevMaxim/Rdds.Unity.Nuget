@@ -8,6 +8,8 @@ namespace Rdds.Unity.Nuget.Utility
   {
     private static readonly ILogger _logger = EditorContext.Logger;
 
+    public static void LogInfo(string message) => _logger.LogInformation(message);
+    
     public static void LogWarning(string message) => _logger.LogWarning(message);
     
     public static void LogWarningException(Exception exception) => 

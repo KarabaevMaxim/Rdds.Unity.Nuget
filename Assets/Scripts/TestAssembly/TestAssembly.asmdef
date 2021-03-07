@@ -1,0 +1,6 @@
+{
+  "name": "TestAssembly",
+  "rootNameSpace": "TestAssembly",
+  "overrideReferences": true,
+  "precompiledReferences": []
+}

@@ -11,7 +11,7 @@ namespace Rdds.Unity.Nuget.UI
     [UsedImplicitly] 
     private static MainWindowPresenter _mainWindowPresenter = null!;
     
-    [MenuItem("Rdds/New Unity.Nuget")]
+    [MenuItem("Rdds/Unity.Nuget")]
     public static async void ShowNugetWindow()
     {
       var wnd = EditorWindow.GetWindow<MainWindow>();

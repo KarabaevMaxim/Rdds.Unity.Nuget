@@ -2,7 +2,7 @@
 <engine:UXML
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:engine="UnityEngine.UIElements"
-        xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
+        xsi:noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd">
     <engine:VisualElement name="Root">
         <engine:VisualElement name="Header" class="PanelHeader HorizontalStack Block">
             <engine:Image name="Icon" class="SmallIcon" />

@@ -17,8 +17,9 @@
 
 .PanelHeader {
     width: 100%;
-    height: auto;
+    height: 30px;
     background-color: #3e424d;
+    flex: none;
 }
 
 #FilterTextField {

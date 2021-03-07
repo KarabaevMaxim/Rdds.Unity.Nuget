@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using UnityEditorInternal;
 
 namespace Rdds.Unity.Nuget.Entities
 {
@@ -20,5 +19,10 @@ namespace Rdds.Unity.Nuget.Entities
 
     [JsonIgnore] 
     public string Path { get; set; } = null!;
+
+    public override bool Equals(object obj) => 
+      ReferenceEquals(this, obj) || (obj is AssemblyModel other && Equals(other));
+
+    private bool Equals(AssemblyModel other) => Name == other.Name;
   }
 }

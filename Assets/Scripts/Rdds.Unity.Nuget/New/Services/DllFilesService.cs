@@ -19,7 +19,8 @@ namespace Rdds.Unity.Nuget.New.Services
       var packagePath = _localPackagesConfigService.RequirePackagePath(identity);
       var frameworkDirectories = Directory.GetDirectories(Path.Combine(packagePath, "lib"));
       var targetDirectory = frameworkDirectories.First(d => Path.GetFileName(d) == targetFramework.Name);
-      return _fileService.CopyFilesFromDirectory(targetDirectory, "dll", _dllsDirectory);
+      var newAssets = _fileService.ImportAssetsFromDirectory(targetDirectory, "dll", _dllsDirectory);
+      return newAssets;
     }
 
     public void ConfigureDlls(IEnumerable<string> dllPaths)
@@ -36,12 +37,17 @@ namespace Rdds.Unity.Nuget.New.Services
 
     public bool RemoveDlls(IEnumerable<string> dllNames)
     {
-      var result = true;
-      
-      foreach (var dllName in dllNames) 
-        result &= _fileService.RemoveFile(Path.Combine(_dllsDirectory, dllName));
+      var failedPaths = new List<string>();
+      ThreadHelper.RunInMainThread(() => 
+        AssetDatabase.DeleteAssets(dllNames.Select(n => Path.Combine(_dllsDirectory, n)).ToArray(), failedPaths));
 
-      return result;
+      if (failedPaths.Count > 0)
+      {
+        LogHelper.LogWarning($"Failed remove dll files {string.Join(", ", failedPaths)}");
+        return false;
+      }
+
+      return true;
     }
 
     public DllFilesService(FileService fileService, LocalPackagesConfigService localPackagesConfigService)

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Utility;
+using UnityEditor;
 
 namespace Rdds.Unity.Nuget.New.Services
 {
@@ -114,20 +116,36 @@ namespace Rdds.Unity.Nuget.New.Services
       Directory.EnumerateFiles(directory, $"*.{extension}",
         recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
 
-    public IEnumerable<string> CopyFilesFromDirectory(string directory, string extension, string destinationDirectory)
+    public IEnumerable<string> ImportAssetsFromDirectory(string directory, string extension, string destinationDirectory)
     {
       var files = FindFiles(directory, extension, false);
-      var copiedFiles = new List<string>();
-      
+      var copiedAssets = new List<string>();
+
       foreach (var file in files)
       {
-        var newFilePath = CopyFile(file, destinationDirectory);
+        var assetPath = Path.Combine(destinationDirectory, Path.GetFileName(file));
 
-        if (newFilePath != null) 
-          copiedFiles.Add(newFilePath);
+        if (!File.Exists(assetPath))
+        {
+          try
+          {
+            File.Copy(file, assetPath);
+            ThreadHelper.RunInMainThread(() => AssetDatabase.ImportAsset(assetPath));
+          }
+          catch (Exception ex)
+          {
+            LogHelper.LogWarningException($"Failed import asset {file} to {destinationDirectory}", ex);
+            continue;
+          }
+        }
+
+        copiedAssets.Add(assetPath);
       }
 
-      return copiedFiles;
+      if (copiedAssets.Count > 0) 
+        ThreadHelper.RunInMainThread(AssetDatabase.Refresh);
+
+      return copiedAssets;
     }
 
     public string? CopyFile(string sourceFile, string destinationDirectory)

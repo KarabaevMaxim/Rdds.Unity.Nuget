@@ -122,6 +122,8 @@ namespace Rdds.Unity.Nuget.New.Presenter
       await action.Invoke();
       IsLoading = false;
     }
+    
+    private async void InstalledPackagesListChangedAsync() => await _installedPackagesPresenter.InitializeAsync();
 
     public MainWindowPresenter(IMainWindow mainWindow, 
       LocalPackagesService localPackagesService,
@@ -146,6 +148,8 @@ namespace Rdds.Unity.Nuget.New.Presenter
       _mainWindow.FilterTextChanged += FilterByIdAsync;
       _mainWindow.AssemblyChanged += FilterByAssembly;
       _mainWindow.SourceChanged += FilterBySourceAsync;
+
+      _packageDetailsPresenter.PackageInstalledOrRemoved += InstalledPackagesListChangedAsync;
     }
   }
 }

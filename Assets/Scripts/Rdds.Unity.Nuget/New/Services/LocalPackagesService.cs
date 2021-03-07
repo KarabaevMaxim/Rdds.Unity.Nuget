@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
@@ -30,8 +31,9 @@ namespace Rdds.Unity.Nuget.New.Services
       
       var dlls = _dllFilesService.CopyDlls(identity, targetFramework);
       _dllFilesService.ConfigureDlls(dlls);
-      var changedAssemblies= await _assembliesService.AddDllReferencesAsync(assembliesToInstall, dlls);
-      _installedPackagesConfigService.AddInstalledPackageOrUpdate(identity, changedAssemblies.ToList(), dlls.ToList());
+      var dllNames = dlls.Select(Path.GetFileName);
+      var changedAssemblies = await _assembliesService.AddDllReferencesAsync(assembliesToInstall, dllNames);
+      _installedPackagesConfigService.AddInstalledPackageOrUpdate(identity, changedAssemblies.ToList(), dllNames.ToList());
       await _installedPackagesConfigService.SaveConfigFileAsync();
       return true;
     }
@@ -43,12 +45,11 @@ namespace Rdds.Unity.Nuget.New.Services
       await _assembliesService.RemoveDllReferencesAsync(assemblies, dllNames);
       var needRemoveDlls = _installedPackagesConfigService.RemoveInstalledPackage(packageId, assemblies);
       await _installedPackagesConfigService.SaveConfigFileAsync();
-      var result = true;
-      
-      if (needRemoveDlls) 
-        result &= _dllFilesService.RemoveDlls(dllNames);
 
-      return result;
+      if (needRemoveDlls) 
+        return _dllFilesService.RemoveDlls(dllNames);
+
+      return true;
     }
 
     public IEnumerable<PackageIdentity> RequireInstalledPackages() => 

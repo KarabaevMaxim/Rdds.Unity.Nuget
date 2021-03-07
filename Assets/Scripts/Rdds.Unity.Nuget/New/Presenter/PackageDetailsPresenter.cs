@@ -9,6 +9,7 @@ using Rdds.Unity.Nuget.New.UI;
 using Rdds.Unity.Nuget.New.UI.Controls.Models;
 using Rdds.Unity.Nuget.Services;
 using Rdds.Unity.Nuget.Utility;
+using UnityEditor;
 
 namespace Rdds.Unity.Nuget.New.Presenter
 {
@@ -35,9 +36,22 @@ namespace Rdds.Unity.Nuget.New.Presenter
 
     private bool IsLoading
     {
-      get => _mainWindow.IsDetailsLoading;
-      set => _mainWindow.IsDetailsLoading = value;
+      set
+      {
+        _mainWindow.IsDetailsLoading = value;
+
+        if (value)
+          AssetDatabase.StartAssetEditing();
+        else
+          AssetDatabase.StopAssetEditing();
+      }
     }
+
+    #endregion
+
+    #region Events
+
+    public event Action? PackageInstalledOrRemoved;
 
     #endregion
 
@@ -100,10 +114,9 @@ namespace Rdds.Unity.Nuget.New.Presenter
 
     private async void InstallPackageAsync()
     {
-      IsLoading = true;
-
       try
       {
+        IsLoading = true;
         _installCancellationTokenSource?.Cancel();
         _installCancellationTokenSource = new CancellationTokenSource();
         var identity = new PackageIdentity(_selectedPackage!.Value.Id, SelectedVersion!);
@@ -126,10 +139,13 @@ namespace Rdds.Unity.Nuget.New.Presenter
       
         var successInstall = await DialogHelper.ShowLoadingAsync("Installing", "Please wait while package installing...", task);
 
-        if (!successInstall) 
+        if (successInstall)
+        {
+          PackageInstalledOrRemoved?.Invoke();
+          await ChangeSelectedPackageRowAsync(_selectedPackage!.Value);
+        }
+        else
           DialogHelper.ShowErrorAlert($"Failed to install package {identity}");
-
-        await ChangeSelectedPackageRowAsync(_selectedPackage!.Value);
       }
       finally
       {
@@ -139,10 +155,9 @@ namespace Rdds.Unity.Nuget.New.Presenter
     
     private async void RemovePackageAsync()
     {
-      IsLoading = true;
-
       try
       {
+        IsLoading = true;
         _removeCancellationTokenSource?.Cancel();
         _removeCancellationTokenSource = new CancellationTokenSource();
 
@@ -153,9 +168,14 @@ namespace Rdds.Unity.Nuget.New.Presenter
         }, _removeCancellationTokenSource.Token);
       
         var successRemove = await DialogHelper.ShowLoadingAsync("Removing", "Please wait while package removing...", removeTask);
-      
-        if (!successRemove) 
-          DialogHelper.ShowErrorAlert($"Failed to install package {_selectedPackage!.Value.Id}");
+
+        if (successRemove)
+        {
+          PackageInstalledOrRemoved?.Invoke();
+          await ChangeSelectedPackageRowAsync(_selectedPackage!.Value);
+        }
+        else
+          DialogHelper.ShowErrorAlert($"Failed to remove package {_selectedPackage!.Value.Id}");
       }
       finally
       {

@@ -13,5 +13,10 @@
     "Id": "Rdds.Dto",
     "Version": "1.0.0",
     "Path": "D:\\NugetRepository\\Rdds.Dto.1.0.0"
+  },
+  {
+    "Id": "Rdds.HttpClient",
+    "Version": "1.0.0",
+    "Path": "D:\\NugetRepository\\Rdds.HttpClient.1.0.0"
   }
 ]

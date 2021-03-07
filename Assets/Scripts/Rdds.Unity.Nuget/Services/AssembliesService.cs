@@ -65,7 +65,7 @@ namespace Rdds.Unity.Nuget.Services
       foreach (var assembly in assemblies)
       {
         if (await AddDllReferencesInternalAsync(assembly, dllPaths)) 
-          changedAssemblies.Add(assembly.Path);
+          changedAssemblies.Add(assembly.Name);
       }
 
       return changedAssemblies;

@@ -30,12 +30,14 @@ namespace Rdds.Unity.Nuget.New.UI.Controls
     private readonly VisualElement _contentPanel;
     private readonly Label _assembliesNotFoundLabel;
     private readonly ListView _assembliesListView;
+    private readonly Button _installRemoveInAllAssembliesButton;
 
     private PopupField<string>? _versionsControl;
     private PopupField<string>? _sourcesControl;
 
     private PackageDetailsPresentationModel _details;
-    
+    private bool _isLoading;
+
     public PackageDetailsPresentationModel? Details
     {
       private get => _details;
@@ -57,6 +59,28 @@ namespace Rdds.Unity.Nuget.New.UI.Controls
         CreateDependencies(_details.Dependencies);
         CreateAssembliesList(_details.Assemblies);
       }
+    }
+
+    public string? SelectedSource => _sourcesControl?.value;
+    
+    public string? SelectedVersion => _versionsControl?.value;
+
+    public bool IsLoading
+    {
+      get => _isLoading;
+      set
+      {
+        if (_isLoading == value)
+          return;
+
+        _isLoading = value;
+
+        if (_isLoading)
+          DisableControls();
+        else
+          EnableControls();
+      }
+      
     }
     
     private string Id
@@ -190,6 +214,22 @@ namespace Rdds.Unity.Nuget.New.UI.Controls
       _assembliesListView.bindItem -= OnAssembliesListViewBindItem;
       _assembliesListView.bindItem += OnAssembliesListViewBindItem;
     }
+
+    private void DisableControls()
+    {
+      _versionsControl?.SetEnabled(false);
+      _sourcesControl?.SetEnabled(false);
+      _installRemoveInAllAssembliesButton.SetEnabled(false);
+      _updateInAllAssembliesButton.SetEnabled(false);
+    }
+
+    private void EnableControls()
+    {
+      _versionsControl?.SetEnabled(true);
+      _sourcesControl?.SetEnabled(true);
+      _installRemoveInAllAssembliesButton.SetEnabled(true);
+      _updateInAllAssembliesButton.SetEnabled(true);
+    }
     
     private void OnSourcesControlValueChanged(ChangeEvent<string> evt)
     {
@@ -228,9 +268,9 @@ namespace Rdds.Unity.Nuget.New.UI.Controls
       _subHeader = root.Q<VisualElement>("SubHeader");
       _versionsPlaceholder = _subHeader.Q<VisualElement>("VersionsPlaceholder");
       _sourcesPlaceholder = _subHeader.Q<VisualElement>("SourcesPlaceholder");
-      Button installRemoveInAllAssembliesButton = _subHeader.Q<Button>("InstallRemoveInAllAssembliesButton");
-      _installRemoveInAllAssembliesButtonIcon = installRemoveInAllAssembliesButton.Q<Image>("ButtonIcon");
-      installRemoveInAllAssembliesButton.clickable.clicked += OnInstallRemoveInAllAssembliesButtonClicked;
+      _installRemoveInAllAssembliesButton = _subHeader.Q<Button>("InstallRemoveInAllAssembliesButton");
+      _installRemoveInAllAssembliesButtonIcon = _installRemoveInAllAssembliesButton.Q<Image>("ButtonIcon");
+      _installRemoveInAllAssembliesButton.clickable.clicked += OnInstallRemoveInAllAssembliesButtonClicked;
       _updateInAllAssembliesButton = _subHeader.Q<Button>("UpdateInAllAssembliesButton");
       _updateInAllAssembliesButton.clickable.clicked += OnUpdateInAllAssembliesButtonClicked;
       _updateInAllAssembliesButton.Q<Image>("ButtonIcon").image = ImageHelper.LoadImageFromResource(Paths.UpdatePackageButtonIconResourceName);

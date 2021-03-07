@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading;
 using NuGet.Common;
 using Rdds.Unity.Nuget.New.Services;
 using Rdds.Unity.Nuget.New.Services.Configs;
@@ -25,10 +23,12 @@ namespace Rdds.Unity.Nuget.Services
     public static RemotePackagesService RemotePackagesService { get; }
     public static InstalledPackagesConfigService InstalledPackagesConfigService { get; }
     public static LocalPackagesConfigService LocalPackagesConfigService { get; }
-
-    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    
+    public static SynchronizationContext MainThreadSynchContext { get; }
+    
     static EditorContext()
     {
+      MainThreadSynchContext = SynchronizationContext.Current;
       Logger = new UnityConsoleLogger();
       FileService = new FileService();
       FrameworkService = new FrameworkService();
@@ -39,7 +39,7 @@ namespace Rdds.Unity.Nuget.Services
       NugetConfigService = new NugetConfigService(FileService);
       NuspecFileService = new NuspecFileService(FileService);
 
-      RemotePackagesService = new RemotePackagesService(NugetConfigService, FileService, FrameworkService, Logger);
+      RemotePackagesService = new RemotePackagesService(NugetConfigService, FileService, FrameworkService, LocalPackagesConfigService, Logger);
       LocalPackagesService = new LocalPackagesService(InstalledPackagesConfigService, LocalPackagesConfigService, NuspecFileService, DllFilesService, AssembliesService);
       
       PackagesFileService = new PackagesFileService(FileService);

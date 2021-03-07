@@ -81,7 +81,14 @@ namespace Rdds.Unity.Nuget.New.Presenter
       
       var tasks = identities.Select(async i =>
       {
-        var packageInfo = await _localPackagesService.RequireInstalledPackageInfoAsync(i.Id);
+        var packageInfo = await _localPackagesService.GetInstalledPackageInfoAsync(i.Id);
+
+        if (packageInfo == null)
+          return new PackageRowPresentationModel(i.Id, i.Version.ToString(), 
+            Resources.Load<Texture>(Paths.DefaultIconResourceName), 
+            Enumerable.Empty<string>(), 
+            Enumerable.Empty<string>());
+
         return await CreatePresentationModelAsync(packageInfo);
       });
 

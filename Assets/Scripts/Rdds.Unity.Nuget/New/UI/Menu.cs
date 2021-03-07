@@ -24,7 +24,8 @@ namespace Rdds.Unity.Nuget.New.UI
         EditorContext.LocalPackagesConfigService, 
         EditorContext.NugetConfigService, 
         EditorContext.AssembliesService,
-        EditorContext.RemotePackagesService);
+        EditorContext.RemotePackagesService,
+        EditorContext.FrameworkService);
       await _mainWindowPresenter.InitializeAsync();
     }
   }

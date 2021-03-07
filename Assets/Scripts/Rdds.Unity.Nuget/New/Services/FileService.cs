@@ -133,7 +133,10 @@ namespace Rdds.Unity.Nuget.New.Services
     public string? CopyFile(string sourceFile, string destinationDirectory)
     {
       var newFilePath = Path.Combine(destinationDirectory, Path.GetFileName(sourceFile));
-      
+
+      if (!Directory.Exists(destinationDirectory)) 
+        Directory.CreateDirectory(destinationDirectory);
+
       try
       {
         File.Copy(sourceFile, newFilePath);

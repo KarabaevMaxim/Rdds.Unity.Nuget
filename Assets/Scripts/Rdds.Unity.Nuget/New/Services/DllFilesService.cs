@@ -18,17 +18,20 @@ namespace Rdds.Unity.Nuget.New.Services
     {
       var packagePath = _localPackagesConfigService.RequirePackagePath(identity);
       var frameworkDirectories = Directory.GetDirectories(Path.Combine(packagePath, "lib"));
-      var targetDirectory = frameworkDirectories.First(d => d == targetFramework.Name);
+      var targetDirectory = frameworkDirectories.First(d => Path.GetFileName(d) == targetFramework.Name);
       return _fileService.CopyFilesFromDirectory(targetDirectory, "dll", _dllsDirectory);
     }
 
     public void ConfigureDlls(IEnumerable<string> dllPaths)
     {
-      foreach (var dll in dllPaths)
+      ThreadHelper.RunInMainThread(() =>
       {
-        var importer = AssetImporter.GetAtPath(dll);
-        ReflectionHelper.SetPrivateProperty(importer, "ValidateReferences", false);
-      }
+        foreach (var dll in dllPaths)
+        {
+          var importer = AssetImporter.GetAtPath(dll);
+          ReflectionHelper.SetPrivateProperty(importer, "ValidateReferences", false);
+        } 
+      });
     }
 
     public bool RemoveDlls(IEnumerable<string> dllNames)

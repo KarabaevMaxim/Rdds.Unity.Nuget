@@ -1,13 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.New.Services;
 using Rdds.Unity.Nuget.Utility;
+using UnityEditor;
+using UnityEditorInternal;
 
 namespace Rdds.Unity.Nuget.Services
 {
@@ -36,7 +40,8 @@ namespace Rdds.Unity.Nuget.Services
         }
       });
 
-      return (await Task.WhenAll(tasks)).Where(a => a != null)!;
+      var currentAssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+      return (await Task.WhenAll(tasks)).Where(a => a != null && a.Name != currentAssemblyName)!;
     }
 
     public async Task<IEnumerable<AssemblyModel>> RequireAssembliesAsync(IEnumerable<string> assemblyNames)
@@ -115,18 +120,27 @@ namespace Rdds.Unity.Nuget.Services
     private async Task<bool> SaveAssemblyAsync(AssemblyModel assembly)
     {
       string json;
+      var backupFilePath = string.Empty;
       
       try
       {
-        json = JsonConvert.SerializeObject(assembly);
+        backupFilePath = _fileService.CopyFile(assembly.Path,
+          Path.Combine(_fileService.TempDirectoryPath, "Backup"));
+      }
+      catch (Exception ex)
+      {
+        LogHelper.LogWarningException($"Failed to create backup of file '{assembly.Path}'", ex);
+      }
+      
+      try
+      {
+        json = JsonConvert.SerializeObject(assembly, Formatting.Indented);
       }
       catch (JsonException ex)
       {
         LogHelper.LogWarningException($"Failed serialize assembly object {assembly.Name}", ex);
         return false;
       }
-
-      var backupFilePath = _fileService.CopyFile(assembly.Path, _fileService.TempDirectoryPath);;
 
       try
       {
@@ -137,6 +151,9 @@ namespace Rdds.Unity.Nuget.Services
         LogHelper.LogWarningException( $"Failed save assembly file {assembly.Path}. Backup: {backupFilePath}", ex);
         return false;
       }
+
+      if (!string.IsNullOrWhiteSpace(backupFilePath))
+        _fileService.RemoveFile(backupFilePath!);
 
       return true;
     }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Rdds.Unity.Nuget.Entities;
+using Rdds.Unity.Nuget.Utility;
 using UnityEditor;
 
 namespace Rdds.Unity.Nuget.New.Services
@@ -23,11 +24,22 @@ namespace Rdds.Unity.Nuget.New.Services
       {ApiCompatibilityLevel.NET_Standard_2_0, "netstandard2.0"},
       {ApiCompatibilityLevel.NET_Web, ""},
     };
-    
+
     public Framework RequireCurrentFramework()
     {
-     var apiCompatibilityLevel = PlayerSettings.GetApiCompatibilityLevel(EditorUserBuildSettings.selectedBuildTargetGroup);
-     return new Framework(_frameworks[apiCompatibilityLevel]);
+      // var apiCompatibilityLevel =
+      //   PlayerSettings.GetApiCompatibilityLevel(EditorUserBuildSettings.selectedBuildTargetGroup);
+      // return new Framework(_frameworks[apiCompatibilityLevel]);
+
+      Framework result = null!;
+      ThreadHelper.RunInMainThread(() =>
+      {
+        var apiCompatibilityLevel =
+          PlayerSettings.GetApiCompatibilityLevel(EditorUserBuildSettings.selectedBuildTargetGroup);
+        result = new Framework(_frameworks[apiCompatibilityLevel]);
+      });
+      
+      return result;
     }
   }
 }

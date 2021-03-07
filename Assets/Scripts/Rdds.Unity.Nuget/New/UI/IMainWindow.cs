@@ -17,7 +17,13 @@ namespace Rdds.Unity.Nuget.New.UI
     
     IEnumerable<string> Assemblies { get; set; }
     
-    bool IsLoading { set; }
+    bool IsListsLoading { set; }
+    
+    bool IsDetailsLoading { get; set; }
+    
+    string? DetailsSelectedSource { get; }
+    
+    string? DetailsSelectedVersion { get; }
 
     void SetSource(string key);
     

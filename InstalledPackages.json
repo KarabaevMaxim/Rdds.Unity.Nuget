@@ -1,12 +1,12 @@
 [
   {
     "Id": "Newtonsoft.Json",
-    "Version": "8.0.2",
+    "Version": "12.0.3",
     "InstalledInAssemblies": [
-      "Rdds.Unity.Nuget"
+      "TestAssembly"
     ],
     "DllNames": [
       "Newtonsoft.Json.dll"
     ]
-  }
+  },
 ]

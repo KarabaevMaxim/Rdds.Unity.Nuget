@@ -35,7 +35,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
 
     private bool IsLoading
     {
-      set => _mainWindow.IsLoading = value;
+      set => _mainWindow.IsListsLoading = value;
     }
     
     #endregion
@@ -129,7 +129,8 @@ namespace Rdds.Unity.Nuget.New.Presenter
       LocalPackagesConfigService localPackagesConfigService,
       NugetConfigService nugetConfigService,
       AssembliesService assembliesService,
-      RemotePackagesService remotePackagesService)
+      RemotePackagesService remotePackagesService,
+      FrameworkService frameworkService)
     {
       _mainWindow = mainWindow;
       _installedPackagesConfigService = installedPackagesConfigService;
@@ -139,7 +140,7 @@ namespace Rdds.Unity.Nuget.New.Presenter
       _remotePackagesService = remotePackagesService;
       _installedPackagesPresenter = new InstalledPackagesPresenter(_mainWindow, localPackagesService, _remotePackagesService, _installedPackagesConfigService);
       _availablePackagesPresenter = new AvailablePackagesPresenter(_mainWindow, _remotePackagesService, _installedPackagesConfigService);
-      _packageDetailsPresenter = new PackageDetailsPresenter(_mainWindow, localPackagesService, _installedPackagesConfigService, _remotePackagesService);
+      _packageDetailsPresenter = new PackageDetailsPresenter(_mainWindow, localPackagesService, _installedPackagesConfigService, _remotePackagesService, _assembliesService, frameworkService);
       
       _mainWindow.PackageRowSelected += SelectPackageRowAsync; 
       _mainWindow.FilterTextChanged += FilterByIdAsync;

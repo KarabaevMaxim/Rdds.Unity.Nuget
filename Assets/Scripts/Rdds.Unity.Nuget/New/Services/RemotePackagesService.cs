@@ -19,6 +19,7 @@ namespace Rdds.Unity.Nuget.New.Services
     private readonly NugetConfigService _nugetConfigService;
     private readonly FileService _fileService;
     private readonly FrameworkService _frameworkService;
+    private readonly LocalPackagesConfigService _localPackagesConfigService;
     private readonly ILogger _logger;
     private Dictionary<string, NugetService> _nugetServices = null!;
 
@@ -48,7 +49,9 @@ namespace Rdds.Unity.Nuget.New.Services
     
     #endregion
 
-    public void ChangeActiveSource(string? key) => 
+    #region Public methods
+
+    public void ChangeActiveSource(string? key) =>
       SelectedSource = string.IsNullOrWhiteSpace(key) ? null : _nugetConfigService.RequirePackageSource(key!);
 
     public async Task<IEnumerable<PackageInfoSourceWrapper>> FindPackagesAsync(string filterString, 
@@ -77,12 +80,16 @@ namespace Rdds.Unity.Nuget.New.Services
     
     public IEnumerable<FrameworkGroup> FindDependencies(PackageIdentity packageIdentity) => throw new NotImplementedException();
 
-    public string DownloadPackage(PackageIdentity identity)
-    { 
-      // загружает архив из сети
-      // распаковывает его в репозиторий
-      // LocalPackagesConfigService.AddLocalPackage(identity, localPath)
-      throw new NotImplementedException();
+    public async Task<string?> DownloadPackageAsync(PackageIdentity identity, string sourceKey, CancellationToken cancellationToken)
+    {
+      var packagePath = await _nugetServices[sourceKey].DownloadPackageAsync(identity, cancellationToken);
+
+      if (string.IsNullOrWhiteSpace(packagePath))
+        return null;
+
+      _localPackagesConfigService.AddLocalPackage(identity, packagePath!);
+      await _localPackagesConfigService.SaveConfigFileAsync();
+      return packagePath;
     }
 
     public async Task<IEnumerable<PackageVersionSourceWrapper>> FindPackageVersionsAsync(string packageId, string sourceKey, CancellationToken cancellationToken)
@@ -103,6 +110,8 @@ namespace Rdds.Unity.Nuget.New.Services
       var packages = await FindPackagesAsync(packageId, 0, 1, cancellationToken);
       return packages.SelectMany(p => p.SourceKeys);
     }
+
+    #endregion
 
     #region IDisposable
 
@@ -136,11 +145,13 @@ namespace Rdds.Unity.Nuget.New.Services
     public RemotePackagesService(NugetConfigService nugetConfigService, 
       FileService fileService, 
       FrameworkService frameworkService, 
+      LocalPackagesConfigService localPackagesConfigService,
       ILogger logger)
     {
       _nugetConfigService = nugetConfigService;
       _fileService = fileService;
       _frameworkService = frameworkService;
+      _localPackagesConfigService = localPackagesConfigService;
       _logger = logger;
     }
 

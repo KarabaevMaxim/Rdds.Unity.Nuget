@@ -18,7 +18,7 @@ namespace Rdds.Unity.Nuget.New.Services
     private readonly AssembliesService _assembliesService;
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-    public async Task<bool> InstallPackage(PackageIdentity identity, IEnumerable<string> assembliesToInstall, Framework targetFramework)
+    public async Task<bool> InstallPackageAsync(PackageIdentity identity, IEnumerable<string> assembliesToInstall, Framework targetFramework)
     {
       var path = _localPackagesConfigService.GetPackagePath(identity);
 
@@ -37,7 +37,7 @@ namespace Rdds.Unity.Nuget.New.Services
     }
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-    public async Task<bool> RemovePackage(string packageId, List<string> assemblies)
+    public async Task<bool> RemovePackageAsync(string packageId, IEnumerable<string> assemblies)
     {
       var dllNames = _installedPackagesConfigService.RequireDllNames(packageId);
       await _assembliesService.RemoveDllReferencesAsync(assemblies, dllNames);
@@ -54,12 +54,18 @@ namespace Rdds.Unity.Nuget.New.Services
     public IEnumerable<PackageIdentity> RequireInstalledPackages() => 
       _installedPackagesConfigService.InstalledPackages.Select(p => new PackageIdentity(p.Id, p.Version));
     
-
     public Task<PackageInfo> RequireInstalledPackageInfoAsync(string packageId)
     {
       var package = _installedPackagesConfigService.RequireInstalledPackage(packageId);
       var path = _localPackagesConfigService.RequirePackagePath(new PackageIdentity(package.Id, package.Version));
       return _nuspecFileService.RequirePackageInfoFromNuspecAsync(path);
+    }
+    
+    public Task<PackageInfo?> GetInstalledPackageInfoAsync(string packageId)
+    {
+      var package = _installedPackagesConfigService.RequireInstalledPackage(packageId);
+      var path = _localPackagesConfigService.RequirePackagePath(new PackageIdentity(package.Id, package.Version));
+      return _nuspecFileService.GetPackageInfoFromNuspecAsync(path);
     }
 
     public bool IsPackageInstalled(string packageId)

@@ -6,6 +6,8 @@
     
     public PackageVersion Version { get; }
 
+    public override string ToString() => $"{Id}.{Version}";
+
     public PackageIdentity(string id, PackageVersion version)
     {
       Id = id;

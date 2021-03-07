@@ -102,7 +102,7 @@ namespace Rdds.Unity.Nuget.New.UI
       }
     }
 
-    public bool IsLoading
+    public bool IsListsLoading
     {
       set
       {
@@ -113,6 +113,16 @@ namespace Rdds.Unity.Nuget.New.UI
         _loadingLabel.visible = _isLoading;
       }
     }
+
+    public bool IsDetailsLoading
+    {
+      get => _packageDetailsControl.IsLoading;
+      set => _packageDetailsControl.IsLoading = value;
+    }
+
+    public string? DetailsSelectedSource => _packageDetailsControl.SelectedSource;
+    
+    public string? DetailsSelectedVersion => _packageDetailsControl.SelectedVersion;
 
     #endregion
 

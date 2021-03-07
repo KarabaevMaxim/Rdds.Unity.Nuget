@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Utility;
@@ -15,38 +16,43 @@ namespace Rdds.Unity.Nuget.New.Services
   {
     private readonly FileService _fileService;
 
-    public Task<PackageInfo?> GetPackageInfoFromNuspecAsync(string packageDirectoryPath)
+    public async Task<PackageInfo?> GetPackageInfoFromNuspecAsync(string packageDirectoryPath)
     {
       var nuspecFiles = Directory.GetFiles(packageDirectoryPath, "*.nuspec", SearchOption.AllDirectories);
 
       if (nuspecFiles.Length == 0)
       {
         LogHelper.LogWarning($".nuspec file of package '{packageDirectoryPath}' not found!");
-        return Task.FromResult<PackageInfo?>(null);
+        return null;
       }
       
       if (nuspecFiles.Length > 1)
       {
         LogHelper.LogWarning($"Too many .nuspec files of package '{packageDirectoryPath}'!");
-        return Task.FromResult<PackageInfo?>(null);
+        return null;
       }
 
-      return ParseNuspecFileAsync(nuspecFiles[0])!;
+      try
+      {
+        return await ParseNuspecFileAsync(nuspecFiles[0])!;
+      }
+      catch (Exception ex)
+      {
+        LogHelper.LogWarningException($"Failed read .nuspec file '{nuspecFiles[0]}'", ex);
+        return null;
+      }
     }
 
-    public Task<PackageInfo> RequirePackageInfoFromNuspecAsync(string packageDirectoryPath)
+    public async Task<PackageInfo> RequirePackageInfoFromNuspecAsync(string packageDirectoryPath)
     {
-      var nuspecFiles = Directory.GetFiles(packageDirectoryPath, "*.nuspec", SearchOption.AllDirectories);
-      
-      if (nuspecFiles.Length == 0)
-        throw new InvalidOperationException($".nuspec file of package '{packageDirectoryPath}' not found!");
+      var package = await GetPackageInfoFromNuspecAsync(packageDirectoryPath);
 
-      if (nuspecFiles.Length > 1)
-        throw new InvalidOperationException($"Too many .nuspec files of package '{packageDirectoryPath}'!");
+      if (package == null)
+        throw new NullReferenceException();
 
-      return ParseNuspecFileAsync(nuspecFiles[0]);
+      return package;
     }
-    
+
     private async Task<PackageInfo> ParseNuspecFileAsync(string nuspecFile)
     {
       var xml = (await _fileService.ReadFromFileAsync(nuspecFile, CancellationToken.None))!;

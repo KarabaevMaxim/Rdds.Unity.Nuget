@@ -29,7 +29,7 @@ namespace Rdds.Unity.Nuget.New.Services
         foreach (var dll in dllPaths)
         {
           var importer = AssetImporter.GetAtPath(dll);
-          ReflectionHelper.SetPrivateProperty(importer, "ValidateReferences", false);
+          ReflectionHelper.SetNonPublicProperty(importer, "ValidateReferences", false);
         } 
       });
     }

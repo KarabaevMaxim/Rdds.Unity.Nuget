@@ -150,9 +150,9 @@ namespace Rdds.Unity.Nuget.New.Presenter
         {
           var assemblies = (await _assembliesService.RequireAllAssembliesAsync()).Select(a => a.Name);
           return await _localPackagesService.RemovePackageAsync(_selectedPackage!.Value.Id, assemblies);
-        });
+        }, _removeCancellationTokenSource.Token);
       
-        var successRemove = await DialogHelper.ShowLoadingAsync("Installing", "Please wait while package installing...", removeTask);
+        var successRemove = await DialogHelper.ShowLoadingAsync("Removing", "Please wait while package removing...", removeTask);
       
         if (!successRemove) 
           DialogHelper.ShowErrorAlert($"Failed to install package {_selectedPackage!.Value.Id}");

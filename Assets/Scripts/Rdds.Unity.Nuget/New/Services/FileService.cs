@@ -124,7 +124,7 @@ namespace Rdds.Unity.Nuget.New.Services
         var newFilePath = CopyFile(file, destinationDirectory);
 
         if (newFilePath != null) 
-          copiedFiles.Add(file);
+          copiedFiles.Add(newFilePath);
       }
 
       return copiedFiles;
@@ -137,6 +137,11 @@ namespace Rdds.Unity.Nuget.New.Services
       if (!Directory.Exists(destinationDirectory)) 
         Directory.CreateDirectory(destinationDirectory);
 
+      if (File.Exists(newFilePath))
+      {
+        return newFilePath;
+      }
+      
       try
       {
         File.Copy(sourceFile, newFilePath);

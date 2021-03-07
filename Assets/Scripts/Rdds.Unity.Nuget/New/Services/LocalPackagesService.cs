@@ -31,7 +31,7 @@ namespace Rdds.Unity.Nuget.New.Services
       var dlls = _dllFilesService.CopyDlls(identity, targetFramework);
       _dllFilesService.ConfigureDlls(dlls);
       var changedAssemblies= await _assembliesService.AddDllReferencesAsync(assembliesToInstall, dlls);
-      _installedPackagesConfigService.AddInstalledPackage(identity, changedAssemblies.ToList(), dlls);
+      _installedPackagesConfigService.AddInstalledPackageOrUpdate(identity, changedAssemblies.ToList(), dlls.ToList());
       await _installedPackagesConfigService.SaveConfigFileAsync();
       return true;
     }

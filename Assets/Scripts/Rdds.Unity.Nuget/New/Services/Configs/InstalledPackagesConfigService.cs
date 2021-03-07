@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.New.Exceptions;
 using Rdds.Unity.Nuget.New.Services.Configs.Models;
-using Rdds.Unity.Nuget.Services;
 using Rdds.Unity.Nuget.Utility;
 
 namespace Rdds.Unity.Nuget.New.Services.Configs
@@ -49,8 +48,31 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
       await _fileService.WriteToFileAsync(ConfigName, json);
     }
     
-    public void AddInstalledPackage(PackageIdentity identity, List<string> installedInAssemblies, IEnumerable<string> dllNames) => 
-      _installedPackages.Add(new InstalledPackageInfo(identity.Id, identity.Version.ToString(), installedInAssemblies, dllNames));
+    public void AddInstalledPackage(PackageIdentity identity, List<string> installedInAssemblies, List<string> dllNames)
+    {
+      var foundPackage = GetInstalledPackage(identity.Id);
+      
+      if (foundPackage != null)
+        return;
+
+      _installedPackages.Add(
+        new InstalledPackageInfo(identity.Id, identity.Version.ToString(), installedInAssemblies, dllNames));
+    }
+
+    public void AddInstalledPackageOrUpdate(PackageIdentity identity, List<string> installedInAssemblies, List<string> dllNames)
+    {
+      var foundPackage = GetInstalledPackage(identity.Id);
+
+      if (foundPackage != null)
+      {
+        foundPackage.InstalledInAssemblies.AddRange(installedInAssemblies.Except(foundPackage.InstalledInAssemblies));
+        foundPackage.DllNames.AddRange(dllNames.Except(foundPackage.DllNames));
+        return;
+      }
+      
+      _installedPackages.Add(
+        new InstalledPackageInfo(identity.Id, identity.Version.ToString(), installedInAssemblies, dllNames));
+    }
 
     public void AddPackageToAssemblies(string packageId, IEnumerable<string> installedInAssemblies)
     {

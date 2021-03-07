@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.New.Exceptions;
 using Rdds.Unity.Nuget.New.Services.Configs.Models;
-using Rdds.Unity.Nuget.Services;
 using Rdds.Unity.Nuget.Utility;
 
 namespace Rdds.Unity.Nuget.New.Services.Configs
@@ -49,9 +48,9 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
       await _fileService.WriteToFileAsync(ConfigName, json);
     }
 
+    // ReSharper disable once ReturnTypeCanBeNotNullable
     public string? GetPackagePath(PackageIdentity identity) =>
-      _localPackages
-        .FirstOrDefault(p => p.Id == identity.Id && p.Version == identity.Version.ToString())?.Path;
+      _localPackages.FirstOrDefault(p => p.Id == identity.Id && p.Version == identity.Version.ToString()).Path;
 
     public string RequirePackagePath(PackageIdentity identity)
     {
@@ -63,8 +62,15 @@ namespace Rdds.Unity.Nuget.New.Services.Configs
       return package;
     }
     
-    public void AddLocalPackage(PackageIdentity identity, string localPath) => 
-      _localPackages.Add(new LocalPackageInfo(identity.Id, identity.Version.ToString(), localPath));
+    public void AddLocalPackage(PackageIdentity identity, string localPath)
+    {
+      var newPackage = new LocalPackageInfo(identity.Id, identity.Version.ToString(), localPath);
+      
+      if (_localPackages.Contains(newPackage, LocalPackageInfo.IdVersionComparer.New))
+        return;
+      
+      _localPackages.Add(newPackage);
+    }
 
     private async Task SaveDefaultConfigFileAsync()
     {

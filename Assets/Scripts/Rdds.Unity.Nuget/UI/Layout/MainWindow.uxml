@@ -3,13 +3,20 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:engine="UnityEngine.UIElements"
         xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd">
-    <engine:ScrollView name="Root" class="VerticalStack">
-        <engine:VisualElement name="TabsControl">
-            <engine:VisualElement name="TabsControlBlock" class="HorizontalStack Block">
+    
+    <engine:TwoPaneSplitView name="Root">
+        <engine:VisualElement name="LeftPanel" style="width: 200px;">
+            <engine:VisualElement class="PanelHeader HorizontalStack Block">
+                <engine:TextField name="FilterTextField" class="StackExpanded2Element" />
+                <engine:VisualElement name="AssembliesPopupPlaceholder" class="StackExpandedElement" />
+                <engine:VisualElement name="SourcesListPlaceholder" class="StackExpandedElement"/>
             </engine:VisualElement>
-
-            <engine:VisualElement name="TabsContainer" class="TabsContainer">
-            </engine:VisualElement>
+            <engine:VisualElement name="InstalledPackagesPlaceholder"/>
+            <engine:VisualElement name="AvailablePackagesPlaceholder"/>
+            <engine:Label name="LoadingLabel" text="Loading..."/>
         </engine:VisualElement>
-    </engine:ScrollView>
+        <engine:ScrollView name="RightPanel">
+
+        </engine:ScrollView>
+    </engine:TwoPaneSplitView>
 </engine:UXML>

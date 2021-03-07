@@ -8,10 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rdds.Unity.Nuget.Entities;
-using Rdds.Unity.Nuget.New.Services;
 using Rdds.Unity.Nuget.Utility;
-using UnityEditor;
-using UnityEditorInternal;
 
 namespace Rdds.Unity.Nuget.Services
 {

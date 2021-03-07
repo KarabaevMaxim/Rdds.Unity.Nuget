@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class TestClass
+namespace TestAssembly
 {
+  public class TestClass
+  {
+  }
 }

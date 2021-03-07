@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using NuGet.Common;
-using Rdds.Unity.Nuget.New.Services;
-using Rdds.Unity.Nuget.New.Services.Configs;
+using Rdds.Unity.Nuget.Services.Configs;
 using UnityEditor;
 
 namespace Rdds.Unity.Nuget.Services
@@ -13,8 +12,6 @@ namespace Rdds.Unity.Nuget.Services
     public static FileService FileService { get; }
     public static NugetConfigService NugetConfigService { get; }
     public static FrameworkService FrameworkService { get; }
-    public static PackagesFileService PackagesFileService { get; }
-    public static InstalledPackagesService InstalledPackagesService { get; }
     public static NuspecFileService NuspecFileService { get; }
     public static AssembliesService AssembliesService { get; }
     
@@ -41,9 +38,6 @@ namespace Rdds.Unity.Nuget.Services
 
       RemotePackagesService = new RemotePackagesService(NugetConfigService, FileService, FrameworkService, LocalPackagesConfigService, Logger);
       LocalPackagesService = new LocalPackagesService(InstalledPackagesConfigService, LocalPackagesConfigService, NuspecFileService, DllFilesService, AssembliesService);
-      
-      PackagesFileService = new PackagesFileService(FileService);
-      InstalledPackagesService = new InstalledPackagesService(PackagesFileService, null, NugetConfigService, NuspecFileService);
     }
   }
 }

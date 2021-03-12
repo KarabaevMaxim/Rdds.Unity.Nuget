@@ -62,7 +62,7 @@ namespace Rdds.Unity.Nuget.Presenter
       var id = packageInfo.Identity.Id;
       var version = packageInfo.Identity.Version.ToString();
       var icon = (packageInfo.IconPath == null
-                   ? Resources.Load<Texture>(Paths.DefaultIconResourceName)
+                   ? Resources.Load<Texture2D>(Paths.DefaultIconResourceName)
                    : await ImageHelper.LoadImageAsync(packageInfo.IconPath, token)) 
                  ?? ImageHelper.LoadImageFromResource(Paths.DefaultIconResourceName);
       
@@ -85,7 +85,7 @@ namespace Rdds.Unity.Nuget.Presenter
 
         if (packageInfo == null)
           return new PackageRowPresentationModel(i.Id, i.Version.ToString(), 
-            Resources.Load<Texture>(Paths.DefaultIconResourceName), 
+            Resources.Load<Texture2D>(Paths.DefaultIconResourceName), 
             Enumerable.Empty<string>(), 
             Enumerable.Empty<string>());
 

@@ -8,16 +8,5 @@
     "DllNames": [
       "Newtonsoft.Json.dll"
     ]
-  },
-  {
-    "Id": "Rdds.Dto",
-    "Version": "1.0.0",
-    "InstalledInAssemblies": [
-      "TestAssembly2",
-      "TestAssembly"
-    ],
-    "DllNames": [
-      "Rdds.Dto.dll"
-    ]
   }
 ]

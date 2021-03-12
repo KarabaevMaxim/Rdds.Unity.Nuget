@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Services;
-using Rdds.Unity.Nuget.Services.Configs;
 using Rdds.Unity.Nuget.UI;
 using Rdds.Unity.Nuget.UI.Controls.Models;
 using Rdds.Unity.Nuget.Utility;
@@ -19,7 +18,6 @@ namespace Rdds.Unity.Nuget.Presenter
 
     private readonly IMainWindow _mainWindow;
     private readonly LocalPackagesService _localPackagesService;
-    private readonly InstalledPackagesConfigService _installedPackagesConfigService;
     private readonly RemotePackagesService _remotePackagesService;
     private readonly AssembliesService _assembliesService;
     private readonly FrameworkService _frameworkService;
@@ -72,7 +70,7 @@ namespace Rdds.Unity.Nuget.Presenter
       var assemblies = (await _assembliesService.RequireAllAssembliesAsync())
         .Select(assembly =>
         {
-          var icon = ImageHelper.LoadBuiltinImage(Paths.AssemblyDefinitionAssetIconBuiltInResourceName);
+          var icon = ImageHelper.LoadImageFromResource(Paths.AssemblyDefinitionAssetIconResourceName);
           var installedInAssembly = _assembliesService.IsPackageInstalledInAssembly(selected.Id, assembly.Name);
           var version = installedInAssembly
             ? _assembliesService.RequireInstalledPackageVersion(selected.Id, assembly.Name)
@@ -204,7 +202,7 @@ namespace Rdds.Unity.Nuget.Presenter
       _mainWindow.SelectedPackage = details;
     }
 
-    private Texture RequireInstallOrRemoveIcon(bool packageInstalled)
+    private Texture2D RequireInstallOrRemoveIcon(bool packageInstalled)
     {
       return packageInstalled
         ? ImageHelper.LoadImageFromResource(Paths.RemovePackageButtonIconResourceName)
@@ -221,15 +219,13 @@ namespace Rdds.Unity.Nuget.Presenter
     #region Constructor
 
     public PackageDetailsPresenter(IMainWindow mainWindow, 
-      LocalPackagesService localPackagesService, 
-      InstalledPackagesConfigService installedPackagesConfigService,
+      LocalPackagesService localPackagesService,
       RemotePackagesService remotePackagesService,
       AssembliesService assembliesService,
       FrameworkService frameworkService)
     {
       _mainWindow = mainWindow;
       _localPackagesService = localPackagesService;
-      _installedPackagesConfigService = installedPackagesConfigService;
       _remotePackagesService = remotePackagesService;
       _assembliesService = assembliesService;
       _frameworkService = frameworkService;

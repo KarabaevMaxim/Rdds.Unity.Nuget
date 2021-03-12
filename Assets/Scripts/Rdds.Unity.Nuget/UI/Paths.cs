@@ -8,6 +8,7 @@ namespace Rdds.Unity.Nuget.UI
     public static string UpdatePackageButtonIconResourceName { get; } = "PackageUpdate";
     public static string InstallPackageButtonIconResourceName { get; } = "InstallIcon";
     public static string RemovePackageButtonIconResourceName { get; } = "RemoveIcon";
+    public static string AssemblyDefinitionAssetIconResourceName { get; } = "AssemblyDefinitionIcon";
     public static string AssemblyDefinitionAssetIconBuiltInResourceName { get; } = "AssemblyDefinitionAsset Icon";
 
     public static string LayoutRootPath { get; } = "Assets/Scripts/Rdds.Unity.Nuget/UI/Layout";

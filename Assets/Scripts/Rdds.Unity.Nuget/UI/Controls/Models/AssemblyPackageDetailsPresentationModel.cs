@@ -1,4 +1,7 @@
 ﻿using System;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Rdds.Unity.Nuget.Utility;
 using UnityEngine;
 
 namespace Rdds.Unity.Nuget.UI.Controls.Models
@@ -6,19 +9,35 @@ namespace Rdds.Unity.Nuget.UI.Controls.Models
   /// <summary>
   /// Presentation model for assembly row in details panel of package.
   /// </summary>
-  internal readonly struct AssemblyPackageDetailsPresentationModel
+  internal struct AssemblyPackageDetailsPresentationModel
   {
-    public Texture Icon { get; }
+    [JsonIgnore]
+    public Texture2D Icon { get; private set; }
     
+    [UsedImplicitly]
+    public string IconBase64
+    {
+      get => ImageHelper.TextureToBase64(Icon);
+      set => Icon = ImageHelper.TextureFromBase64(value);
+    }
+
     public string Name { get; }
     
     public string? InstalledVersionOfPackage { get; }
     
-    public Texture ButtonIcon { get; }
+    [JsonIgnore]
+    public Texture2D ButtonIcon { get; private set; }
     
+    [UsedImplicitly]
+    public string ButtonIconBase64
+    {
+      get => ImageHelper.TextureToBase64(ButtonIcon);
+      set => ButtonIcon = ImageHelper.TextureFromBase64(value);
+    }
+
     public Action ButtonAction { get; }
 
-    public AssemblyPackageDetailsPresentationModel(Texture icon, string name, string? installedVersionOfPackage, Texture buttonIcon, Action buttonAction)
+    public AssemblyPackageDetailsPresentationModel(Texture2D icon, string name, string? installedVersionOfPackage, Texture2D buttonIcon, Action buttonAction)
     {
       Icon = icon;
       Name = name;

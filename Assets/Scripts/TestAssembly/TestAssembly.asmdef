@@ -2,7 +2,5 @@
   "name": "TestAssembly",
   "rootNameSpace": "TestAssembly",
   "overrideReferences": true,
-  "precompiledReferences": [
-    "Rdds.Dto.dll"
-  ]
+  "precompiledReferences": []
 }

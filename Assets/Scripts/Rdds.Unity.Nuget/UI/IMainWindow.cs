@@ -24,14 +24,16 @@ namespace Rdds.Unity.Nuget.UI
     
     string? DetailsSelectedVersion { get; }
 
-    void SetSource(string key);
-    
-    event Action<PackageRowPresentationModel>? PackageRowSelected;
-    
-    event Action<string>? FilterTextChanged;
+    string FilterString { get; set; }
 
-    event Action<string>? AssemblyChanged;
+    string SelectedAssembly { get; set; }
     
+    string SelectedSource { get; set; }
+
+    event Action<PackageRowPresentationModel>? PackageRowSelected;
+    event Action<string>? FilterTextChanged;
+    event Action<string>? AssemblyChanged;
     event Action<string>? SourceChanged;
+    event Action? WillDisabled;
   }
 }

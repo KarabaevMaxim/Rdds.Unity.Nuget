@@ -46,7 +46,7 @@ namespace Rdds.Unity.Nuget.Presenter
       var id = packageInfo.PackageInfo.Identity.Id;
       var version = packageInfo.PackageInfo.Identity.Version.ToString();
       var icon = (packageInfo.PackageInfo.IconPath == null
-                   ? Resources.Load<Texture>(Paths.DefaultIconResourceName)
+                   ? Resources.Load<Texture2D>(Paths.DefaultIconResourceName)
                    : await ImageHelper.LoadImageAsync(packageInfo.PackageInfo.IconPath, CancellationToken.None)) 
                  ?? ImageHelper.LoadImageFromResource(Paths.DefaultIconResourceName);
       var sources = packageInfo.SourceKeys;

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Rdds.Unity.Nuget.Utility;
 using UnityEngine;
 
 namespace Rdds.Unity.Nuget.UI.Controls.Models
@@ -8,8 +11,16 @@ namespace Rdds.Unity.Nuget.UI.Controls.Models
   {
     public string Id { get; }
     
-    public Texture Icon { get; }
-    
+    [JsonIgnore]
+    public Texture2D Icon { get; private set; }
+
+    [UsedImplicitly]
+    public string IconBase64
+    {
+      get => ImageHelper.TextureToBase64(Icon);
+      set => Icon = ImageHelper.TextureFromBase64(value);
+    }
+
     public string SelectedVersion { get; }
     
     public IEnumerable<string> Versions { get; set; }
@@ -22,8 +33,16 @@ namespace Rdds.Unity.Nuget.UI.Controls.Models
 
     public IEnumerable<DependenciesPresentationModel>? Dependencies { get; set; }
     
-    public Texture InstallRemoveButtonIcon { get; }
+    [JsonIgnore]
+    public Texture2D InstallRemoveButtonIcon { get; private set; }
     
+    [UsedImplicitly]
+    public string InstallRemoveButtonIconBase64
+    {
+      get => ImageHelper.TextureToBase64(InstallRemoveButtonIcon);
+      set => InstallRemoveButtonIcon = ImageHelper.TextureFromBase64(value);
+    }
+
     public IEnumerable<AssemblyPackageDetailsPresentationModel> Assemblies { get; }
     
     public Action? InstallRemoveButtonAction { get; }
@@ -31,14 +50,14 @@ namespace Rdds.Unity.Nuget.UI.Controls.Models
     public Action? UpdateButtonAction { get; }
 
     public PackageDetailsPresentationModel(string id, 
-      Texture icon, 
+      Texture2D icon, 
       string selectedVersion, 
       IEnumerable<string> versions,
       string selectedSource, 
       IEnumerable<string> availableInSources, 
       string? description,
       IEnumerable<DependenciesPresentationModel>? dependencies, 
-      Texture installRemoveButtonIcon,
+      Texture2D installRemoveButtonIcon,
       Action? installRemoveButtonAction, 
       Action? updateButtonAction,
       IEnumerable<AssemblyPackageDetailsPresentationModel> assemblies)

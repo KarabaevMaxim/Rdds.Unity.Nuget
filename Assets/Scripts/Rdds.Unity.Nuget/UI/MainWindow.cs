@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Rdds.Unity.Nuget.Presenter;
+using Rdds.Unity.Nuget.Services;
 using Rdds.Unity.Nuget.UI.Controls;
 using Rdds.Unity.Nuget.UI.Controls.Models;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 // ReSharper disable Unity.NoNullCoalescing
@@ -37,7 +41,7 @@ namespace Rdds.Unity.Nuget.UI
     private PopupField<string>? _assembliesPopup;
     private PackageDetailsControl _packageDetailsControl = null!;
     private bool _isLoading;
-    
+
     #endregion
 
     #region Properties
@@ -124,6 +128,24 @@ namespace Rdds.Unity.Nuget.UI
     
     public string? DetailsSelectedVersion => _packageDetailsControl.SelectedVersion;
 
+    public string FilterString
+    {
+      get => _filterTextField.value;
+      set => _filterTextField.SetValueWithoutNotify(value);
+    }
+    
+    public string SelectedAssembly
+    {
+      get => _assembliesPopup!.value;
+      set => _assembliesPopup!.SetValueWithoutNotify(value);
+    }
+    
+    public string SelectedSource
+    {
+      get => _sourcesPopup!.value;
+      set => _sourcesPopup!.SetValueWithoutNotify(value);
+    }
+
     #endregion
 
     #region Events
@@ -132,12 +154,13 @@ namespace Rdds.Unity.Nuget.UI
     public event Action<string>? FilterTextChanged;
     public event Action<string>? AssemblyChanged;
     public event Action<string>? SourceChanged;
+    public event Action? WillDisabled;
 
     #endregion
 
     #region Methods
 
-    private void OnEnable()
+    private async void OnEnable()
     {
       var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Paths.MainWindowLayout);
       visualTree.CloneTree(rootVisualElement);
@@ -159,9 +182,20 @@ namespace Rdds.Unity.Nuget.UI
       _root.fixedPaneInitialDimension = 300;
 
       _packageDetailsControl = new PackageDetailsControl(_rightPanel);
+
+      // todo shit crunch
+      var presenter = new MainWindowPresenter(this, 
+        EditorContext.LocalPackagesService,
+        EditorContext.InstalledPackagesConfigService,
+        EditorContext.LocalPackagesConfigService, 
+        EditorContext.NugetConfigService, 
+        EditorContext.AssembliesService,
+        EditorContext.RemotePackagesService,
+        EditorContext.FrameworkService);
+      await presenter.InitializeAsync();
     }
 
-    public void SetSource(string key) => _sourcesPopup!.SetValueWithoutNotify(key);
+    private void OnDisable() => WillDisabled?.Invoke();
 
     #endregion
 

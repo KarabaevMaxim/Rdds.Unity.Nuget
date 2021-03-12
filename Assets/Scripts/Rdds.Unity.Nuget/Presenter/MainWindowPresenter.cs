@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Rdds.Unity.Nuget.Services;
 using Rdds.Unity.Nuget.Services.Configs;
 using Rdds.Unity.Nuget.UI;
 using Rdds.Unity.Nuget.UI.Controls.Models;
+using Rdds.Unity.Nuget.Utility;
+using UnityEditor;
 
 namespace Rdds.Unity.Nuget.Presenter
 {
@@ -37,10 +40,53 @@ namespace Rdds.Unity.Nuget.Presenter
       set => _mainWindow.IsListsLoading = value;
     }
     
+    private MainWindowState? MainWindowState
+    {
+      get
+      {
+        var serialized = EditorPrefs.GetString(nameof(MainWindowState), string.Empty);
+
+        if (string.IsNullOrWhiteSpace(serialized))
+          return null;
+
+        try
+        {
+          return JsonConvert.DeserializeObject<MainWindowState>(serialized);
+        }
+        catch (JsonException ex)
+        {
+          LogHelper.LogWarningException("Failed load window state", ex);
+          return null;
+        }
+      }
+      set
+      {
+        string serialized;
+        
+        try
+        {
+          serialized = value == null ? string.Empty : JsonConvert.SerializeObject(value);
+        }
+        catch (JsonException ex)
+        {
+          LogHelper.LogWarningException("Failed save window state", ex);
+          serialized = string.Empty;
+        }
+        
+        EditorPrefs.SetString(nameof(MainWindowState), serialized);
+      }
+    }
+    
     #endregion
 
     public async Task InitializeAsync()
     {
+      if (RestoreFromSavedState())
+        return;
+
+      LogHelper.LogInfo("Have not saved state. State not restored");
+      
+      // ReSharper disable once ConvertToLocalFunction
       Func<Task> action = async () =>
       {
         await Task.WhenAll(_installedPackagesConfigService.LoadConfigFileAsync(),
@@ -105,7 +151,7 @@ namespace Rdds.Unity.Nuget.Presenter
       var sources = new List<string> { AllSources };
       sources.AddRange(_nugetConfigService.RequireAvailableSourcesKeys());
       _mainWindow.Sources = sources;
-      _mainWindow.SetSource(_remotePackagesService.SelectedSource?.Key ?? AllSources);
+      _mainWindow.SelectedSource = _remotePackagesService.SelectedSource?.Key ?? AllSources;
     }
 
     private async Task InitializeAssembliesAsync()
@@ -121,7 +167,62 @@ namespace Rdds.Unity.Nuget.Presenter
       await action.Invoke();
       IsLoading = false;
     }
-    
+
+    private void SaveState()
+    {
+      try
+      {
+        MainWindowState = new MainWindowState
+        {
+          LeftPanelState = new LeftPanelState
+          {
+            AvailablePackagesList = _mainWindow.AvailablePackages,
+            InstalledPackagesList = _mainWindow.InstalledPackages,
+            Header = new LeftPanelState.HeaderState
+            {
+              SelectedSource = _mainWindow.SelectedSource,
+              SelectedAssembly = _mainWindow.SelectedAssembly,
+              AssembliesList = _mainWindow.Assemblies,
+              FilterString = _mainWindow.FilterString,
+              SourcesList = _mainWindow.Sources
+            },
+            IsInstalledPackageSelected = false,
+            SelectedPackageId = string.Empty
+          },
+          RightPanelState = _mainWindow.SelectedPackage
+        };
+      }
+      catch
+      {
+        MainWindowState = null;
+      }
+    }
+
+    private bool RestoreFromSavedState()
+    {
+      if (!MainWindowState.HasValue)
+        return false;
+
+      try
+      {
+        _mainWindow.InstalledPackages = MainWindowState.Value.LeftPanelState.InstalledPackagesList;
+        _mainWindow.AvailablePackages = MainWindowState.Value.LeftPanelState.AvailablePackagesList;
+        _mainWindow.SelectedPackage = MainWindowState.Value.RightPanelState;
+        _mainWindow.Sources = MainWindowState.Value.LeftPanelState.Header.SourcesList;
+        _mainWindow.Assemblies = MainWindowState.Value.LeftPanelState.Header.AssembliesList;
+        _mainWindow.SelectedSource = MainWindowState.Value.LeftPanelState.Header.SelectedSource;
+        _mainWindow.SelectedAssembly = MainWindowState.Value.LeftPanelState.Header.SelectedAssembly;
+        _mainWindow.FilterString = MainWindowState.Value.LeftPanelState.Header.FilterString;
+        MainWindowState = null;
+        return true;
+      }
+      catch
+      {
+        MainWindowState = null;
+        return false;
+      }
+    }
+
     private async void InstalledPackagesListChangedAsync() => await _installedPackagesPresenter.InitializeAsync();
 
     public MainWindowPresenter(IMainWindow mainWindow, 
@@ -141,13 +242,13 @@ namespace Rdds.Unity.Nuget.Presenter
       _remotePackagesService = remotePackagesService;
       _installedPackagesPresenter = new InstalledPackagesPresenter(_mainWindow, localPackagesService, _remotePackagesService, _installedPackagesConfigService);
       _availablePackagesPresenter = new AvailablePackagesPresenter(_mainWindow, _remotePackagesService, _installedPackagesConfigService);
-      _packageDetailsPresenter = new PackageDetailsPresenter(_mainWindow, localPackagesService, _installedPackagesConfigService, _remotePackagesService, _assembliesService, frameworkService);
+      _packageDetailsPresenter = new PackageDetailsPresenter(_mainWindow, localPackagesService, _remotePackagesService, _assembliesService, frameworkService);
       
       _mainWindow.PackageRowSelected += SelectPackageRowAsync; 
       _mainWindow.FilterTextChanged += FilterByIdAsync;
       _mainWindow.AssemblyChanged += FilterByAssembly;
       _mainWindow.SourceChanged += FilterBySourceAsync;
-
+      _mainWindow.WillDisabled += SaveState;
       _packageDetailsPresenter.PackageInstalledOrRemoved += InstalledPackagesListChangedAsync;
     }
   }

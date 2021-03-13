@@ -1,5 +1,4 @@
-﻿using Rdds.Unity.Nuget.Utility;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace Rdds.Unity.Nuget.UI
@@ -9,11 +8,10 @@ namespace Rdds.Unity.Nuget.UI
     [MenuItem("Rdds/Unity.Nuget")]
     public static void ShowNugetWindow()
     {
+      // todo todo move to StateService
+      EditorPrefs.DeleteKey("MainWindowState");
       var wnd = EditorWindow.GetWindow<MainWindow>();
       wnd.titleContent = new GUIContent("Nuget package manager");
     }
-    
-    [MenuItem("Rdds/Reset cache")]
-    public static void ResetCache() => EditorPrefs.DeleteKey("MainWindowState");
   }
 }

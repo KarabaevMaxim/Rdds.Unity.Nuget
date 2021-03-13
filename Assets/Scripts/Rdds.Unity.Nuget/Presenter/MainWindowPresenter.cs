@@ -40,6 +40,7 @@ namespace Rdds.Unity.Nuget.Presenter
       set => _mainWindow.IsListsLoading = value;
     }
     
+    // todo move to StateService
     private MainWindowState? MainWindowState
     {
       get
@@ -84,8 +85,6 @@ namespace Rdds.Unity.Nuget.Presenter
       if (RestoreFromSavedState())
         return;
 
-      LogHelper.LogInfo("Have not saved state. State not restored");
-      
       // ReSharper disable once ConvertToLocalFunction
       Func<Task> action = async () =>
       {
@@ -170,6 +169,13 @@ namespace Rdds.Unity.Nuget.Presenter
 
     private void SaveState()
     {
+      // todo не сохранять так много данных.
+      // Сохранить списки установленных и доступных пакетов, ИД выбранного пакета и пометку, указывающую, в списке установленных или списке доступных выбран пакет
+      // public IEnumerable<PackageRowPresentationModel> InstalledPackagesList { get; set; }
+      // public IEnumerable<PackageRowPresentationModel> AvailablePackagesList { get; set; }
+      // bool IsInInstalledList { get; set; }
+      // string SelectedPackageId { get; set; }
+      // Остальную инфу загрузить как при выборе пакета в списке
       try
       {
         MainWindowState = new MainWindowState

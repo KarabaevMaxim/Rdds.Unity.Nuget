@@ -1,6 +1,14 @@
 {
   "name": "TestAssembly2",
-  "rootNameSpace": "TestAssembly2",
+  "rootNamespace": "Rdds.TestAssembly2",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
   "overrideReferences": true,
-  "precompiledReferences": []
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

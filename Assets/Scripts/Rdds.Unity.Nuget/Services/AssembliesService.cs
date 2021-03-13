@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Rdds.Unity.Nuget.Entities;
 using Rdds.Unity.Nuget.Exceptions;
 using Rdds.Unity.Nuget.Services.Configs;
@@ -25,13 +26,9 @@ namespace Rdds.Unity.Nuget.Services
     {
       var tasks = _fileService.FindFiles(CodeRootDirectory, "asmdef", true).Select(async filePath =>
       {
-        var json = await _fileService.RequireFileContentAsync(filePath, CancellationToken.None);
-
         try
         {
-          var assembly = JsonConvert.DeserializeObject<AssemblyModel>(json);
-          assembly.Path = filePath;
-          return assembly;
+          return await ParseAssemblyFileAsync(filePath);
         }
         catch (JsonException ex)
         {
@@ -103,8 +100,6 @@ namespace Rdds.Unity.Nuget.Services
     {
       if (!assembly.OverrideReferences)
         return true;
-      
-      assembly.PrecompiledReferences ??= new List<string>();
 
       foreach (var dll in dllPaths)
       {
@@ -127,10 +122,10 @@ namespace Rdds.Unity.Nuget.Services
     {
       if (!assembly.OverrideReferences)
         return true;
-      
-      var removedCount = assembly.PrecompiledReferences?.RemoveAll(dllNames.Contains);
+
+      var removedCount = dllNames.Count(dllName => assembly.PrecompiledReferences.Remove(dllName));
       var saveResult = await SaveAssemblyAsync(assembly);
-      return removedCount.GetValueOrDefault(-1) == dllNames.Count() && saveResult;
+      return removedCount == dllNames.Count() && saveResult;
     }
     
     private async Task<bool> SaveAssemblyAsync(AssemblyModel assembly)
@@ -150,7 +145,7 @@ namespace Rdds.Unity.Nuget.Services
       
       try
       {
-        json = JsonConvert.SerializeObject(assembly, Formatting.Indented);
+        json = assembly.Properties.ToString();
       }
       catch (JsonException ex)
       {
@@ -172,6 +167,13 @@ namespace Rdds.Unity.Nuget.Services
         _fileService.RemoveFile(backupFilePath!);
 
       return true;
+    }
+
+    private async Task<AssemblyModel> ParseAssemblyFileAsync(string filePath)
+    {
+      var json = await _fileService.RequireFileContentAsync(filePath, CancellationToken.None);
+      var result = new AssemblyModel(JObject.Parse(json)) { Path = filePath };
+      return result;
     }
 
     public AssembliesService(FileService fileService, InstalledPackagesConfigService installedPackagesConfigService)

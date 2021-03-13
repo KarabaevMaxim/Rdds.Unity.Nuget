@@ -11,6 +11,8 @@ namespace Rdds.Unity.Nuget.UI.Controls.Models
   {
     public string Id { get; }
     
+    public bool IsInstalled { get; }
+    
     [JsonIgnore]
     public Texture2D Icon { get; private set; }
 
@@ -50,6 +52,7 @@ namespace Rdds.Unity.Nuget.UI.Controls.Models
     public Action? UpdateButtonAction { get; }
 
     public PackageDetailsPresentationModel(string id, 
+      bool isInstalled,
       Texture2D icon, 
       string selectedVersion, 
       IEnumerable<string> versions,
@@ -63,6 +66,7 @@ namespace Rdds.Unity.Nuget.UI.Controls.Models
       IEnumerable<AssemblyPackageDetailsPresentationModel> assemblies)
     {
       Id = id;
+      IsInstalled = isInstalled;
       Icon = icon;
       SelectedVersion = selectedVersion;
       Versions = versions;

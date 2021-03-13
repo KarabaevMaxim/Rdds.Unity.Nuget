@@ -68,7 +68,7 @@ namespace Rdds.Unity.Nuget.Presenter
       
       var assemblies = _installedPackagesConfigService.RequireInstalledInAssemblies(id);
       var sources = await _remotePackagesService.FindSourcesForPackageAsync(id, token);
-      return new PackageRowPresentationModel(id, version, icon, sources, assemblies);
+      return new PackageRowPresentationModel(id, true, version, icon, sources, assemblies);
     }
     
     private async Task ReloadPackagesAsync()
@@ -84,7 +84,7 @@ namespace Rdds.Unity.Nuget.Presenter
         var packageInfo = await _localPackagesService.GetInstalledPackageInfoAsync(i.Id);
 
         if (packageInfo == null)
-          return new PackageRowPresentationModel(i.Id, i.Version.ToString(), 
+          return new PackageRowPresentationModel(i.Id, true, i.Version.ToString(), 
             Resources.Load<Texture2D>(Paths.DefaultIconResourceName), 
             Enumerable.Empty<string>(), 
             Enumerable.Empty<string>());

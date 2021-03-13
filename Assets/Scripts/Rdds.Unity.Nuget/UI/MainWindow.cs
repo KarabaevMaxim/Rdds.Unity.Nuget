@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Rdds.Unity.Nuget.Presenter;
 using Rdds.Unity.Nuget.Services;
 using Rdds.Unity.Nuget.UI.Controls;
 using Rdds.Unity.Nuget.UI.Controls.Models;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 // ReSharper disable Unity.NoNullCoalescing
@@ -102,6 +100,15 @@ namespace Rdds.Unity.Nuget.UI
       set
       {
         _selectedPackage = value;
+
+        if (_selectedPackage.HasValue)
+        {
+          if (_selectedPackage.Value.IsInstalled && _installedListControl != null)
+            _installedListControl.SelectedPackageId = _selectedPackage.Value.Id;
+          else if (!_selectedPackage.Value.IsInstalled && _availableListControl != null)
+            _availableListControl.SelectedPackageId = _selectedPackage.Value.Id;
+        }
+
         _packageDetailsControl.Details = _selectedPackage;
       }
     }

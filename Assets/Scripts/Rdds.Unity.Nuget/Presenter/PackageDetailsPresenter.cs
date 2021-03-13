@@ -66,7 +66,6 @@ namespace Rdds.Unity.Nuget.Presenter
       var installIcon = RequireInstallOrRemoveIcon(installed);
       Action installAction = RequireInstallOrRemoveAction(installed);
       
-      // var assemblies = _installedPackagesConfigService.GetInstalledInAssemblies(selected.Id)?
       var assemblies = (await _assembliesService.RequireAllAssembliesAsync())
         .Select(assembly =>
         {
@@ -81,7 +80,7 @@ namespace Rdds.Unity.Nuget.Presenter
           return new AssemblyPackageDetailsPresentationModel(icon, assembly.Name, version, buttonIcon, buttonAction);
         });
 
-      var selectedDetails = new PackageDetailsPresentationModel(selected.Id, selected.Icon, selected.Version,
+      var selectedDetails = new PackageDetailsPresentationModel(selected.Id, selected.IsInstalled, selected.Icon, selected.Version,
         new[] { selected.Version }, selected.Sources.FirstOrDefault() ?? string.Empty, selected.Sources, null,
         null, installIcon, installAction, null, assemblies);
       _mainWindow.SelectedPackage = selectedDetails;

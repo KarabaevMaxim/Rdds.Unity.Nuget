@@ -186,8 +186,6 @@ namespace Rdds.Unity.Nuget.Presenter
               FilterString = _mainWindow.FilterString,
               SourcesList = _mainWindow.Sources
             },
-            IsInstalledPackageSelected = false,
-            SelectedPackageId = string.Empty
           },
           RightPanelState = _mainWindow.SelectedPackage
         };

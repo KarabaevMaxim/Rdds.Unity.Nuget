@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Rdds.Unity.Nuget.UI.Controls.Models;
@@ -16,13 +17,27 @@ namespace Rdds.Unity.Nuget.UI.Controls
     
     private readonly VisualTreeAsset _rowTemplate;
     private readonly int _listViewHeight;
-    private readonly List<PackageRowPresentationModel> _sourceItems;
     private readonly Action<PackageRowPresentationModel> _selectionChangeHandler;
+
+    private string? _selectedPackageId;
 
     public string Title
     {
       get => _titleLabel.text;
       set => _titleLabel.text = value;
+    }
+
+    public string SelectedPackageId
+    {
+      set
+      {
+        if (_selectedPackageId == value)
+          return;
+
+        _selectedPackageId = value;
+        var package = _listView.itemsSource.Cast<PackageRowPresentationModel>().First(i => i.Id == _selectedPackageId);
+        _listView.SetSelectionWithoutNotify(new []{ _listView.itemsSource.IndexOf(package) });
+      }
     }
 
     public void Refresh(List<PackageRowPresentationModel> sourceItems)
@@ -31,13 +46,13 @@ namespace Rdds.Unity.Nuget.UI.Controls
       _listView.Refresh();
     }
 
-    private void Initialize()
+    private void Initialize(IList sourceItems)
     {
       _listView.style.height = new StyleLength(_listViewHeight);
       _listView.selectionType = SelectionType.Single;
       _listView.itemHeight = ItemHeight;
       _listView.makeItem += () => _rowTemplate.CloneTree();
-      _listView.itemsSource = _sourceItems;
+      _listView.itemsSource = sourceItems;
       _listView.bindItem += (element, i) =>
       {
         var model = (PackageRowPresentationModel)_listView.itemsSource[i];
@@ -65,11 +80,10 @@ namespace Rdds.Unity.Nuget.UI.Controls
       _listView = root.Q<ListView>("ListView");
 
       _listViewHeight = listViewHeight;
-      _sourceItems = sourceItems;
       _selectionChangeHandler = selectionChangeHandler;
       Title = title;
 
-      Initialize();
+      Initialize(sourceItems);
     }
   }
 }

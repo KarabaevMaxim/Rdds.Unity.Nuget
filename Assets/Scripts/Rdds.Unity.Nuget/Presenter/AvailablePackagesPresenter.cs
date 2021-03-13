@@ -51,7 +51,7 @@ namespace Rdds.Unity.Nuget.Presenter
                  ?? ImageHelper.LoadImageFromResource(Paths.DefaultIconResourceName);
       var sources = packageInfo.SourceKeys;
       var assemblies = _installedPackagesConfigService.GetInstalledInAssemblies(id) ?? new List<string>(0);
-      return new PackageRowPresentationModel(id, version, icon, sources, assemblies);
+      return new PackageRowPresentationModel(id, false, version, icon, sources, assemblies);
     }
 
     private async Task ReloadPackagesAsync()

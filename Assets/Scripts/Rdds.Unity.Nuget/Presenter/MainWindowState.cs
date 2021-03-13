@@ -15,10 +15,6 @@ namespace Rdds.Unity.Nuget.Presenter
   {
     public HeaderState Header { get; set; }
 
-    public string SelectedPackageId { get; set; }
-    
-    public bool IsInstalledPackageSelected { get; set; }
-    
     public IEnumerable<PackageRowPresentationModel> InstalledPackagesList { get; set; }
     
     public IEnumerable<PackageRowPresentationModel> AvailablePackagesList { get; set; }

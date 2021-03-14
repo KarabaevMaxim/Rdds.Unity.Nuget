@@ -81,8 +81,9 @@ namespace Rdds.Unity.Nuget.Services
           var deps = group.Elements(XName.Get("dependency", xNamespace))
             .Select(e =>
             {
-              var depId = e.Attribute(XName.Get("id", xNamespace))!.Value!;
-              var depVer =  e.Attribute(XName.Get("version", xNamespace))!.Value!;
+              // attribute name without namespace
+              var depId = e.Attribute("id")!.Value!;
+              var depVer = e.Attribute("version")!.Value!;
               return new PackageIdentity(depId, PackageVersion.Parse(depVer));
             });
 

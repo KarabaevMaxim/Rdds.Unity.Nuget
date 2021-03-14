@@ -18,7 +18,7 @@ namespace Rdds.Unity.Nuget.Services
     {
       var packagePath = _localPackagesConfigService.RequirePackagePath(identity);
       var frameworkDirectories = Directory.GetDirectories(Path.Combine(packagePath, "lib"));
-      var targetDirectory = frameworkDirectories.First(d => Path.GetFileName(d) == targetFramework.Name);
+      var targetDirectory = frameworkDirectories.First(d => Path.GetFileName(d) == targetFramework.TFM);
       var newAssets = _fileService.ImportAssetsFromDirectory(targetDirectory, "dll", _dllsDirectory);
       return newAssets;
     }

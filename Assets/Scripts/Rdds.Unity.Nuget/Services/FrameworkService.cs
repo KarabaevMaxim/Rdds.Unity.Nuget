@@ -7,6 +7,7 @@ namespace Rdds.Unity.Nuget.Services
 {
   public class FrameworkService
   {
+    // temporary arrays
     private static readonly string[] _unityFrameworks = { "unity" };
     private static readonly string[] _netStandardFrameworks = {
       "netstandard2.0", "netstandard1.6", "netstandard1.5", "netstandard1.4", "netstandard1.3", "netstandard1.2", "netstandard1.1", "netstandard1.0" };
@@ -27,10 +28,6 @@ namespace Rdds.Unity.Nuget.Services
 
     public Framework RequireCurrentFramework()
     {
-      // var apiCompatibilityLevel =
-      //   PlayerSettings.GetApiCompatibilityLevel(EditorUserBuildSettings.selectedBuildTargetGroup);
-      // return new Framework(_frameworks[apiCompatibilityLevel]);
-
       Framework result = null!;
       ThreadHelper.RunInMainThread(() =>
       {

@@ -194,7 +194,7 @@ namespace Rdds.Unity.Nuget.Presenter
     private void SetDependencies(PackageDetailsPresentationModel details, PackageInfoSourceWrapper detailInfo)
     {
       details.Dependencies = detailInfo.PackageInfo.Dependencies?
-        .Select(d => new DependenciesPresentationModel(d.TargetFramework.Name, d.Dependencies
+        .Select(d => new DependenciesPresentationModel(d.TargetFramework.TFM, d.Dependencies
           .Select(dd => new DependencyPresentationModel(dd.Id, dd.Version.ToString()))));
       details.Description = detailInfo.PackageInfo.Description;
       

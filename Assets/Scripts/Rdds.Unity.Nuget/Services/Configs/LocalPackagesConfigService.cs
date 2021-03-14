@@ -10,6 +10,7 @@ using Rdds.Unity.Nuget.Utility;
 
 namespace Rdds.Unity.Nuget.Services.Configs
 {
+  // todo read downloaded packages from repository directory
   internal class LocalPackagesConfigService
   {
     private const string ConfigName = "LocalPackages.json";

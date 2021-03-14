@@ -6,7 +6,11 @@
   "excludePlatforms": [],
   "allowUnsafeCode": true,
   "overrideReferences": true,
-  "precompiledReferences": [],
+  "precompiledReferences": [
+    "Newtonsoft.Json.dll",
+    "Rdds.Dto.dll",
+    "Rdds.HttpClient.dll"
+  ],
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
